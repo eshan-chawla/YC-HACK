@@ -26,6 +26,58 @@ export default function NewEventPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  const demoEmployees = [
+    {
+      "id": "e7f8c1b2-a345-6789-b0c1-d2e3f4a5b6c7",
+      "name": "Alice Johnson",
+      "email": "alice.johnson@example.com",
+      "team": "Engineering",
+      "location": "New York, NY"
+    },
+    {
+      "id": "f9a0b1c2-d3e4-f5a6-b7c8-d9e0f1a2b3c4",
+      "name": "Bob Smith",
+      "email": "bob.smith@example.com",
+      "team": "Marketing",
+      "location": "San Francisco, CA"
+    },
+    {
+      "id": "a1b2c3d4-e5f6-a7b8-c9d0-e1f2a3b4c5d6",
+      "name": "Carol White",
+      "email": "carol.white@example.com",
+      "team": "Sales",
+      "location": "Chicago, IL"
+    },
+    {
+      "id": "b4c5d6e7-f8a9-b0c1-d2e3-f4a5b6c7d8e9",
+      "name": "David Brown",
+      "email": "david.brown@example.com",
+      "team": "Engineering",
+      "location": "Austin, TX"
+    },
+    {
+      "id": "c6d7e8f9-a0b1-c2d3-e4f5-a6b7c8d9e0f1",
+      "name": "Eve Davis",
+      "email": "eve.davis@example.com",
+      "team": "Product",
+      "location": "Remote"
+    },
+    {
+      "id": "d8e9f0a1-b2c3-d4e5-f6a7-b8c9d0e1f2a3",
+      "name": "Frank Miller",
+      "email": "frank.miller@example.com",
+      "team": "Sales",
+      "location": "London, UK"
+    },
+    {
+      "id": "e0f1a2b3-c4d5-e6f7-a8b9-c0d1e2f3a4b5",
+      "name": "Grace Wilson",
+      "email": "grace.wilson@example.com",
+      "team": "Human Resources",
+      "location": "New York, NY"
+    }
+  ];
+
   // Available employees from database
   const [availableEmployees, setAvailableEmployees] = useState<Employee[]>([])
   const [selectedEmployeeIds, setSelectedEmployeeIds] = useState<Set<string>>(new Set())
@@ -39,27 +91,33 @@ export default function NewEventPage() {
   const [restrictions, setRestrictions] = useState('')
 
   // Fetch employees from Supabase
+  // useEffect(() => {
+    // const fetchEmployees = async () => {
+    //   try {
+    //     const supabase = createClient()
+    //     const { data, error } = await supabase
+    //       .from('employees')
+    //       .select('*')
+    //       .order('name')
+    //
+    //     if (error) throw error
+    //
+    //     setAvailableEmployees(data || [])
+    //   } catch (err) {
+    //     console.error('[v0] Error fetching employees:', err)
+    //     setError('Failed to load employees')
+    //   } finally {
+    //     setIsLoading(false)
+    //   }
+    // }
+
+    // fetchEmployees()
+  // }, [])
+
   useEffect(() => {
-    const fetchEmployees = async () => {
-      try {
-        const supabase = createClient()
-        const { data, error } = await supabase
-          .from('employees')
-          .select('*')
-          .order('name')
-
-        if (error) throw error
-
-        setAvailableEmployees(data || [])
-      } catch (err) {
-        console.error('[v0] Error fetching employees:', err)
-        setError('Failed to load employees')
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    fetchEmployees()
+    // Use the demo data instead of fetching
+    setAvailableEmployees(demoEmployees);
+    setIsLoading(false);
   }, [])
 
   const toggleEmployee = (employeeId: string) => {
