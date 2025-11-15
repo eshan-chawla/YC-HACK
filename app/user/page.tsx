@@ -23,11 +23,35 @@ export default function UserChatPage() {
     setMessage('')
     setIsLoading(true)
 
+    // Add user message to history immediately
+    const userMessageEntry: SerializedChatMessage = {
+      role: 'user',
+      content: userMessage,
+      timestamp: new Date().toISOString()
+    }
+    const updatedHistoryWithUser = [...chatHistory, userMessageEntry]
+    setChatHistory(updatedHistoryWithUser)
+
     try {
-      const updatedHistory = await chatWithAgent(userMessage)
-      setChatHistory(updatedHistory)
+      // Pass full chat history (including the new user message) to agent
+      const agentResponse = await chatWithAgent(userMessage, updatedHistoryWithUser)
+      
+      // Add agent response to history
+      const agentMessageEntry: SerializedChatMessage = {
+        role: 'agent',
+        content: agentResponse,
+        timestamp: new Date().toISOString()
+      }
+      setChatHistory([...updatedHistoryWithUser, agentMessageEntry])
     } catch (error) {
       console.error('Error chatting with agent:', error)
+      // Add error message to history
+      const errorMessageEntry: SerializedChatMessage = {
+        role: 'agent',
+        content: 'Sorry, I encountered an error. Please try again.',
+        timestamp: new Date().toISOString()
+      }
+      setChatHistory([...updatedHistoryWithUser, errorMessageEntry])
     } finally {
       setIsLoading(false)
     }
