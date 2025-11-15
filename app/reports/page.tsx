@@ -153,7 +153,7 @@ export default function ReportsPage() {
                       <Cell key={`cell-${index}`} fill={entry.fill} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(value) => `$${(value / 1000).toFixed(1)}k`} />
+                  <Tooltip formatter={(value: number) => `$${(value / 1000).toFixed(1)}k`} />
                 </PieChart>
               </ResponsiveContainer>
             </Card>
