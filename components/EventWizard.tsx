@@ -433,7 +433,7 @@ export function EventWizard() {
                     className="mt-2 w-full p-3 rounded-lg border border-input bg-background text-foreground min-h-32 font-mono text-sm"
                   />
                   <p className="text-xs text-muted-foreground mt-2">
-                    Available tags: {'{'}{'{'}EMPLOYEE_NAME{'}'}{'}' | '{'}{'{'}EMPLOYEE_EMAIL{'}'}{'}'} | {'{'}{'{'}BUDGET{'}'}{'}'} | {'{'}{'{'}DESTINATION{'}'}{'}'} | {'{'}{'{'}TRAVEL_DATES{'}'}{'}'}
+                    Available tags: {'{'}{'{'}EMPLOYEE_NAME{'}'}{'}'} | {'{'}{'{'}EMPLOYEE_EMAIL{'}'}{'}'} | {'{'}{'{'}BUDGET{'}'}{'}'} | {'{'}{'{'}DESTINATION{'}'}{'}'} | {'{'}{'{'}TRAVEL_DATES{'}'}{'}'}
                   </p>
                 </div>
 
