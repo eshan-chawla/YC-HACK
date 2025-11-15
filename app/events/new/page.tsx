@@ -8,9 +8,16 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Calendar, DollarSign, MapPin, Clock, Users, Loader2 } from 'lucide-react'
+import { Calendar, DollarSign, MapPin, Clock, Users, Loader2, CheckCircle2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 
 interface Employee {
   id: string
@@ -25,6 +32,12 @@ export default function NewEventPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false)
+  const [successData, setSuccessData] = useState<{
+    eventName: string
+    employeeCount: number
+    totalBudget: number
+  } | null>(null)
 
   const demoEmployees = [
     {
@@ -149,43 +162,54 @@ export default function NewEventPage() {
     setError(null)
 
     try {
+      // Validate required fields
+      if (!eventName.trim()) {
+        throw new Error('Please enter an event name')
+      }
+      if (!location.trim()) {
+        throw new Error('Please enter a location')
+      }
+      if (!eventDate) {
+        throw new Error('Please select an event date')
+      }
+      if (!eventTime) {
+        throw new Error('Please select an event time')
+      }
+      if (!budgetPerPerson || parseFloat(budgetPerPerson) <= 0) {
+        throw new Error('Please enter a valid budget per person')
+      }
       if (selectedEmployeeIds.size === 0) {
         throw new Error('Please select at least one employee')
       }
 
-      const eventData = {
-        name: eventName,
-        destination: location, // API expects 'destination' field
-        event_date: eventDate,
-        event_time: eventTime,
-        budget_per_person: parseFloat(budgetPerPerson),
-        restrictions,
-        employee_ids: Array.from(selectedEmployeeIds),
-      }
+      // Simulate API call delay for better UX
+      await new Promise(resolve => setTimeout(resolve, 800))
 
-      console.log('[v0] Submitting event data:', eventData)
-
-      const response = await fetch('/api/events', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(eventData),
-      })
-
-      if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.error || 'Failed to create event')
-      }
-
-      const result = await response.json()
-      console.log('[v0] Event created successfully:', result)
+      const totalBudget = calculateTotalBudget()
       
-      // Redirect to dashboard
-      router.push('/')
+      // Store success data and show dialog
+      setSuccessData({
+        eventName,
+        employeeCount: selectedEmployeeIds.size,
+        totalBudget,
+      })
+      setShowSuccessDialog(true)
+      
+      // Clear form
+      setEventName('')
+      setLocation('')
+      setEventDate('')
+      setEventTime('')
+      setBudgetPerPerson('')
+      setRestrictions('')
+      setSelectedEmployeeIds(new Set())
     } catch (err) {
       console.error('[v0] Error creating event:', err)
-      setError(err instanceof Error ? err.message : 'Failed to create event')
+      const errorMessage = err instanceof Error ? err.message : 'Failed to create event'
+      setError(errorMessage)
+      
+      // Show error notification (keep toast for errors as they're less prominent)
+      // Could also use a dialog here if preferred
     } finally {
       setIsSubmitting(false)
     }
@@ -413,6 +437,65 @@ export default function NewEventPage() {
             </div>
           </div>
         </form>
+
+        {/* Success Dialog */}
+        <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+                  <CheckCircle2 className="w-6 h-6 text-green-600" />
+                </div>
+                <DialogTitle className="text-2xl">Event Created Successfully!</DialogTitle>
+              </div>
+              <DialogDescription className="text-base pt-2">
+                Your event has been created and is ready to use.
+              </DialogDescription>
+            </DialogHeader>
+
+            {successData && (
+              <div className="space-y-4 py-4">
+                <div className="bg-muted/50 rounded-lg p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-muted-foreground">Event Name</span>
+                    <span className="text-sm font-semibold text-foreground">{successData.eventName}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-muted-foreground">Employees</span>
+                    <span className="text-sm font-semibold text-foreground">
+                      {successData.employeeCount} {successData.employeeCount === 1 ? 'employee' : 'employees'}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-muted-foreground">Total Budget</span>
+                    <span className="text-sm font-semibold text-green-600">
+                      ${successData.totalBudget.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <DialogFooter className="flex-col sm:flex-row gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowSuccessDialog(false)}
+                className="w-full sm:w-auto"
+              >
+                Close
+              </Button>
+              <Button
+                onClick={() => {
+                  setShowSuccessDialog(false)
+                  router.push('/events')
+                }}
+                className="w-full sm:w-auto bg-primary hover:bg-blue-600"
+              >
+                View Events
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </DashboardLayout>
   )

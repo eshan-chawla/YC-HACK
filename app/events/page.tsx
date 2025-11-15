@@ -52,7 +52,7 @@ export default function EventsPage() {
             <h1 className="text-3xl font-bold text-foreground">Events</h1>
             <p className="text-muted-foreground mt-1">Manage all your travel events</p>
           </div>
-          <Link href="/events/create">
+          <Link href="/events/new">
             <Button className="bg-primary hover:bg-blue-600 text-primary-foreground gap-2">
               <Plus className="w-4 h-4" />
               Create New Event
