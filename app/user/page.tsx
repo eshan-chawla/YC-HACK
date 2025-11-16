@@ -176,7 +176,7 @@ export default function UserChatPage() {
             <Button
               type="submit"
               disabled={!message.trim() || isLoading}
-              className="bg-primary hover:bg-blue-600 text-primary-foreground"
+              className="bg-primary hover:bg-green-600 text-primary-foreground"
             >
               <Send className="w-4 h-4" />
             </Button>
