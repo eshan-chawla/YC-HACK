@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { LayoutDashboard, Calendar, Users, Settings, BarChart3, Globe } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { TravelWeaverLogo } from './TravelWeaverLogo'
+import { TripWeaverLogo } from './TripWeaverLogo'
 
 const navItems = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -23,7 +23,7 @@ export function Sidebar() {
       {/* Logo */}
       <div className="p-6 border-b border-sidebar-border">
         <Link href="/" className="block">
-          <TravelWeaverLogo variant="full" size="md" />
+          <TripWeaverLogo variant="full" size="md" />
         </Link>
       </div>
 
