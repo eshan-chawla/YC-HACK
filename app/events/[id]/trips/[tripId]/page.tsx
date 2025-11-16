@@ -76,7 +76,7 @@ const mockTripData = {
   budget: 2500,
   isCompliant: true,
   agentNotes:
-    'Selected United flights to match preferred airline. Marriott chosen to maximize loyalty points. Hotel within allocated budget; added meal allowance per company policy. All bookings confirmed and paid via TravelWeaver. Ground transport via rideshare for reliability.',
+    'Selected United flights to match preferred airline. Marriott chosen to maximize loyalty points. Hotel within allocated budget; added meal allowance per company policy. All bookings confirmed and paid via TripWeaver. Ground transport via rideshare for reliability.',
 }
 
 export default function TripDetailPage({

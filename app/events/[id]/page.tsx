@@ -6,10 +6,12 @@ import { Button } from '@/components/ui/button'
 import { StatsCard } from '@/components/EventDetail/StatsCard'
 import { BookingsTable } from '@/components/EventDetail/BookingsTable'
 import { ActivityFeed } from '@/components/EventDetail/ActivityFeed'
+import { EventConfiguration } from '@/components/EventConfig/EventConfiguration'
 import { useEventPolling } from '@/hooks/useEventPolling'
 import { ArrowLeft, RefreshCw, Pause, MoreVertical } from 'lucide-react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -171,17 +173,30 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
           />
         </div>
 
-        {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            <div className="mb-4">
-              <h2 className="text-lg font-semibold text-foreground">Employee Bookings</h2>
-            </div>
-            <BookingsTable employees={data.employees} eventId={data.id} />
-          </div>
+        {/* Main Content with Tabs */}
+        <Tabs defaultValue="overview" className="w-full">
+          <TabsList>
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="configuration">Configuration</TabsTrigger>
+          </TabsList>
 
-          <ActivityFeed items={data.activities} />
-        </div>
+          <TabsContent value="overview" className="mt-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2">
+                <div className="mb-4">
+                  <h2 className="text-lg font-semibold text-foreground">Employee Bookings</h2>
+                </div>
+                <BookingsTable employees={data.employees} eventId={data.id} />
+              </div>
+
+              <ActivityFeed items={data.activities} />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="configuration" className="mt-6">
+            <EventConfiguration eventId={data.id} />
+          </TabsContent>
+        </Tabs>
       </div>
     </DashboardLayout>
   )

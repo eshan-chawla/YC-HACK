@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect, FormEvent } from 'react'
-import { DashboardLayout } from '@/components/DashboardLayout'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
@@ -22,6 +21,7 @@ export default function UserChatPage() {
   const [message, setMessage] = useState('')
   const [chatHistory, setChatHistory] = useState<SerializedChatMessage[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  const [showPaymentAnimation, setShowPaymentAnimation] = useState(false)
 
   // Initialize chat history on client side only to avoid hydration mismatch
   useEffect(() => {
@@ -41,6 +41,10 @@ export default function UserChatPage() {
     const userMessage = message.trim()
     setMessage('')
     setIsLoading(true)
+
+    // Check if user is booking (starts with "go ahead and book")
+    const isBookingMessage = userMessage.toLowerCase().startsWith('go ahead and book')
+    setShowPaymentAnimation(isBookingMessage)
 
     // Add user message to history immediately
     const userMessageEntry: SerializedChatMessage = {
@@ -74,17 +78,21 @@ export default function UserChatPage() {
       setChatHistory([...updatedHistoryWithUser, errorMessageEntry])
     } finally {
       setIsLoading(false)
+      setShowPaymentAnimation(false)
     }
   }
 
   return (
-    <DashboardLayout>
-      <div className="flex flex-col h-[calc(100vh-8rem)] max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-foreground">Chat with Agent</h1>
-          <p className="text-muted-foreground mt-1">Ask questions and get help with your travel needs</p>
-        </div>
+    <div className="flex h-screen bg-background">
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <main className="flex-1 overflow-auto bg-background">
+          <div className="container mx-auto py-6 px-6">
+            <div className="flex flex-col h-[calc(100vh-3rem)] max-w-4xl mx-auto">
+              {/* Header */}
+              <div className="mb-6">
+                <h1 className="text-3xl font-bold text-foreground">Chat with Agent</h1>
+                <p className="text-muted-foreground mt-1">Ask questions and get help with your travel needs</p>
+              </div>
 
         {/* Chat Messages */}
         <Card className="flex-1 flex flex-col overflow-hidden p-6 mb-4">
@@ -118,7 +126,7 @@ export default function UserChatPage() {
                   >
                     {msg.paymentCompleted && (
                       <div className="mb-4">
-                        <PaymentFlowAnimation />
+                        <PaymentFlowAnimation showCompletion={true} />
                       </div>
                     )}
                     <div className="text-sm">
@@ -203,43 +211,49 @@ export default function UserChatPage() {
                 <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                   <Bot className="w-4 h-4 text-primary" />
                 </div>
-                <div className="bg-muted text-foreground rounded-lg px-4 py-3 flex items-center gap-1">
-                  <div className="flex gap-1">
-                    <motion.div
-                      className="w-2 h-2 rounded-full bg-foreground/60"
-                      animate={{
-                        y: [0, -8, 0],
-                      }}
-                      transition={{
-                        duration: 0.6,
-                        repeat: Infinity,
-                        delay: 0,
-                      }}
-                    />
-                    <motion.div
-                      className="w-2 h-2 rounded-full bg-foreground/60"
-                      animate={{
-                        y: [0, -8, 0],
-                      }}
-                      transition={{
-                        duration: 0.6,
-                        repeat: Infinity,
-                        delay: 0.2,
-                      }}
-                    />
-                    <motion.div
-                      className="w-2 h-2 rounded-full bg-foreground/60"
-                      animate={{
-                        y: [0, -8, 0],
-                      }}
-                      transition={{
-                        duration: 0.6,
-                        repeat: Infinity,
-                        delay: 0.4,
-                      }}
-                    />
+                {showPaymentAnimation ? (
+                  <div className="bg-muted text-foreground rounded-lg px-4 py-3">
+                    <PaymentFlowAnimation isLoading={true} />
                   </div>
-                </div>
+                ) : (
+                  <div className="bg-muted text-foreground rounded-lg px-4 py-3 flex items-center gap-1">
+                    <div className="flex gap-1">
+                      <motion.div
+                        className="w-2 h-2 rounded-full bg-foreground/60"
+                        animate={{
+                          y: [0, -8, 0],
+                        }}
+                        transition={{
+                          duration: 0.6,
+                          repeat: Infinity,
+                          delay: 0,
+                        }}
+                      />
+                      <motion.div
+                        className="w-2 h-2 rounded-full bg-foreground/60"
+                        animate={{
+                          y: [0, -8, 0],
+                        }}
+                        transition={{
+                          duration: 0.6,
+                          repeat: Infinity,
+                          delay: 0.2,
+                        }}
+                      />
+                      <motion.div
+                        className="w-2 h-2 rounded-full bg-foreground/60"
+                        animate={{
+                          y: [0, -8, 0],
+                        }}
+                        transition={{
+                          duration: 0.6,
+                          repeat: Infinity,
+                          delay: 0.4,
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
               </motion.div>
             )}
           </div>
@@ -263,8 +277,11 @@ export default function UserChatPage() {
             </Button>
           </form>
         </Card>
+            </div>
+          </div>
+        </main>
       </div>
-    </DashboardLayout>
+    </div>
   )
 }
 

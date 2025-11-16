@@ -4,7 +4,7 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* TravelWeaver Brand Colors - White & Green */
+  /* TripWeaver Brand Colors - White & Green */
   --travelweaver-green: #10B981;
   --travelweaver-green-dark: #059669;
   --travelweaver-green-light: #34D399;

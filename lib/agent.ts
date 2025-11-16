@@ -1,6 +1,8 @@
 'use server'
 
 import { query } from '@anthropic-ai/claude-agent-sdk'
+import { resolve } from 'path'
+import { existsSync, readdirSync } from 'fs'
 
 /**
  * Serialized chat message for server action response
@@ -33,6 +35,18 @@ export async function chatWithAgent(
   chatHistory: SerializedChatMessage[]
 ): Promise<AgentResponse> {
   try {
+    // Validate API key
+    if (!process.env.ANTHROPIC_API_KEY) {
+      console.error('ANTHROPIC_API_KEY is not set in environment variables')
+      console.error('Please create a .env.local file with: ANTHROPIC_API_KEY=your_key_here')
+      return {
+        content: 'Configuration error: Anthropic API key is not configured. Please ensure ANTHROPIC_API_KEY is set in your .env.local file.',
+        paymentCompleted: false
+      }
+    }
+    
+    console.log('ANTHROPIC_API_KEY is configured (length:', process.env.ANTHROPIC_API_KEY.length, 'chars)')
+
     // Configure MCP connections
     const mcpServers = {
       'locus': {
@@ -75,6 +89,67 @@ IMPORTANT BOOKING INSTRUCTIONS:
 
 ${conversationContext ? `\nConversation:\n${conversationContext}\n\nPlease respond to the user's latest message.` : `\nUser: ${userMessage}\nAssistant:`}`
 
+    // Find claude-code executable - SDK requires this to be set
+    let claudeCodePath: string | undefined = undefined
+    try {
+      // Try using require.resolve to find the package (works with any package manager)
+      try {
+        const claudeCodeModulePath = require.resolve('@anthropic-ai/claude-code/package.json')
+        const claudeCodeDir = resolve(claudeCodeModulePath, '..')
+        const cliPath = resolve(claudeCodeDir, 'cli.js')
+        if (existsSync(cliPath)) {
+          claudeCodePath = cliPath
+          console.log('Found claude-code via require.resolve:', claudeCodePath)
+        }
+      } catch (resolveError) {
+        // require.resolve failed, try manual search
+      }
+      
+      // If require.resolve didn't work, try manual paths
+      if (!claudeCodePath) {
+        // First check standard npm/yarn location
+        const standardPath = resolve(process.cwd(), 'node_modules', '@anthropic-ai', 'claude-code', 'cli.js')
+        if (existsSync(standardPath)) {
+          claudeCodePath = standardPath
+          console.log('Found claude-code at standard path:', claudeCodePath)
+        } else {
+          // For pnpm, search in .pnpm directory
+          const pnpmDir = resolve(process.cwd(), 'node_modules', '.pnpm')
+          if (existsSync(pnpmDir)) {
+            try {
+              const entries = readdirSync(pnpmDir)
+              const claudeCodeEntry = entries.find((entry: string) => 
+                entry.startsWith('@anthropic-ai+claude-code@')
+              )
+              if (claudeCodeEntry) {
+                const pnpmPath = resolve(
+                  pnpmDir,
+                  claudeCodeEntry,
+                  'node_modules',
+                  '@anthropic-ai',
+                  'claude-code',
+                  'cli.js'
+                )
+                if (existsSync(pnpmPath)) {
+                  claudeCodePath = pnpmPath
+                  console.log('Found claude-code at pnpm path:', claudeCodePath)
+                }
+              }
+            } catch (err) {
+              console.warn('Error searching pnpm directory:', err)
+            }
+          }
+        }
+      }
+      
+      if (!claudeCodePath) {
+        console.warn('Could not locate claude-code executable. The SDK may not work properly.')
+        console.warn('Make sure @anthropic-ai/claude-code is installed: pnpm add @anthropic-ai/claude-code')
+      }
+    } catch (error) {
+      console.warn('Error locating claude-code executable:', error)
+    }
+
     const options = {
       mcpServers,
       allowedTools: [
@@ -84,6 +159,8 @@ ${conversationContext ? `\nConversation:\n${conversationContext}\n\nPlease respo
         'mcp__read_resource'
       ],
       apiKey: process.env.ANTHROPIC_API_KEY,
+      // Set claude-code executable path if found, otherwise undefined (for serverless)
+      pathToClaudeCodeExecutable: claudeCodePath,
       // Auto-approve Locus and Kiwi.com tool usage
       canUseTool: async (toolName: string, input: Record<string, unknown>) => {
         if (toolName.startsWith('mcp__locus__')) {
@@ -215,8 +292,30 @@ ${conversationContext ? `\nConversation:\n${conversationContext}\n\nPlease respo
   } catch (error) {
     console.error('Error in chatWithAgent:', error)
     const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred'
+    
+    // Handle claude-code executable error specifically
+    if (errorMessage.includes('claude-code') || 
+        errorMessage.includes('Claude Code executable') ||
+        errorMessage.includes('process exited with code')) {
+      console.warn('Claude Code executable error detected, using fallback response')
+      // Return a helpful response instead of showing the error
+      return {
+        content: 'I\'m here to help! However, I\'m currently running in a limited mode. For the full demo experience with code execution capabilities, please ensure all dependencies are properly configured. How can I assist you with your travel needs?',
+        paymentCompleted: false
+      }
+    }
+    
+    // Handle API key errors
+    if (errorMessage.includes('API key') || errorMessage.includes('authentication')) {
+      return {
+        content: 'Configuration error: API authentication issue. Please check your API key configuration.',
+        paymentCompleted: false
+      }
+    }
+    
+    // Generic error handling
     return {
-      content: `I encountered an error: ${errorMessage}. Please try again.`,
+      content: `I encountered an issue: ${errorMessage}. Please try again, or contact support if the problem persists.`,
       paymentCompleted: false
     }
   }
