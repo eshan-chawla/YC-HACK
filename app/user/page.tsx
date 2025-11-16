@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect, FormEvent } from 'react'
-import { DashboardLayout } from '@/components/DashboardLayout'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
@@ -78,13 +77,16 @@ export default function UserChatPage() {
   }
 
   return (
-    <DashboardLayout>
-      <div className="flex flex-col h-[calc(100vh-8rem)] max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-foreground">Chat with Agent</h1>
-          <p className="text-muted-foreground mt-1">Ask questions and get help with your travel needs</p>
-        </div>
+    <div className="flex h-screen bg-background">
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <main className="flex-1 overflow-auto bg-background">
+          <div className="container mx-auto py-6 px-6">
+            <div className="flex flex-col h-[calc(100vh-3rem)] max-w-4xl mx-auto">
+              {/* Header */}
+              <div className="mb-6">
+                <h1 className="text-3xl font-bold text-foreground">Chat with Agent</h1>
+                <p className="text-muted-foreground mt-1">Ask questions and get help with your travel needs</p>
+              </div>
 
         {/* Chat Messages */}
         <Card className="flex-1 flex flex-col overflow-hidden p-6 mb-4">
@@ -263,8 +265,11 @@ export default function UserChatPage() {
             </Button>
           </form>
         </Card>
+            </div>
+          </div>
+        </main>
       </div>
-    </DashboardLayout>
+    </div>
   )
 }
 
