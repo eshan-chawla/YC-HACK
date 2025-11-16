@@ -7,8 +7,8 @@ const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'TravelWeaver - Corporate Travel Management',
-  description: 'Admin portal for corporate travel event management by TravelWeaver',
+  title: 'TripWeaver - Corporate Travel Management',
+  description: 'Admin portal for corporate travel event management by TripWeaver',
   generator: 'v0.app',
   icons: {
     icon: [

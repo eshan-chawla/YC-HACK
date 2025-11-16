@@ -1,6 +1,8 @@
 'use server'
 
 import { query } from '@anthropic-ai/claude-agent-sdk'
+import { resolve } from 'path'
+import { existsSync, readdirSync } from 'fs'
 
 /**
  * Serialized chat message for server action response
@@ -75,6 +77,46 @@ IMPORTANT BOOKING INSTRUCTIONS:
 
 ${conversationContext ? `\nConversation:\n${conversationContext}\n\nPlease respond to the user's latest message.` : `\nUser: ${userMessage}\nAssistant:`}`
 
+    // Try to find claude-code executable, but don't fail if not found (for serverless)
+    let claudeCodePath: string | undefined = undefined
+    try {
+      // Check if claude-code is available in node_modules
+      // First check standard npm/yarn location
+      const standardPath = resolve(process.cwd(), 'node_modules', '@anthropic-ai', 'claude-code', 'cli.js')
+      if (existsSync(standardPath)) {
+        claudeCodePath = standardPath
+      } else {
+        // For pnpm, try to find in .pnpm directory (version-specific)
+        const pnpmDir = resolve(process.cwd(), 'node_modules', '.pnpm')
+        if (existsSync(pnpmDir)) {
+          try {
+            const entries = readdirSync(pnpmDir)
+            const claudeCodeEntry = entries.find((entry: string) => 
+              entry.startsWith('@anthropic-ai+claude-code@')
+            )
+            if (claudeCodeEntry) {
+              const pnpmPath = resolve(
+                pnpmDir,
+                claudeCodeEntry,
+                'node_modules',
+                '@anthropic-ai',
+                'claude-code',
+                'cli.js'
+              )
+              if (existsSync(pnpmPath)) {
+                claudeCodePath = pnpmPath
+              }
+            }
+          } catch (err) {
+            // Ignore errors when searching pnpm directory
+          }
+        }
+      }
+    } catch (error) {
+      // Ignore errors when checking for executable
+      console.warn('Could not locate claude-code executable, continuing without it')
+    }
+
     const options = {
       mcpServers,
       allowedTools: [
@@ -84,6 +126,8 @@ ${conversationContext ? `\nConversation:\n${conversationContext}\n\nPlease respo
         'mcp__read_resource'
       ],
       apiKey: process.env.ANTHROPIC_API_KEY,
+      // Set claude-code executable path if found, otherwise undefined (for serverless)
+      pathToClaudeCodeExecutable: claudeCodePath,
       // Auto-approve Locus and Kiwi.com tool usage
       canUseTool: async (toolName: string, input: Record<string, unknown>) => {
         if (toolName.startsWith('mcp__locus__')) {
@@ -215,6 +259,16 @@ ${conversationContext ? `\nConversation:\n${conversationContext}\n\nPlease respo
   } catch (error) {
     console.error('Error in chatWithAgent:', error)
     const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred'
+    
+    // Handle claude-code executable error specifically
+    if (errorMessage.includes('claude-code') || errorMessage.includes('Claude Code executable')) {
+      console.warn('Claude Code executable not available in serverless environment, using fallback response')
+      return {
+        content: 'I\'m currently experiencing a configuration issue. Please try again in a moment, or contact support if the problem persists.',
+        paymentCompleted: false
+      }
+    }
+    
     return {
       content: `I encountered an error: ${errorMessage}. Please try again.`,
       paymentCompleted: false

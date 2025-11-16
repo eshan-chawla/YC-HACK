@@ -14,7 +14,7 @@ export function TripWeaverLogo({
   size = 'md',
   className,
   text = 'TripWeaver'
-}: TravelWeaverLogoProps) {
+}: TripWeaverLogoProps) {
   const sizeClasses = {
     sm: 'text-xs',
     md: 'text-sm',
