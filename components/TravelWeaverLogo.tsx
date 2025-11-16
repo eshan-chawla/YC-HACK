@@ -6,12 +6,14 @@ interface TravelWeaverLogoProps {
   variant?: 'full' | 'icon' | 'text'
   size?: 'sm' | 'md' | 'lg'
   className?: string
+  text?: string
 }
 
 export function TravelWeaverLogo({ 
   variant = 'full', 
   size = 'md',
-  className 
+  className,
+  text = 'TripWeaver'
 }: TravelWeaverLogoProps) {
   const sizeClasses = {
     sm: 'text-xs',
@@ -73,7 +75,7 @@ export function TravelWeaverLogo({
         'bg-gradient-to-r from-green-600 to-green-500 bg-clip-text text-transparent',
         sizeClasses[size]
       )}>
-        TravelWeaver
+        {text}
       </span>
     </div>
   )
