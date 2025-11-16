@@ -9,6 +9,15 @@ export interface SerializedChatMessage {
   role: 'user' | 'agent'
   content: string
   timestamp: string // ISO string for serialization
+  paymentCompleted?: boolean // Indicates if a payment was completed in this message
+}
+
+/**
+ * Agent response with payment status
+ */
+export interface AgentResponse {
+  content: string
+  paymentCompleted: boolean
 }
 
 // Hardcoded destination wallet address
@@ -17,12 +26,12 @@ const DESTINATION_WALLET = '0x57ba59033233c750b434636e86e385294d43eeba'
 /**
  * Server action to chat with the agent
  * This can be called directly from client components
- * Takes the full chat history and returns only the agent's response
+ * Takes the full chat history and returns the agent's response with payment status
  */
 export async function chatWithAgent(
   userMessage: string,
   chatHistory: SerializedChatMessage[]
-): Promise<string> {
+): Promise<AgentResponse> {
   try {
     // Configure MCP connections
     const mcpServers = {
@@ -121,6 +130,7 @@ ${conversationContext ? `\nConversation:\n${conversationContext}\n\nPlease respo
     // Run query with Claude SDK
     let agentResponse = ''
     let finalResult: any = null
+    let paymentCompleted = false
 
     for await (const message of query({
       prompt: fullPrompt,
@@ -145,6 +155,17 @@ ${conversationContext ? `\nConversation:\n${conversationContext}\n\nPlease respo
               if (block.type === 'text' && block.text) {
                 agentResponse += block.text
               }
+              // Check for tool use blocks (when agent calls tools)
+              if (block.type === 'tool_use' && block.name) {
+                const toolName = block.name
+                // Check if it's a Locus payment tool
+                if (toolName.startsWith('mcp__locus__') && 
+                    (toolName.includes('send_to_address') || 
+                     toolName.includes('send_to_contact') || 
+                     toolName.includes('send_to_email'))) {
+                  paymentCompleted = true
+                }
+              }
             }
           } else if (typeof assistantMessage.content === 'string') {
             agentResponse += assistantMessage.content
@@ -156,6 +177,28 @@ ${conversationContext ? `\nConversation:\n${conversationContext}\n\nPlease respo
         if (streamEvent.subtype === 'content_block_delta' && streamEvent.delta?.text) {
           agentResponse += streamEvent.delta.text
         }
+        // Check for tool use events
+        if (streamEvent.subtype === 'content_block_start' && streamEvent.content_block?.type === 'tool_use') {
+          const toolName = streamEvent.content_block?.name
+          if (toolName && toolName.startsWith('mcp__locus__') && 
+              (toolName.includes('send_to_address') || 
+               toolName.includes('send_to_contact') || 
+               toolName.includes('send_to_email'))) {
+            paymentCompleted = true
+          }
+        }
+      } else if (message.type === 'tool_progress') {
+        // Track tool execution progress
+        const toolProgress = message as any
+        if (toolProgress.toolName && toolProgress.toolName.startsWith('mcp__locus__') &&
+            (toolProgress.toolName.includes('send_to_address') || 
+             toolProgress.toolName.includes('send_to_contact') || 
+             toolProgress.toolName.includes('send_to_email'))) {
+          // Payment tool was executed
+          if (toolProgress.status === 'success' || toolProgress.status === 'completed') {
+            paymentCompleted = true
+          }
+        }
       }
     }
 
@@ -164,12 +207,18 @@ ${conversationContext ? `\nConversation:\n${conversationContext}\n\nPlease respo
       agentResponse = 'I received your message. How can I help you with your travel needs?'
     }
 
-    return agentResponse
+    return {
+      content: agentResponse,
+      paymentCompleted
+    }
     
   } catch (error) {
     console.error('Error in chatWithAgent:', error)
     const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred'
-    return `I encountered an error: ${errorMessage}. Please try again.`
+    return {
+      content: `I encountered an error: ${errorMessage}. Please try again.`,
+      paymentCompleted: false
+    }
   }
 }
 
