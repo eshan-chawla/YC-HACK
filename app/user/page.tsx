@@ -21,6 +21,7 @@ export default function UserChatPage() {
   const [message, setMessage] = useState('')
   const [chatHistory, setChatHistory] = useState<SerializedChatMessage[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  const [showPaymentAnimation, setShowPaymentAnimation] = useState(false)
 
   // Initialize chat history on client side only to avoid hydration mismatch
   useEffect(() => {
@@ -40,6 +41,10 @@ export default function UserChatPage() {
     const userMessage = message.trim()
     setMessage('')
     setIsLoading(true)
+
+    // Check if user is booking (starts with "go ahead and book")
+    const isBookingMessage = userMessage.toLowerCase().startsWith('go ahead and book')
+    setShowPaymentAnimation(isBookingMessage)
 
     // Add user message to history immediately
     const userMessageEntry: SerializedChatMessage = {
@@ -73,6 +78,7 @@ export default function UserChatPage() {
       setChatHistory([...updatedHistoryWithUser, errorMessageEntry])
     } finally {
       setIsLoading(false)
+      setShowPaymentAnimation(false)
     }
   }
 
@@ -120,7 +126,7 @@ export default function UserChatPage() {
                   >
                     {msg.paymentCompleted && (
                       <div className="mb-4">
-                        <PaymentFlowAnimation />
+                        <PaymentFlowAnimation showCompletion={true} />
                       </div>
                     )}
                     <div className="text-sm">
@@ -205,43 +211,49 @@ export default function UserChatPage() {
                 <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                   <Bot className="w-4 h-4 text-primary" />
                 </div>
-                <div className="bg-muted text-foreground rounded-lg px-4 py-3 flex items-center gap-1">
-                  <div className="flex gap-1">
-                    <motion.div
-                      className="w-2 h-2 rounded-full bg-foreground/60"
-                      animate={{
-                        y: [0, -8, 0],
-                      }}
-                      transition={{
-                        duration: 0.6,
-                        repeat: Infinity,
-                        delay: 0,
-                      }}
-                    />
-                    <motion.div
-                      className="w-2 h-2 rounded-full bg-foreground/60"
-                      animate={{
-                        y: [0, -8, 0],
-                      }}
-                      transition={{
-                        duration: 0.6,
-                        repeat: Infinity,
-                        delay: 0.2,
-                      }}
-                    />
-                    <motion.div
-                      className="w-2 h-2 rounded-full bg-foreground/60"
-                      animate={{
-                        y: [0, -8, 0],
-                      }}
-                      transition={{
-                        duration: 0.6,
-                        repeat: Infinity,
-                        delay: 0.4,
-                      }}
-                    />
+                {showPaymentAnimation ? (
+                  <div className="bg-muted text-foreground rounded-lg px-4 py-3">
+                    <PaymentFlowAnimation isLoading={true} />
                   </div>
-                </div>
+                ) : (
+                  <div className="bg-muted text-foreground rounded-lg px-4 py-3 flex items-center gap-1">
+                    <div className="flex gap-1">
+                      <motion.div
+                        className="w-2 h-2 rounded-full bg-foreground/60"
+                        animate={{
+                          y: [0, -8, 0],
+                        }}
+                        transition={{
+                          duration: 0.6,
+                          repeat: Infinity,
+                          delay: 0,
+                        }}
+                      />
+                      <motion.div
+                        className="w-2 h-2 rounded-full bg-foreground/60"
+                        animate={{
+                          y: [0, -8, 0],
+                        }}
+                        transition={{
+                          duration: 0.6,
+                          repeat: Infinity,
+                          delay: 0.2,
+                        }}
+                      />
+                      <motion.div
+                        className="w-2 h-2 rounded-full bg-foreground/60"
+                        animate={{
+                          y: [0, -8, 0],
+                        }}
+                        transition={{
+                          duration: 0.6,
+                          repeat: Infinity,
+                          delay: 0.4,
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
               </motion.div>
             )}
           </div>
