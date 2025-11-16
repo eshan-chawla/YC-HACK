@@ -10,13 +10,19 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { NotificationCenter } from './NotificationCenter'
+import { TravelWeaverLogo } from './TravelWeaverLogo'
+import Link from 'next/link'
 
 export function Header() {
   return (
     <header className="border-b border-border bg-background sticky top-0 z-40">
       <div className="flex items-center justify-between h-16 px-6">
-        <div className="flex-1">
-          <h2 className="text-xl font-semibold text-foreground">Travel Event Management</h2>
+        <div className="flex items-center gap-4">
+          <Link href="/" className="hidden md:block">
+            <TravelWeaverLogo variant="text" size="md" />
+          </Link>
+          <div className="h-6 w-px bg-border hidden md:block" />
+          <h2 className="text-lg font-semibold text-foreground">Travel Event Management</h2>
         </div>
 
         <div className="flex items-center gap-4">

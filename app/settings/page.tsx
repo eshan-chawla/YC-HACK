@@ -254,7 +254,7 @@ export default function SettingsPage() {
 
         <div className="flex gap-3 pt-4">
           <Button variant="outline">Cancel</Button>
-          <Button className="gap-2 bg-primary hover:bg-blue-600 ml-auto">
+          <Button className="gap-2 bg-primary hover:bg-green-600 ml-auto">
             <Save className="w-4 h-4" />
             Save Changes
           </Button>

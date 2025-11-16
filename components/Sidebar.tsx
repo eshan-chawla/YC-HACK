@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { LayoutDashboard, Calendar, Users, Settings, BarChart3, Globe } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { TravelWeaverLogo } from './TravelWeaverLogo'
 
 const navItems = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -21,15 +22,9 @@ export function Sidebar() {
     <aside className="w-64 border-r border-border bg-sidebar text-sidebar-foreground min-h-screen flex flex-col">
       {/* Logo */}
       <div className="p-6 border-b border-sidebar-border">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded bg-primary text-primary-foreground flex items-center justify-center font-bold">
-            L
-          </div>
-          <div>
-            <h1 className="font-bold text-sm">Locus</h1>
-            <p className="text-xs text-sidebar-foreground/60">Travel Admin</p>
-          </div>
-        </div>
+        <Link href="/" className="block">
+          <TravelWeaverLogo variant="full" size="md" />
+        </Link>
       </div>
 
       {/* Navigation */}

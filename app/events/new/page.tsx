@@ -314,7 +314,7 @@ export default function NewEventPage() {
                 </div>
 
                 <div className="grid gap-2">
-                  <Label htmlFor="restrictions">Budget / Restrictions (LOCUS Schema)</Label>
+                  <Label htmlFor="restrictions">Budget / Restrictions</Label>
                   <Textarea
                     id="restrictions"
                     placeholder="Enter any budget restrictions or special requirements..."
@@ -423,7 +423,7 @@ export default function NewEventPage() {
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="bg-primary hover:bg-blue-600"
+                className="bg-primary hover:bg-green-600"
               >
                 {isSubmitting ? (
                   <>
@@ -489,7 +489,7 @@ export default function NewEventPage() {
                   setShowSuccessDialog(false)
                   router.push('/events')
                 }}
-                className="w-full sm:w-auto bg-primary hover:bg-blue-600"
+                className="w-full sm:w-auto bg-primary hover:bg-green-600"
               >
                 View Events
               </Button>

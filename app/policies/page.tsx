@@ -57,7 +57,7 @@ export default function PoliciesPage() {
             <h1 className="text-3xl font-bold text-foreground">Travel Policies</h1>
             <p className="text-muted-foreground mt-1">Manage company travel policy templates</p>
           </div>
-          <Button className="gap-2 bg-primary hover:bg-blue-600">
+          <Button className="gap-2 bg-primary hover:bg-green-600">
             <Plus className="w-4 h-4" />
             Create Policy
           </Button>

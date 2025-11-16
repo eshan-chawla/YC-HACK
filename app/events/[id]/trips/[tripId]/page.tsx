@@ -19,7 +19,7 @@ import {
 const mockTripData = {
   employeeName: 'John Smith',
   status: 'booked' as const,
-  confirmationNumber: 'LOCUS-12345',
+  confirmationNumber: 'TW-12345',
   eventName: 'Team Q4 Offsite 2025',
   segments: [
     {
@@ -76,7 +76,7 @@ const mockTripData = {
   budget: 2500,
   isCompliant: true,
   agentNotes:
-    'Selected United flights to match preferred airline. Marriott chosen to maximize loyalty points. Hotel within allocated budget; added meal allowance per company policy. All bookings confirmed and paid via Locus wallet. Ground transport via rideshare for reliability.',
+    'Selected United flights to match preferred airline. Marriott chosen to maximize loyalty points. Hotel within allocated budget; added meal allowance per company policy. All bookings confirmed and paid via TravelWeaver. Ground transport via rideshare for reliability.',
 }
 
 export default function TripDetailPage({

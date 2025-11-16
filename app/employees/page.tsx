@@ -209,7 +209,7 @@ export default function EmployeesPage() {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            <Button className="bg-primary hover:bg-blue-600 text-primary-foreground gap-2">
+            <Button className="bg-primary hover:bg-green-600 text-primary-foreground gap-2">
               <Plus className="w-4 h-4" />
               Add Employee
             </Button>
