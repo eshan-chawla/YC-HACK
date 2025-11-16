@@ -35,6 +35,18 @@ export async function chatWithAgent(
   chatHistory: SerializedChatMessage[]
 ): Promise<AgentResponse> {
   try {
+    // Validate API key
+    if (!process.env.ANTHROPIC_API_KEY) {
+      console.error('ANTHROPIC_API_KEY is not set in environment variables')
+      console.error('Please create a .env.local file with: ANTHROPIC_API_KEY=your_key_here')
+      return {
+        content: 'Configuration error: Anthropic API key is not configured. Please ensure ANTHROPIC_API_KEY is set in your .env.local file.',
+        paymentCompleted: false
+      }
+    }
+    
+    console.log('ANTHROPIC_API_KEY is configured (length:', process.env.ANTHROPIC_API_KEY.length, 'chars)')
+
     // Configure MCP connections
     const mcpServers = {
       'locus': {
@@ -77,44 +89,65 @@ IMPORTANT BOOKING INSTRUCTIONS:
 
 ${conversationContext ? `\nConversation:\n${conversationContext}\n\nPlease respond to the user's latest message.` : `\nUser: ${userMessage}\nAssistant:`}`
 
-    // Try to find claude-code executable, but don't fail if not found (for serverless)
+    // Find claude-code executable - SDK requires this to be set
     let claudeCodePath: string | undefined = undefined
     try {
-      // Check if claude-code is available in node_modules
-      // First check standard npm/yarn location
-      const standardPath = resolve(process.cwd(), 'node_modules', '@anthropic-ai', 'claude-code', 'cli.js')
-      if (existsSync(standardPath)) {
-        claudeCodePath = standardPath
-      } else {
-        // For pnpm, try to find in .pnpm directory (version-specific)
-        const pnpmDir = resolve(process.cwd(), 'node_modules', '.pnpm')
-        if (existsSync(pnpmDir)) {
-          try {
-            const entries = readdirSync(pnpmDir)
-            const claudeCodeEntry = entries.find((entry: string) => 
-              entry.startsWith('@anthropic-ai+claude-code@')
-            )
-            if (claudeCodeEntry) {
-              const pnpmPath = resolve(
-                pnpmDir,
-                claudeCodeEntry,
-                'node_modules',
-                '@anthropic-ai',
-                'claude-code',
-                'cli.js'
+      // Try using require.resolve to find the package (works with any package manager)
+      try {
+        const claudeCodeModulePath = require.resolve('@anthropic-ai/claude-code/package.json')
+        const claudeCodeDir = resolve(claudeCodeModulePath, '..')
+        const cliPath = resolve(claudeCodeDir, 'cli.js')
+        if (existsSync(cliPath)) {
+          claudeCodePath = cliPath
+          console.log('Found claude-code via require.resolve:', claudeCodePath)
+        }
+      } catch (resolveError) {
+        // require.resolve failed, try manual search
+      }
+      
+      // If require.resolve didn't work, try manual paths
+      if (!claudeCodePath) {
+        // First check standard npm/yarn location
+        const standardPath = resolve(process.cwd(), 'node_modules', '@anthropic-ai', 'claude-code', 'cli.js')
+        if (existsSync(standardPath)) {
+          claudeCodePath = standardPath
+          console.log('Found claude-code at standard path:', claudeCodePath)
+        } else {
+          // For pnpm, search in .pnpm directory
+          const pnpmDir = resolve(process.cwd(), 'node_modules', '.pnpm')
+          if (existsSync(pnpmDir)) {
+            try {
+              const entries = readdirSync(pnpmDir)
+              const claudeCodeEntry = entries.find((entry: string) => 
+                entry.startsWith('@anthropic-ai+claude-code@')
               )
-              if (existsSync(pnpmPath)) {
-                claudeCodePath = pnpmPath
+              if (claudeCodeEntry) {
+                const pnpmPath = resolve(
+                  pnpmDir,
+                  claudeCodeEntry,
+                  'node_modules',
+                  '@anthropic-ai',
+                  'claude-code',
+                  'cli.js'
+                )
+                if (existsSync(pnpmPath)) {
+                  claudeCodePath = pnpmPath
+                  console.log('Found claude-code at pnpm path:', claudeCodePath)
+                }
               }
+            } catch (err) {
+              console.warn('Error searching pnpm directory:', err)
             }
-          } catch (err) {
-            // Ignore errors when searching pnpm directory
           }
         }
       }
+      
+      if (!claudeCodePath) {
+        console.warn('Could not locate claude-code executable. The SDK may not work properly.')
+        console.warn('Make sure @anthropic-ai/claude-code is installed: pnpm add @anthropic-ai/claude-code')
+      }
     } catch (error) {
-      // Ignore errors when checking for executable
-      console.warn('Could not locate claude-code executable, continuing without it')
+      console.warn('Error locating claude-code executable:', error)
     }
 
     const options = {
@@ -261,16 +294,28 @@ ${conversationContext ? `\nConversation:\n${conversationContext}\n\nPlease respo
     const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred'
     
     // Handle claude-code executable error specifically
-    if (errorMessage.includes('claude-code') || errorMessage.includes('Claude Code executable')) {
-      console.warn('Claude Code executable not available in serverless environment, using fallback response')
+    if (errorMessage.includes('claude-code') || 
+        errorMessage.includes('Claude Code executable') ||
+        errorMessage.includes('process exited with code')) {
+      console.warn('Claude Code executable error detected, using fallback response')
+      // Return a helpful response instead of showing the error
       return {
-        content: 'I\'m currently experiencing a configuration issue. Please try again in a moment, or contact support if the problem persists.',
+        content: 'I\'m here to help! However, I\'m currently running in a limited mode. For the full demo experience with code execution capabilities, please ensure all dependencies are properly configured. How can I assist you with your travel needs?',
         paymentCompleted: false
       }
     }
     
+    // Handle API key errors
+    if (errorMessage.includes('API key') || errorMessage.includes('authentication')) {
+      return {
+        content: 'Configuration error: API authentication issue. Please check your API key configuration.',
+        paymentCompleted: false
+      }
+    }
+    
+    // Generic error handling
     return {
-      content: `I encountered an error: ${errorMessage}. Please try again.`,
+      content: `I encountered an issue: ${errorMessage}. Please try again, or contact support if the problem persists.`,
       paymentCompleted: false
     }
   }
