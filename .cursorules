@@ -1,0 +1,488 @@
+# Cursor Rules for Locus Travel Admin Dashboard
+
+## Core Principles
+
+### Implementation Certainty Requirement
+
+**CRITICAL RULE**: Only proceed with feature implementation when you have **>95% certainty** about:
+- What exactly needs to be implemented
+- How it should be implemented
+- Where it should be implemented
+- What the expected behavior/outcome should be
+- Edge cases and error handling requirements
+
+If certainty is below 95%, you MUST ask clarifying questions before proceeding.
+
+### Question-Asking Protocol
+
+When uncertainty exists, ask questions that:
+1. Clarify the exact feature requirements
+2. Identify edge cases and error scenarios
+3. Determine user experience expectations
+4. Understand integration points with existing code
+5. Confirm data flow and state management approach
+
+Format questions clearly and concisely. Provide multiple choice options when appropriate, with the first option as the default assumption.
+
+### Documentation Review Requirements
+
+Before implementing any feature:
+1. Review the latest official documentation for all relevant technologies
+2. Check for breaking changes in recent versions
+3. Verify best practices and recommended patterns
+4. Reference official examples and guides
+5. Consider security implications and best practices
+
+**Required Documentation Sources**:
+- Next.js 16: https://nextjs.org/docs
+- React 19: https://react.dev
+- TypeScript: https://www.typescriptlang.org/docs
+- Tailwind CSS 4: https://tailwindcss.com/docs
+- Radix UI: https://www.radix-ui.com/primitives/docs
+- Supabase: https://supabase.com/docs
+- React Hook Form: https://react-hook-form.com
+- Zod: https://zod.dev
+
+---
+
+## Technology-Specific Guidelines
+
+### Next.js 16 App Router
+
+- Use App Router conventions exclusively (not Pages Router)
+- Server Components by default, Client Components only when necessary
+- Mark Client Components with `'use client'` directive at the top
+- Use Server Actions for mutations when appropriate
+- Implement proper loading.tsx, error.tsx, and not-found.tsx files
+- Use route handlers in `app/api/` for API endpoints
+- Leverage Next.js built-in optimizations (Image, Font, etc.)
+- Follow Next.js 16 specific patterns and avoid deprecated APIs
+- Use `next/navigation` for client-side navigation, not `next/router`
+- Implement proper metadata exports for SEO
+
+### TypeScript
+
+- Strict mode is enabled - all code must be fully typed
+- No `any` types unless absolutely necessary (with justification)
+- Use proper type inference where possible
+- Define interfaces/types in `types/` directory
+- Use type guards for runtime type checking
+- Prefer `interface` for object shapes, `type` for unions/intersections
+- Export types/interfaces that are used across modules
+- Use generic types for reusable components
+- Avoid type assertions unless necessary
+- Document complex types with JSDoc comments
+
+### React 19
+
+- Use functional components exclusively
+- Leverage React 19 features appropriately (Actions, useOptimistic, etc.)
+- Follow React hooks rules (only call at top level)
+- Use proper dependency arrays in useEffect, useMemo, useCallback
+- Implement proper cleanup in useEffect
+- Avoid unnecessary re-renders with proper memoization
+- Use React.memo, useMemo, useCallback judiciously
+- Prefer composition over inheritance
+- Keep components small and focused (single responsibility)
+- Extract custom hooks for reusable logic
+
+### Tailwind CSS 4
+
+- Use utility classes primarily, custom CSS only when necessary
+- Leverage design tokens from `app/globals.css`
+- Use `cn()` utility from `lib/utils.ts` for conditional classes
+- Follow mobile-first responsive design
+- Use semantic color tokens (e.g., `bg-background`, `text-foreground`)
+- Maintain dark mode compatibility
+- Avoid arbitrary values when design tokens exist
+- Use Tailwind 4 specific features and syntax
+- Group related utilities logically
+- Prefer Tailwind classes over inline styles
+
+### Radix UI Components
+
+- Use Radix UI primitives from `components/ui/`
+- Maintain accessibility features (ARIA labels, keyboard navigation)
+- Follow Radix UI composition patterns
+- Customize via className props, not by modifying base components
+- Preserve all accessibility attributes
+- Use proper component variants and props
+- Follow Radix UI theming guidelines
+- Ensure proper focus management
+- Maintain keyboard navigation support
+
+### Supabase Integration
+
+- Use `createClient()` from `lib/supabase/client.ts` for client-side
+- Use `createClient()` from `lib/supabase/server.ts` for server-side
+- Implement proper error handling for all Supabase calls
+- Use TypeScript types for database responses
+- Implement proper authentication checks
+- Use Row Level Security (RLS) policies appropriately
+- Handle loading and error states properly
+- Use Supabase real-time features when appropriate
+- Follow Supabase best practices for queries and mutations
+
+### Framer Motion
+
+- Use for meaningful animations, not gratuitous motion
+- Implement proper animation variants
+- Use `motion` components for animated elements
+- Consider performance implications
+- Provide reduced motion alternatives
+- Use proper animation delays and durations
+- Maintain consistent animation language
+- Test animations on lower-end devices
+
+### React Hook Form + Zod
+
+- Use React Hook Form for all form handling
+- Define Zod schemas for all form validation
+- Use `@hookform/resolvers/zod` for schema validation
+- Implement proper error message display
+- Use `Controller` component for complex inputs
+- Implement proper form state management
+- Handle async validation when needed
+- Provide clear validation feedback
+
+### Sonner (Toast Notifications)
+
+- Use for non-critical notifications
+- Use dialogs for important confirmations
+- Provide actionable notifications when appropriate
+- Use appropriate notification types (success, error, warning, info)
+- Set reasonable durations
+- Ensure notifications are accessible
+
+---
+
+## Code Quality Standards
+
+### TypeScript Strict Typing
+
+- All function parameters and return types must be explicitly typed
+- Use proper generic types for reusable functions
+- Avoid type assertions - use type guards instead
+- Define proper types for API responses
+- Use discriminated unions for state management
+- Type all event handlers properly
+- Use `as const` for literal types when appropriate
+
+### Component Structure
+
+```typescript
+// Preferred component structure:
+'use client' // Only if needed
+
+import { ... } from '...'
+import { ... } from '@/components/...'
+
+interface ComponentProps {
+  // Props definition
+}
+
+export function ComponentName({ prop1, prop2 }: ComponentProps) {
+  // Hooks
+  // State
+  // Effects
+  // Handlers
+  // Render
+  return (...)
+}
+```
+
+### Error Handling
+
+- Always handle errors explicitly
+- Use try-catch blocks for async operations
+- Provide user-friendly error messages
+- Log errors appropriately (console.error in dev, proper logging in prod)
+- Implement error boundaries for React components
+- Handle network errors gracefully
+- Provide retry mechanisms when appropriate
+- Use proper error types
+
+### Accessibility (WCAG 2.1 AA)
+
+- All interactive elements must be keyboard accessible
+- Provide proper ARIA labels and roles
+- Ensure proper focus management
+- Maintain color contrast ratios (4.5:1 for text)
+- Provide alternative text for images
+- Use semantic HTML elements
+- Ensure screen reader compatibility
+- Test with keyboard navigation
+- Provide skip links where appropriate
+- Ensure form labels are properly associated
+
+### Performance Optimization
+
+- Implement code splitting appropriately
+- Use dynamic imports for heavy components
+- Optimize images with Next.js Image component
+- Minimize bundle size
+- Use React.memo for expensive components
+- Implement virtual scrolling for long lists
+- Debounce/throttle expensive operations
+- Use proper caching strategies
+- Minimize re-renders
+- Optimize database queries
+
+### Security Best Practices
+
+- Never expose API keys or secrets in client code
+- Use environment variables for sensitive data
+- Validate all user inputs
+- Sanitize data before rendering
+- Implement proper authentication checks
+- Use HTTPS in production
+- Follow OWASP security guidelines
+- Implement proper CORS policies
+- Use parameterized queries for database operations
+- Validate file uploads properly
+
+---
+
+## Project Structure Guidelines
+
+### File Organization
+
+- Pages: `app/[route]/page.tsx`
+- API Routes: `app/api/[route]/route.ts`
+- Components: `components/[Feature]/ComponentName.tsx`
+- UI Components: `components/ui/component-name.tsx`
+- Hooks: `hooks/useHookName.ts`
+- Utilities: `lib/utility-name.ts`
+- Types: `types/type-name.ts`
+- Styles: `app/globals.css`
+
+### Naming Conventions
+
+- Components: PascalCase (e.g., `EventCard.tsx`)
+- Files: Match component/export name
+- Hooks: `use` prefix (e.g., `useEventPolling.ts`)
+- Utilities: camelCase (e.g., `formatDate.ts`)
+- Types/Interfaces: PascalCase (e.g., `Event`, `Employee`)
+- Constants: UPPER_SNAKE_CASE
+- CSS Classes: Use Tailwind utilities, custom classes in kebab-case
+
+### Import/Export Conventions
+
+- Group imports: external packages, internal modules, types, relative imports
+- Use absolute imports with `@/` prefix
+- Use named exports for components
+- Use default exports only for pages and layout components
+- Export types/interfaces that are used across modules
+
+### Component Composition
+
+- Keep components small and focused
+- Extract reusable logic into custom hooks
+- Use composition over prop drilling
+- Create presentational and container components when appropriate
+- Share state through context when needed
+- Avoid deep prop drilling (max 2-3 levels)
+
+---
+
+## Implementation Workflow
+
+### Pre-Implementation Checklist
+
+Before starting any implementation:
+
+1. **Understand Requirements** (>95% certainty)
+   - [ ] What exactly needs to be built?
+   - [ ] What are the acceptance criteria?
+   - [ ] What are the edge cases?
+   - [ ] What error scenarios need handling?
+
+2. **Review Existing Code**
+   - [ ] Check for similar implementations
+   - [ ] Understand existing patterns
+   - [ ] Identify integration points
+   - [ ] Check for conflicts or dependencies
+
+3. **Review Documentation**
+   - [ ] Read latest official docs for relevant technologies
+   - [ ] Check for version-specific changes
+   - [ ] Review best practices
+   - [ ] Look at official examples
+
+4. **Plan Implementation**
+   - [ ] Identify files to create/modify
+   - [ ] Plan component structure
+   - [ ] Plan state management approach
+   - [ ] Plan error handling
+   - [ ] Plan testing approach
+
+5. **Ask Questions if Needed**
+   - [ ] If any uncertainty exists, ask clarifying questions
+   - [ ] Don't assume requirements
+   - [ ] Confirm edge cases
+   - [ ] Verify user experience expectations
+
+### Documentation Review Requirements
+
+For each technology used:
+- Check official documentation for latest version
+- Review migration guides if upgrading
+- Check for breaking changes
+- Review best practices and patterns
+- Look at official examples
+- Check security advisories
+
+### Testing Considerations
+
+- Write tests for critical functionality
+- Test error scenarios
+- Test edge cases
+- Test accessibility
+- Test responsive design
+- Test performance
+- Manual testing before marking complete
+
+### Code Review Standards
+
+Before considering implementation complete:
+- [ ] Code follows TypeScript strict mode
+- [ ] All types are properly defined
+- [ ] Error handling is implemented
+- [ ] Accessibility requirements are met
+- [ ] Performance is optimized
+- [ ] Code is properly formatted
+- [ ] Comments are added for complex logic
+- [ ] No console.log statements in production code
+- [ ] No unused imports or variables
+- [ ] Follows project structure guidelines
+
+---
+
+## Specific Project Patterns
+
+### API Route Pattern
+
+```typescript
+import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase/server'
+
+export async function POST(request: NextRequest) {
+  try {
+    // Validation
+    // Business logic
+    // Database operations
+    return NextResponse.json({ ... }, { status: 201 })
+  } catch (error) {
+    console.error('Error:', error)
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
+  }
+}
+```
+
+### Client Component Pattern
+
+```typescript
+'use client'
+
+import { useState, useEffect } from 'react'
+import { Button } from '@/components/ui/button'
+
+interface ComponentProps {
+  // Props
+}
+
+export function Component({ prop }: ComponentProps) {
+  const [state, setState] = useState<Type>(initialValue)
+  
+  useEffect(() => {
+    // Effect logic
+    return () => {
+      // Cleanup
+    }
+  }, [dependencies])
+  
+  const handleAction = () => {
+    // Handler logic
+  }
+  
+  return (
+    // JSX
+  )
+}
+```
+
+### Form Pattern with React Hook Form + Zod
+
+```typescript
+'use client'
+
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+
+const formSchema = z.object({
+  // Schema definition
+})
+
+type FormData = z.infer<typeof formSchema>
+
+export function FormComponent() {
+  const form = useForm<FormData>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      // Defaults
+    }
+  })
+  
+  const onSubmit = async (data: FormData) => {
+    // Submit logic
+  }
+  
+  return (
+    <form onSubmit={form.handleSubmit(onSubmit)}>
+      {/* Form fields */}
+    </form>
+  )
+}
+```
+
+---
+
+## Common Pitfalls to Avoid
+
+1. **Don't use `any` type** - Always provide proper types
+2. **Don't skip error handling** - Always handle errors explicitly
+3. **Don't ignore accessibility** - All interactive elements must be accessible
+4. **Don't assume requirements** - Ask questions if uncertain
+5. **Don't skip documentation review** - Always check latest docs
+6. **Don't create unnecessary re-renders** - Optimize performance
+7. **Don't hardcode values** - Use constants or configuration
+8. **Don't ignore TypeScript errors** - Fix all type errors
+9. **Don't skip validation** - Validate all user inputs
+10. **Don't commit secrets** - Use environment variables
+
+---
+
+## When to Ask Questions
+
+Ask clarifying questions when:
+- Requirements are ambiguous or unclear
+- Multiple valid implementation approaches exist
+- Edge cases are not specified
+- Integration points are unclear
+- User experience expectations are unclear
+- Error handling requirements are unclear
+- Performance requirements are unclear
+- Security considerations are unclear
+
+**Remember**: It's better to ask questions than to implement incorrectly.
+
+---
+
+## Final Reminder
+
+**>95% Certainty Rule**: If you're not >95% certain about any aspect of the implementation, you MUST ask clarifying questions before proceeding. This ensures high-quality, correct implementations and minimizes errors.
+

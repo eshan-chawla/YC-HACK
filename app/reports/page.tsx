@@ -65,7 +65,7 @@ export default function ReportsPage() {
             <h1 className="text-3xl font-bold text-foreground">Reports</h1>
             <p className="text-muted-foreground mt-1">View analytics and travel insights</p>
           </div>
-          <Button className="gap-2 bg-primary hover:bg-blue-600">
+          <Button className="gap-2 bg-primary hover:bg-green-600">
             <Download className="w-4 h-4" />
             Export Report
           </Button>
