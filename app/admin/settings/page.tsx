@@ -1,0 +1,225 @@
+'use client'
+
+import { AppShell } from '@/components/layout/AppShell'
+import { PageHeader } from '@/components/layout/PageHeader'
+import { Card } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Input } from '@/components/ui/input'
+import { motion } from 'framer-motion'
+import { Save, Bell, Lock, User, Zap, Shield, Mail, Globe, ArrowRight } from 'lucide-react'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { EmptyState } from '@/components/layout/EmptyState'
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+
+const settingsSections = [
+  { id: 'notifications', label: 'Alerts', icon: Bell },
+  { id: 'security', label: 'Security', icon: Lock },
+  { id: 'profile', label: 'Company', icon: User },
+  { id: 'integrations', label: 'Apps', icon: Zap },
+]
+
+export default function SettingsPage() {
+  const router = useRouter()
+  const [activeTab, setActiveTab] = useState('notifications')
+
+  const handleDiscard = () => {
+    // Navigate back to admin dashboard
+    router.push('/admin')
+  }
+
+  return (
+    <AppShell role="admin">
+      <div className="space-y-8 max-w-4xl">
+        <PageHeader 
+          title="System Settings" 
+          description="Manage global configuration, security protocols, and integration endpoints"
+        />
+
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
+          <TabsList className="bg-muted/40 p-1 rounded-xl h-11 inline-flex w-auto">
+            {settingsSections.map(section => (
+              <TabsTrigger key={section.id} value={section.id} className="gap-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm px-6 font-bold text-xs uppercase tracking-widest">
+                <section.icon className="w-3.5 h-3.5" />
+                {section.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+
+          {/* Notifications Tab */}
+          <TabsContent value="notifications" className="outline-none">
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+              <div className="grid gap-6">
+                <Card className="p-6 border-border/60 shadow-sm">
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                            <Bell className="w-4 h-4" />
+                        </div>
+                        <h3 className="text-lg font-bold">Event Notifications</h3>
+                    </div>
+                    <div className="space-y-4">
+                        <NotificationItem 
+                            title="Booking Confirmations" 
+                            description="Alerts when flights or hotels are successfully booked"
+                            defaultChecked
+                        />
+                        <NotificationItem 
+                            title="Policy Violations" 
+                            description="Immediate notification if a booking exceeds budget or limits"
+                            defaultChecked
+                        />
+                        <NotificationItem 
+                            title="Budget Thresholds" 
+                            description="Notify when an event reaches 80% of its total budget"
+                            defaultChecked
+                        />
+                    </div>
+                </Card>
+
+                <Card className="p-6 border-border/60 shadow-sm">
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-600">
+                            <Mail className="w-4 h-4" />
+                        </div>
+                        <h3 className="text-lg font-bold">System Digests</h3>
+                    </div>
+                    <div className="space-y-4">
+                        <NotificationItem 
+                            title="Daily Summary" 
+                            description="Consolidated report of all activities across active events"
+                        />
+                        <NotificationItem 
+                            title="Critical Failures" 
+                            description="Real-time alerts for booking errors or system downtime"
+                            defaultChecked
+                        />
+                    </div>
+                </Card>
+              </div>
+            </motion.div>
+          </TabsContent>
+
+          {/* Security Tab */}
+          <TabsContent value="security" className="outline-none">
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+              <Card className="p-6 border-border/60 shadow-sm space-y-8">
+                <div className="flex items-center gap-3 mb-2">
+                    <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-600">
+                        <Shield className="w-4 h-4" />
+                    </div>
+                    <h3 className="text-lg font-bold">Authentication & Security</h3>
+                </div>
+
+                <div className="grid gap-6">
+                    <div className="grid gap-2">
+                        <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Current Password</Label>
+                        <Input type="password" placeholder="••••••••" className="h-11 rounded-xl" />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid gap-2">
+                            <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">New Password</Label>
+                            <Input type="password" placeholder="••••••••" className="h-11 rounded-xl" />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Confirm New Password</Label>
+                            <Input type="password" placeholder="••••••••" className="h-11 rounded-xl" />
+                        </div>
+                    </div>
+                </div>
+
+                <div className="pt-6 border-t border-border/40">
+                    <div className="flex items-center justify-between p-4 bg-muted/30 rounded-xl">
+                        <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 rounded-full bg-background flex items-center justify-center border border-border shadow-sm">
+                                <Zap className="w-5 h-5 text-primary" />
+                            </div>
+                            <div>
+                                <p className="text-sm font-bold">Two-Factor Authentication</p>
+                                <p className="text-xs text-muted-foreground">Add an extra layer of security to your account</p>
+                            </div>
+                        </div>
+                        <Button variant="outline" className="font-bold text-[10px] uppercase tracking-widest h-9 px-4 rounded-lg">Enable 2FA</Button>
+                    </div>
+                </div>
+              </Card>
+            </motion.div>
+          </TabsContent>
+
+          {/* Profile/Company Tab */}
+          <TabsContent value="profile" className="outline-none">
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+              <Card className="p-6 border-border/60 shadow-sm space-y-8">
+                <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                        <Globe className="w-4 h-4" />
+                    </div>
+                    <h3 className="text-lg font-bold">Company Profile</h3>
+                </div>
+
+                <div className="grid gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid gap-2">
+                            <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Organization Name</Label>
+                            <Input defaultValue="Acme Corporation" className="h-11 rounded-xl" />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Primary Domain</Label>
+                            <Input defaultValue="acme.com" className="h-11 rounded-xl" />
+                        </div>
+                    </div>
+                    <div className="grid gap-2">
+                        <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Billing Contact Email</Label>
+                        <Input defaultValue="billing@acme.com" className="h-11 rounded-xl" />
+                    </div>
+                </div>
+              </Card>
+            </motion.div>
+          </TabsContent>
+
+          {/* Integrations Tab */}
+          <TabsContent value="integrations" className="outline-none">
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+              <EmptyState 
+                icon={Zap}
+                title="Integrations Coming Soon"
+                description="The App Marketplace is currently disabled for this demo. Third-party integrations will be available in a future update."
+                className="py-20"
+              />
+            </motion.div>
+          </TabsContent>
+        </Tabs>
+
+        <div className="flex items-center justify-between pt-8 border-t border-border/40">
+            <p className="text-xs text-muted-foreground font-medium italic">Changes are saved automatically to your session.</p>
+            <div className="flex gap-3">
+                <Button 
+                  variant="ghost" 
+                  onClick={handleDiscard}
+                  className="font-bold text-xs uppercase tracking-widest"
+                >
+                  Discard
+                </Button>
+                <Button className="gap-2 bg-primary hover:bg-green-600 font-bold text-xs uppercase tracking-widest h-11 px-6 rounded-xl shadow-lg shadow-green-500/10">
+                    <Save className="w-4 h-4" /> Save Changes
+                </Button>
+            </div>
+        </div>
+      </div>
+    </AppShell>
+  )
+}
+
+
+function NotificationItem({ title, description, defaultChecked = false }: { title: string, description: string, defaultChecked?: boolean }) {
+    return (
+        <div className="flex items-start justify-between p-4 rounded-xl border border-border/40 hover:bg-muted/30 transition-colors">
+            <div className="flex-1 pr-4">
+                <Label className="text-sm font-bold text-foreground cursor-pointer mb-1 block">{title}</Label>
+                <p className="text-xs text-muted-foreground leading-relaxed">{description}</p>
+            </div>
+            <Checkbox defaultChecked={defaultChecked} className="h-5 w-5 rounded-md" />
+        </div>
+    )
+}

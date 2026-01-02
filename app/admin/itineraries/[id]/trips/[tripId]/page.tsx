@@ -1,12 +1,13 @@
 'use client'
 
-import { DashboardLayout } from '@/components/DashboardLayout'
+import { AppShell } from '@/components/layout/AppShell'
+import { PageHeader } from '@/components/layout/PageHeader'
 import { Button } from '@/components/ui/button'
 import { ItineraryCard } from '@/components/TripDetail/ItineraryCard'
 import { CostBreakdown } from '@/components/TripDetail/CostBreakdown'
 import { AgentNotes } from '@/components/TripDetail/AgentNotes'
 import { Badge } from '@/components/ui/badge'
-import { ArrowLeft, Download, Share2, Edit2, Trash2, Plane, Building2, Car } from 'lucide-react'
+import { ArrowLeft, Download, Share2, MoreVertical, Edit2, Trash2, Plane, Building2, Car } from 'lucide-react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import {
@@ -14,6 +15,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu'
 
 const mockTripData = {
@@ -84,85 +86,84 @@ export default function TripDetailPage({
 }: {
   params: { id: string; tripId: string }
 }) {
-  const statusConfig = {
-    pending: 'bg-blue-100 text-blue-700',
-    booked: 'bg-green-100 text-green-700',
-    in_progress: 'bg-amber-100 text-amber-700',
-    failed: 'bg-red-100 text-red-700',
-    completed: 'bg-green-100 text-green-700',
-  }
-
   return (
-    <DashboardLayout>
-      <div className="space-y-6">
+    <AppShell role="admin">
+      <div className="space-y-8">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex items-start justify-between"
-        >
+        <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
           <div className="flex items-start gap-4">
-            <Link href={`/events/${params.id}`}>
-              <Button variant="ghost" size="icon">
+            <Link href={`/admin/itineraries/${params.id}`}>
+              <Button variant="outline" size="icon" className="h-10 w-10 rounded-xl bg-background shadow-sm">
                 <ArrowLeft className="w-5 h-5" />
               </Button>
             </Link>
             <div>
-              <div className="flex items-center gap-3">
-                <h1 className="text-3xl font-bold text-foreground">{mockTripData.employeeName}</h1>
-                <Badge className={`${statusConfig[mockTripData.status]}`}>
-                  {mockTripData.status.charAt(0).toUpperCase() + mockTripData.status.slice(1)}
+              <div className="flex items-center gap-3 mb-1.5">
+                <h1 className="text-3xl font-bold tracking-tight text-foreground">{mockTripData.employeeName}</h1>
+                <Badge className="bg-green-50 text-green-600 border-green-100 uppercase text-[10px] font-bold tracking-widest px-2.5 py-1">
+                    {mockTripData.status}
                 </Badge>
               </div>
-              <p className="text-sm text-muted-foreground mt-2">
-                Confirmation #: {mockTripData.confirmationNumber} • {mockTripData.eventName}
+              <p className="text-sm text-muted-foreground font-medium flex items-center gap-2">
+                <span className="text-foreground font-bold uppercase tracking-wider text-[10px] bg-muted px-2 py-0.5 rounded">Conf # {mockTripData.confirmationNumber}</span>
+                <span className="text-muted-foreground/30">•</span>
+                <span>{mockTripData.eventName}</span>
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <Button variant="outline" className="gap-2">
+          <div className="flex items-center gap-2 self-end md:self-start">
+            <Button variant="outline" className="gap-2 h-10 rounded-xl font-bold text-xs uppercase tracking-widest">
               <Download className="w-4 h-4" />
-              Download Voucher
+              Voucher
             </Button>
-            <Button variant="outline" className="gap-2">
+            <Button variant="outline" className="gap-2 h-10 rounded-xl font-bold text-xs uppercase tracking-widest">
               <Share2 className="w-4 h-4" />
               Share
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon">
-                  <Edit2 className="w-4 h-4" />
+                <Button variant="outline" size="icon" className="h-10 w-10 rounded-xl">
+                  <MoreVertical className="w-5 h-5 text-muted-foreground" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem>Edit Trip</DropdownMenuItem>
-                <DropdownMenuItem className="text-red-600">
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  Cancel Booking
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem className="gap-2 cursor-pointer font-medium">
+                    <Edit2 className="w-4 h-4" /> Edit Trip
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="gap-2 cursor-pointer font-bold text-destructive focus:text-destructive">
+                  <Trash2 className="w-4 h-4" /> Cancel Booking
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-        </motion.div>
+        </div>
 
         {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 space-y-4">
+            <h2 className="text-xl font-bold text-foreground px-1">Itinerary Details</h2>
             <ItineraryCard segments={mockTripData.segments} />
           </div>
 
           <div className="space-y-6">
-            <CostBreakdown
-              items={mockTripData.costItems}
-              total={mockTripData.total}
-              budget={mockTripData.budget}
-              isCompliant={mockTripData.isCompliant}
-            />
-            <AgentNotes notes={mockTripData.agentNotes} />
+            <div className="space-y-4">
+                <h2 className="text-xl font-bold text-foreground px-1">Financials</h2>
+                <CostBreakdown
+                items={mockTripData.costItems}
+                total={mockTripData.total}
+                budget={mockTripData.budget}
+                isCompliant={mockTripData.isCompliant}
+                />
+            </div>
+            <div className="space-y-4">
+                <h2 className="text-xl font-bold text-foreground px-1">Agent Notes</h2>
+                <AgentNotes notes={mockTripData.agentNotes} />
+            </div>
           </div>
         </div>
       </div>
-    </DashboardLayout>
+    </AppShell>
   )
 }
