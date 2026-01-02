@@ -7,12 +7,12 @@ import { cn } from '@/lib/utils'
 import { TripWeaverLogo } from './TripWeaverLogo'
 
 const navItems = [
-  { href: '/', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/events', label: 'Events', icon: Calendar },
-  { href: '/employees', label: 'Employees', icon: Users },
-  { href: '/reports', label: 'Reports', icon: BarChart3 },
-  { href: '/policies', label: 'Policies', icon: Settings },
-  { href: '/settings', label: 'Settings', icon: Settings },
+  { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/admin/itineraries', label: 'Itineraries', icon: Calendar },
+  { href: '/admin/employees', label: 'Employees', icon: Users },
+  { href: '/admin/reports', label: 'Reports', icon: BarChart3 },
+  { href: '/admin/policies', label: 'Policies', icon: Settings },
+  { href: '/admin/settings', label: 'Settings', icon: Settings },
 ]
 
 export function Sidebar() {
@@ -22,7 +22,7 @@ export function Sidebar() {
     <aside className="w-64 border-r border-border bg-sidebar text-sidebar-foreground min-h-screen flex flex-col">
       {/* Logo */}
       <div className="p-6 border-b border-sidebar-border">
-        <Link href="/" className="block">
+        <Link href="/admin" className="block">
           <TripWeaverLogo variant="full" size="md" />
         </Link>
       </div>
