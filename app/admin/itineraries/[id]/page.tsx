@@ -136,17 +136,17 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
             </Link>
             <div>
               <div className="flex items-center gap-3 mb-1.5">
-                <h1 className="text-3xl font-bold tracking-tight text-foreground">{data.name}</h1>
-                <Badge className="bg-blue-50 text-blue-600 hover:bg-blue-50 border-blue-100 uppercase text-[10px] font-bold tracking-widest px-2.5 py-1">
+                <h1 className="text-2xl font-bold tracking-[-0.02em] text-foreground">{data.name}</h1>
+                <Badge className="bg-emerald-50 text-emerald-700 hover:bg-emerald-50 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20 uppercase text-[10px] font-bold tracking-wider px-2.5 py-1 rounded-md">
                     {data.status}
                 </Badge>
               </div>
               <div className="flex flex-wrap items-center gap-y-2 gap-x-4 text-sm text-muted-foreground font-medium">
                 <span className="flex items-center gap-1.5"><RefreshCw className="w-3.5 h-3.5" /> Created {data.createdAt}</span>
-                <span className="hidden md:inline text-muted-foreground/30">•</span>
+                <span className="hidden md:inline text-muted-foreground/30">&bull;</span>
                 <span className="flex items-center gap-1.5">Ends {data.endDate}</span>
-                <span className="hidden md:inline text-muted-foreground/30">•</span>
-                <span className="flex items-center gap-1.5 text-primary">{data.destination}</span>
+                <span className="hidden md:inline text-muted-foreground/30">&bull;</span>
+                <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">{data.destination}</span>
               </div>
             </div>
           </div>
@@ -227,7 +227,7 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
             </TabsTrigger>
             <TabsTrigger value="logistics" className="gap-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm px-6 font-bold text-xs uppercase tracking-widest">
                 <Plane className="w-4 h-4" />
-                Logistics & Coverage
+                Logistics &amp; Coverage
             </TabsTrigger>
           </TabsList>
 
@@ -235,8 +235,8 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <div className="lg:col-span-2 space-y-4">
                 <div className="flex items-center justify-between px-1">
-                  <h2 className="text-xl font-bold text-foreground">Employee Directory</h2>
-                  <div className="text-xs font-bold text-muted-foreground/60 uppercase tracking-widest">
+                  <h2 className="text-base font-semibold text-foreground tracking-wider">Employee Directory</h2>
+                  <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Showing {data.employees.length} participants
                   </div>
                 </div>
@@ -248,7 +248,7 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
               <div className="space-y-4">
                 <div className="flex items-center gap-2 px-1">
                     <History className="w-5 h-5 text-muted-foreground" />
-                    <h2 className="text-xl font-bold text-foreground">Live Activity</h2>
+                    <h2 className="text-base font-semibold text-foreground tracking-wider">Live Activity</h2>
                 </div>
                 <ActivityFeed items={data.activities} />
               </div>
@@ -257,30 +257,30 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
 
           <TabsContent value="logistics" className="mt-0 outline-none">
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <Card className="p-6 border-border/60 shadow-sm relative overflow-hidden group">
+                <Card className="p-6 border-border/60 shadow-sm relative overflow-hidden group hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
                     <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:scale-110 transition-transform">
                         <Plane className="w-24 h-24 rotate-12" />
                     </div>
                     <div className="flex items-center gap-3 mb-6">
-                        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                        <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
                             <Plane className="w-5 h-5" />
                         </div>
                         <div>
-                            <h3 className="text-sm font-black uppercase tracking-widest text-foreground">Flight Coverage</h3>
-                            <p className="text-[10px] font-bold text-muted-foreground">Aggregate ticket status</p>
+                            <h3 className="text-base font-semibold text-foreground tracking-wider">Flight Coverage</h3>
+                            <p className="text-xs font-medium text-muted-foreground">Aggregate ticket status</p>
                         </div>
                     </div>
                     <div className="space-y-4">
                         <div className="flex items-center justify-between">
-                            <span className="text-xs font-bold text-muted-foreground">Booked Tickets</span>
-                            <span className="text-sm font-black text-foreground">{data.logistics.flights.booked} / {data.logistics.flights.total}</span>
+                            <span className="text-xs font-medium text-muted-foreground">Booked Tickets</span>
+                            <span className="text-sm font-bold text-foreground">{data.logistics.flights.booked} / {data.logistics.flights.total}</span>
                         </div>
                         <div className="w-full bg-muted rounded-full h-1.5 overflow-hidden">
-                            <div className="bg-primary h-full rounded-full" style={{ width: `${(data.logistics.flights.booked / data.logistics.flights.total) * 100}%` }} />
+                            <div className="bg-emerald-500 h-full rounded-full" style={{ width: `${(data.logistics.flights.booked / data.logistics.flights.total) * 100}%` }} />
                         </div>
                         <div className="pt-2 flex flex-wrap gap-2">
                             {data.logistics.flights.airlines.map(airline => (
-                                <Badge key={airline} variant="secondary" className="text-[8px] font-black uppercase tracking-tighter px-1.5 py-0">
+                                <Badge key={airline} variant="secondary" className="text-[8px] font-bold uppercase tracking-tighter px-1.5 py-0 rounded-md">
                                     {airline}
                                 </Badge>
                             ))}
@@ -288,35 +288,35 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
                     </div>
                 </Card>
 
-                <Card className="p-6 border-border/60 shadow-sm relative overflow-hidden group">
+                <Card className="p-6 border-border/60 shadow-sm relative overflow-hidden group hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
                     <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:scale-110 transition-transform">
                         <Building2 className="w-24 h-24" />
                     </div>
                     <div className="flex items-center gap-3 mb-6">
-                        <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-600">
+                        <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
                             <Building2 className="w-5 h-5" />
                         </div>
                         <div>
-                            <h3 className="text-sm font-black uppercase tracking-widest text-foreground">Room Blocks</h3>
-                            <p className="text-[10px] font-bold text-muted-foreground">Hotel reservations</p>
+                            <h3 className="text-base font-semibold text-foreground tracking-wider">Room Blocks</h3>
+                            <p className="text-xs font-medium text-muted-foreground">Hotel reservations</p>
                         </div>
                     </div>
                     <div className="space-y-4">
                         <div className="flex items-center justify-between">
-                            <span className="text-xs font-bold text-muted-foreground">Reserved Rooms</span>
-                            <span className="text-sm font-black text-foreground">{data.logistics.hotels.booked} / {data.logistics.hotels.totalRooms}</span>
+                            <span className="text-xs font-medium text-muted-foreground">Reserved Rooms</span>
+                            <span className="text-sm font-bold text-foreground">{data.logistics.hotels.booked} / {data.logistics.hotels.totalRooms}</span>
                         </div>
                         <div className="w-full bg-muted rounded-full h-1.5 overflow-hidden">
-                            <div className="bg-blue-500 h-full rounded-full" style={{ width: `${(data.logistics.hotels.booked / data.logistics.hotels.totalRooms) * 100}%` }} />
+                            <div className="bg-emerald-500 h-full rounded-full" style={{ width: `${(data.logistics.hotels.booked / data.logistics.hotels.totalRooms) * 100}%` }} />
                         </div>
                         <div className="pt-2">
-                            <p className="text-[10px] font-bold text-muted-foreground uppercase mb-1">Primary Partner</p>
+                            <p className="text-xs font-medium text-muted-foreground uppercase mb-1 tracking-wider">Primary Partner</p>
                             <p className="text-xs font-bold text-foreground truncate">{data.logistics.hotels.mainHotel}</p>
                         </div>
                     </div>
                 </Card>
 
-                <Card className="p-6 border-border/60 shadow-sm relative overflow-hidden group">
+                <Card className="p-6 border-border/60 shadow-sm relative overflow-hidden group hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
                     <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:scale-110 transition-transform">
                         <Car className="w-24 h-24 -rotate-12" />
                     </div>
@@ -325,19 +325,19 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
                             <Car className="w-5 h-5" />
                         </div>
                         <div>
-                            <h3 className="text-sm font-black uppercase tracking-widest text-foreground">Ground Transport</h3>
-                            <p className="text-[10px] font-bold text-muted-foreground">Vehicle coverage</p>
+                            <h3 className="text-base font-semibold text-foreground tracking-wider">Ground Transport</h3>
+                            <p className="text-xs font-medium text-muted-foreground">Vehicle coverage</p>
                         </div>
                     </div>
                     <div className="space-y-4">
                         <div className="flex items-center justify-between">
-                            <span className="text-xs font-bold text-muted-foreground">Active Rentals</span>
-                            <span className="text-sm font-black text-foreground">{data.logistics.ground.carRentals} vehicles</span>
+                            <span className="text-xs font-medium text-muted-foreground">Active Rentals</span>
+                            <span className="text-sm font-bold text-foreground">{data.logistics.ground.carRentals} vehicles</span>
                         </div>
-                        <div className="pt-4 p-3 bg-muted/30 rounded-xl border border-border/40">
+                        <div className="pt-4 p-3 bg-muted/30 rounded-xl border border-border/60">
                             <div className="flex items-center justify-between mb-1">
-                                <span className="text-[10px] font-black uppercase text-muted-foreground">Ride Share (Uber/Lyft)</span>
-                                <Badge className="bg-green-50 text-green-600 text-[8px] font-black border-none shadow-none">ENABLED</Badge>
+                                <span className="text-xs font-medium uppercase text-muted-foreground tracking-wider">Ride Share (Uber/Lyft)</span>
+                                <Badge className="bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 text-[8px] font-bold border-none shadow-none rounded-md">ENABLED</Badge>
                             </div>
                             <p className="text-[10px] text-muted-foreground leading-relaxed">Enterprise vouchers applied to all participants.</p>
                         </div>

@@ -41,7 +41,7 @@ export default function SettingsPage() {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
           <TabsList className="bg-muted/40 p-1 rounded-xl h-11 inline-flex w-auto">
             {settingsSections.map(section => (
-              <TabsTrigger key={section.id} value={section.id} className="gap-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm px-6 font-bold text-xs uppercase tracking-widest">
+              <TabsTrigger key={section.id} value={section.id} className="gap-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm px-6 font-semibold text-xs uppercase tracking-wider">
                 <section.icon className="w-3.5 h-3.5" />
                 {section.label}
               </TabsTrigger>
@@ -52,12 +52,12 @@ export default function SettingsPage() {
           <TabsContent value="notifications" className="outline-none">
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
               <div className="grid gap-6">
-                <Card className="p-6 border-border/60 shadow-sm">
+                <Card className="p-6 border-border/60 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
                     <div className="flex items-center gap-3 mb-6">
-                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                        <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
                             <Bell className="w-4 h-4" />
                         </div>
-                        <h3 className="text-lg font-bold">Event Notifications</h3>
+                        <h3 className="text-base font-semibold text-foreground">Event Notifications</h3>
                     </div>
                     <div className="space-y-4">
                         <NotificationItem 
@@ -78,12 +78,12 @@ export default function SettingsPage() {
                     </div>
                 </Card>
 
-                <Card className="p-6 border-border/60 shadow-sm">
+                <Card className="p-6 border-border/60 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
                     <div className="flex items-center gap-3 mb-6">
-                        <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-600">
+                        <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
                             <Mail className="w-4 h-4" />
                         </div>
-                        <h3 className="text-lg font-bold">System Digests</h3>
+                        <h3 className="text-base font-semibold text-foreground">System Digests</h3>
                     </div>
                     <div className="space-y-4">
                         <NotificationItem 
@@ -109,21 +109,21 @@ export default function SettingsPage() {
                     <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-600">
                         <Shield className="w-4 h-4" />
                     </div>
-                    <h3 className="text-lg font-bold">Authentication & Security</h3>
+                    <h3 className="text-base font-semibold text-foreground">Authentication & Security</h3>
                 </div>
 
                 <div className="grid gap-6">
                     <div className="grid gap-2">
-                        <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Current Password</Label>
+                        <Label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Current Password</Label>
                         <Input type="password" placeholder="••••••••" className="h-11 rounded-xl" />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="grid gap-2">
-                            <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">New Password</Label>
+                            <Label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">New Password</Label>
                             <Input type="password" placeholder="••••••••" className="h-11 rounded-xl" />
                         </div>
                         <div className="grid gap-2">
-                            <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Confirm New Password</Label>
+                            <Label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Confirm New Password</Label>
                             <Input type="password" placeholder="••••••••" className="h-11 rounded-xl" />
                         </div>
                     </div>
@@ -132,15 +132,15 @@ export default function SettingsPage() {
                 <div className="pt-6 border-t border-border/40">
                     <div className="flex items-center justify-between p-4 bg-muted/30 rounded-xl">
                         <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 rounded-full bg-background flex items-center justify-center border border-border shadow-sm">
-                                <Zap className="w-5 h-5 text-primary" />
+                            <div className="w-10 h-10 rounded-full bg-background flex items-center justify-center border border-border/60 shadow-sm">
+                                <Zap className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                             </div>
                             <div>
-                                <p className="text-sm font-bold">Two-Factor Authentication</p>
+                                <p className="text-sm font-semibold">Two-Factor Authentication</p>
                                 <p className="text-xs text-muted-foreground">Add an extra layer of security to your account</p>
                             </div>
                         </div>
-                        <Button variant="outline" className="font-bold text-[10px] uppercase tracking-widest h-9 px-4 rounded-lg">Enable 2FA</Button>
+                        <Button variant="outline" className="font-semibold text-[10px] uppercase tracking-widest h-9 px-4 rounded-lg">Enable 2FA</Button>
                     </div>
                 </div>
               </Card>
@@ -152,25 +152,25 @@ export default function SettingsPage() {
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
               <Card className="p-6 border-border/60 shadow-sm space-y-8">
                 <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                    <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
                         <Globe className="w-4 h-4" />
                     </div>
-                    <h3 className="text-lg font-bold">Company Profile</h3>
+                    <h3 className="text-base font-semibold text-foreground">Company Profile</h3>
                 </div>
 
                 <div className="grid gap-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="grid gap-2">
-                            <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Organization Name</Label>
+                            <Label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Organization Name</Label>
                             <Input defaultValue="Acme Corporation" className="h-11 rounded-xl" />
                         </div>
                         <div className="grid gap-2">
-                            <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Primary Domain</Label>
+                            <Label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Primary Domain</Label>
                             <Input defaultValue="acme.com" className="h-11 rounded-xl" />
                         </div>
                     </div>
                     <div className="grid gap-2">
-                        <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Billing Contact Email</Label>
+                        <Label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Billing Contact Email</Label>
                         <Input defaultValue="billing@acme.com" className="h-11 rounded-xl" />
                     </div>
                 </div>
@@ -197,11 +197,11 @@ export default function SettingsPage() {
                 <Button 
                   variant="ghost" 
                   onClick={handleDiscard}
-                  className="font-bold text-xs uppercase tracking-widest"
+                  className="font-semibold text-xs uppercase tracking-wider"
                 >
                   Discard
                 </Button>
-                <Button className="gap-2 bg-primary hover:bg-green-600 font-bold text-xs uppercase tracking-widest h-11 px-6 rounded-xl shadow-lg shadow-green-500/10">
+                <Button className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs uppercase tracking-wider h-11 px-6 rounded-xl shadow-lg shadow-emerald-500/10">
                     <Save className="w-4 h-4" /> Save Changes
                 </Button>
             </div>
@@ -216,7 +216,7 @@ function NotificationItem({ title, description, defaultChecked = false }: { titl
     return (
         <div className="flex items-start justify-between p-4 rounded-xl border border-border/40 hover:bg-muted/30 transition-colors">
             <div className="flex-1 pr-4">
-                <Label className="text-sm font-bold text-foreground cursor-pointer mb-1 block">{title}</Label>
+                <Label className="text-sm font-semibold text-foreground cursor-pointer mb-1 block">{title}</Label>
                 <p className="text-xs text-muted-foreground leading-relaxed">{description}</p>
             </div>
             <Checkbox defaultChecked={defaultChecked} className="h-5 w-5 rounded-md" />
