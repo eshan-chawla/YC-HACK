@@ -15,23 +15,22 @@ export function TripWeaverLogo({
   className,
   text = 'TripWeaver'
 }: TripWeaverLogoProps) {
-  const sizeClasses = {
-    sm: 'text-xs',
-    md: 'text-sm',
-    lg: 'text-lg'
+  const textSizes = {
+    sm: 'text-sm',
+    md: 'text-base',
+    lg: 'text-xl'
   }
 
   const iconSizes = {
-    sm: 'w-6 h-6',
-    md: 'w-8 h-8',
+    sm: 'w-7 h-7',
+    md: 'w-9 h-9',
     lg: 'w-12 h-12'
   }
 
   const LogoIcon = () => (
     <div className={cn(
       iconSizes[size],
-      'rounded-lg bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-lg',
-      'ring-2 ring-green-400/20'
+      'rounded-lg bg-emerald-600 flex items-center justify-center'
     )}>
       <svg
         viewBox="0 0 24 24"
@@ -69,15 +68,12 @@ export function TripWeaverLogo({
   )
 
   const LogoText = () => (
-    <div className="flex flex-col">
-      <span className={cn(
-        'font-bold tracking-tight',
-        'bg-gradient-to-r from-green-600 to-green-500 bg-clip-text text-transparent',
-        sizeClasses[size]
-      )}>
-        {text}
-      </span>
-    </div>
+    <span className={cn(
+      'font-bold tracking-[-0.02em] text-foreground',
+      textSizes[size]
+    )}>
+      {text}
+    </span>
   )
 
   if (variant === 'icon') {
@@ -95,4 +91,3 @@ export function TripWeaverLogo({
     </div>
   )
 }
-

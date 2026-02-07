@@ -1,0 +1,52 @@
+# Convex Configuration
+# Get your deployment URL from: https://dashboard.convex.dev
+# NEXT_PUBLIC_CONVEX_URL=
+
+# App URL (used for OAuth callbacks)
+#NEXT_PUBLIC_APP_URL=http://localhost:3000
+
+# ========================================
+# IMPORTANT: The following secrets should be set via Convex environment variables
+# Run: npx convex env set <KEY> <VALUE>
+# Do NOT put actual values in .env.local
+# ========================================
+
+# Google AI (Gemini) API Key
+# Set via: npx convex env set GOOGLE_AI_API_KEY <your-key>
+# Get from: https://aistudio.google.com/apikey
+# GOOGLE_AI_API_KEY=
+
+# Kiwi.com API Key for flight search
+# Set via: npx convex env set KIWI_API_KEY <your-key>
+# KIWI_API_KEY=
+
+# Locus API Key for payments
+# Set via: npx convex env set LOCUS_API_KEY <your-key>
+# LOCUS_API_KEY=
+
+# Encryption key for sensitive data (32-byte hex string)
+# Generate with: openssl rand -hex 32
+# Set via: npx convex env set ENCRYPTION_KEY <your-key>
+# ENCRYPTION_KEY=
+
+# ========================================
+# OAuth Configuration (for Google Sign-In)
+# Set via Convex dashboard or CLI
+# ========================================
+
+# Google OAuth credentials
+# Get from: https://console.cloud.google.com/apis/credentials
+# Set via: npx convex env set AUTH_GOOGLE_CLIENT_ID <your-id>
+# Set via: npx convex env set AUTH_GOOGLE_CLIENT_SECRET <your-secret>
+# AUTH_GOOGLE_CLIENT_ID=
+# AUTH_GOOGLE_CLIENT_SECRET=
+
+# ========================================
+# Development Only (for local testing)
+# ========================================
+
+# Convex deployment (automatically set when running npx convex dev)
+# CONVEX_DEPLOYMENT=
+
+# JWT secret for testing (Convex handles this in production)
+# JWT_SECRET=

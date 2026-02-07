@@ -99,14 +99,14 @@ export default function TripDetailPage({
             </Link>
             <div>
               <div className="flex items-center gap-3 mb-1.5">
-                <h1 className="text-3xl font-bold tracking-tight text-foreground">{mockTripData.employeeName}</h1>
-                <Badge className="bg-green-50 text-green-600 border-green-100 uppercase text-[10px] font-bold tracking-widest px-2.5 py-1">
+                <h1 className="text-2xl font-bold tracking-[-0.02em] text-foreground">{mockTripData.employeeName}</h1>
+                <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20 uppercase text-[10px] font-bold tracking-wider px-2.5 py-1 rounded-md">
                     {mockTripData.status}
                 </Badge>
               </div>
               <p className="text-sm text-muted-foreground font-medium flex items-center gap-2">
                 <span className="text-foreground font-bold uppercase tracking-wider text-[10px] bg-muted px-2 py-0.5 rounded">Conf # {mockTripData.confirmationNumber}</span>
-                <span className="text-muted-foreground/30">•</span>
+                <span className="text-muted-foreground/30">&bull;</span>
                 <span>{mockTripData.eventName}</span>
               </p>
             </div>
@@ -143,13 +143,13 @@ export default function TripDetailPage({
         {/* Main Content */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-4">
-            <h2 className="text-xl font-bold text-foreground px-1">Itinerary Details</h2>
+            <h2 className="text-base font-semibold text-foreground px-1 tracking-wider">Itinerary Details</h2>
             <ItineraryCard segments={mockTripData.segments} />
           </div>
 
           <div className="space-y-6">
             <div className="space-y-4">
-                <h2 className="text-xl font-bold text-foreground px-1">Financials</h2>
+                <h2 className="text-base font-semibold text-foreground px-1 tracking-wider">Financials</h2>
                 <CostBreakdown
                 items={mockTripData.costItems}
                 total={mockTripData.total}
@@ -158,7 +158,7 @@ export default function TripDetailPage({
                 />
             </div>
             <div className="space-y-4">
-                <h2 className="text-xl font-bold text-foreground px-1">Agent Notes</h2>
+                <h2 className="text-base font-semibold text-foreground px-1 tracking-wider">Agent Notes</h2>
                 <AgentNotes notes={mockTripData.agentNotes} />
             </div>
           </div>

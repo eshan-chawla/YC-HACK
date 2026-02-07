@@ -24,22 +24,21 @@ export function EmptyState({
 }: EmptyStateProps) {
   return (
     <div className={cn(
-      "flex flex-col items-center justify-center text-center p-12 rounded-2xl border-2 border-dashed border-border/60 bg-muted/20",
+      "flex flex-col items-center justify-center text-center py-16 px-8 rounded-xl border border-dashed border-border/60",
       className
     )}>
-      <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-6">
-        <Icon className="w-8 h-8 text-muted-foreground" />
+      <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-4">
+        <Icon className="w-5 h-5 text-muted-foreground/60" />
       </div>
-      <h3 className="text-xl font-bold text-foreground mb-2">{title}</h3>
-      <p className="text-muted-foreground max-w-[280px] leading-relaxed mb-8">
+      <h3 className="text-base font-semibold text-foreground mb-1">{title}</h3>
+      <p className="text-sm text-muted-foreground max-w-[280px] mb-6">
         {description}
       </p>
       {action && (
-        <Button onClick={action.onClick} className="gap-2">
+        <Button onClick={action.onClick} size="sm" className="gap-2">
           {action.label}
         </Button>
       )}
     </div>
   )
 }
-

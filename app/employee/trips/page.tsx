@@ -39,7 +39,7 @@ export default function EmployeeTripsPage() {
           description="View your upcoming and past travel itineraries"
           actions={
             <Link href="/employee">
-              <Button className="bg-primary hover:bg-green-600 gap-2 h-10 px-5 font-bold text-xs uppercase tracking-widest">
+              <Button className="bg-emerald-600 hover:bg-emerald-700 gap-2 h-10 px-5 font-bold text-xs uppercase tracking-widest">
                   <MessageSquare className="w-4 h-4" />
                   Ask AI for help
               </Button>
@@ -48,12 +48,12 @@ export default function EmployeeTripsPage() {
         />
 
         <div className="space-y-6">
-            <h2 className="text-sm font-black uppercase tracking-[0.2em] text-muted-foreground/60 px-1">Upcoming Travel</h2>
+            <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider px-1">Upcoming Travel</h2>
             {mockTrips.filter(t => t.status === 'booked').map((trip, idx) => (
                 <TripCard key={trip.id} trip={trip} index={idx} />
             ))}
 
-            <h2 className="text-sm font-black uppercase tracking-[0.2em] text-muted-foreground/60 px-1 pt-4">History</h2>
+            <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider px-1 pt-4">History</h2>
             {mockTrips.filter(t => t.status === 'completed').map((trip, idx) => (
                 <TripCard key={trip.id} trip={trip} index={idx} isPast />
             ))}
@@ -71,19 +71,19 @@ function TripCard({ trip, index, isPast = false }: { trip: any, index: number, i
             transition={{ delay: index * 0.1 }}
         >
             <Card className={cn(
-                "p-0 overflow-hidden border-border/60 hover:shadow-lg transition-all group",
+                "p-0 overflow-hidden border-border/60 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group",
                 isPast && "opacity-70 grayscale-[0.5]"
             )}>
                 <div className="flex flex-col md:flex-row">
                     <div className={cn(
                         "w-full md:w-2 h-2 md:h-auto",
-                        isPast ? "bg-muted" : "bg-primary"
+                        isPast ? "bg-muted" : "bg-emerald-500"
                     )} />
                     
                     <div className="flex-1 p-6">
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                             <div>
-                                <h3 className="text-xl font-bold text-foreground group-hover:text-primary transition-colors">{trip.eventName}</h3>
+                                <h3 className="text-xl font-bold text-foreground group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">{trip.eventName}</h3>
                                 <div className="flex items-center gap-4 mt-1.5 text-muted-foreground text-sm font-medium">
                                     <span className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" /> {trip.destination}</span>
                                     <span className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" /> {trip.dates}</span>
@@ -97,21 +97,21 @@ function TripCard({ trip, index, isPast = false }: { trip: any, index: number, i
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="p-4 rounded-xl bg-muted/30 border border-border/40 flex items-center gap-4">
-                                <div className="w-10 h-10 rounded-lg bg-background flex items-center justify-center text-primary shadow-sm">
+                            <div className="p-4 rounded-xl bg-muted/30 border border-border/60 flex items-center gap-4">
+                                <div className="w-10 h-10 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shadow-sm">
                                     <Plane className="w-5 h-5" />
                                 </div>
                                 <div>
-                                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Flight</p>
+                                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Flight</p>
                                     <p className="text-sm font-bold text-foreground">{trip.flight}</p>
                                 </div>
                             </div>
-                            <div className="p-4 rounded-xl bg-muted/30 border border-border/40 flex items-center gap-4">
-                                <div className="w-10 h-10 rounded-lg bg-background flex items-center justify-center text-primary shadow-sm">
+                            <div className="p-4 rounded-xl bg-muted/30 border border-border/60 flex items-center gap-4">
+                                <div className="w-10 h-10 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shadow-sm">
                                     <Building2 className="w-5 h-5" />
                                 </div>
                                 <div>
-                                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Stay</p>
+                                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Stay</p>
                                     <p className="text-sm font-bold text-foreground">{trip.hotel}</p>
                                 </div>
                             </div>
@@ -122,4 +122,3 @@ function TripCard({ trip, index, isPast = false }: { trip: any, index: number, i
         </motion.div>
     )
 }
-

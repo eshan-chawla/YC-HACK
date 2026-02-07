@@ -242,7 +242,7 @@ export default function EmployeesPage() {
 
                 <Button 
                     onClick={() => setIsAddModalOpen(true)}
-                    className="bg-primary hover:bg-green-600 text-primary-foreground gap-2 h-10 shadow-lg shadow-green-500/10"
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white gap-2 h-10 shadow-lg shadow-emerald-500/10"
                 >
                     <Plus className="w-4 h-4" />
                     Add Employee
@@ -255,9 +255,8 @@ export default function EmployeesPage() {
             <DialogContent className="sm:max-w-[500px] rounded-2xl p-0 overflow-hidden border-none shadow-2xl">
                 <form onSubmit={handleAddEmployee}>
                     <DialogHeader className="p-8 bg-slate-900 text-white relative overflow-hidden">
-                        <div className="absolute inset-0 bg-gradient-to-br from-green-500/20 to-transparent pointer-events-none" />
                         <div className="relative z-10">
-                            <DialogTitle className="text-2xl font-bold">Add New Employee</DialogTitle>
+                            <DialogTitle className="text-2xl font-bold tracking-[-0.02em]">Add New Employee</DialogTitle>
                             <DialogDescription className="text-slate-400 mt-2">
                                 Invite a new team member to start managing their travel.
                             </DialogDescription>
@@ -267,7 +266,7 @@ export default function EmployeesPage() {
                     <div className="p-8 space-y-6">
                         <div className="grid gap-4">
                             <div className="grid gap-2">
-                                <Label htmlFor="name" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Full Name</Label>
+                                <Label htmlFor="name" className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">Full Name</Label>
                                 <div className="relative">
                                     <UserCircle className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                                     <Input 
@@ -282,7 +281,7 @@ export default function EmployeesPage() {
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="email" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Company Email</Label>
+                                <Label htmlFor="email" className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">Company Email</Label>
                                 <div className="relative">
                                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                                     <Input 
@@ -299,7 +298,7 @@ export default function EmployeesPage() {
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="grid gap-2">
-                                    <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Team</Label>
+                                    <Label className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">Team</Label>
                                     <Select 
                                         value={newEmployee.team} 
                                         onValueChange={v => setNewEmployee({...newEmployee, team: v})}
@@ -319,7 +318,7 @@ export default function EmployeesPage() {
                                     </Select>
                                 </div>
                                 <div className="grid gap-2">
-                                    <Label htmlFor="role" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Role</Label>
+                                    <Label htmlFor="role" className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">Role</Label>
                                     <div className="relative">
                                         <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                                         <Input 
@@ -335,7 +334,7 @@ export default function EmployeesPage() {
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="location" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Primary Office</Label>
+                                <Label htmlFor="location" className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">Primary Office</Label>
                                 <div className="relative">
                                     <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                                     <Input 
@@ -356,14 +355,14 @@ export default function EmployeesPage() {
                             type="button" 
                             variant="ghost" 
                             onClick={() => setIsAddModalOpen(false)}
-                            className="font-bold text-xs uppercase tracking-widest"
+                            className="font-semibold text-xs uppercase tracking-wider"
                         >
                             Cancel
                         </Button>
                         <Button 
                             type="submit" 
                             disabled={isSubmitting}
-                            className="bg-primary hover:bg-green-600 gap-2 h-11 px-8 rounded-xl font-bold shadow-lg shadow-green-500/10"
+                            className="bg-emerald-600 hover:bg-emerald-700 gap-2 h-11 px-8 rounded-xl font-semibold shadow-lg shadow-emerald-500/10"
                         >
                             {isSubmitting ? (
                                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -407,13 +406,13 @@ export default function EmployeesPage() {
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="flex flex-col items-center justify-center py-12 px-6 rounded-2xl border-2 border-dashed border-border bg-muted/20 text-center"
+                className="flex flex-col items-center justify-center py-12 px-6 rounded-2xl border-2 border-dashed border-border/60 bg-muted/20 text-center"
               >
                 <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
                     <Users className="w-8 h-8 text-muted-foreground" />
                 </div>
-                <h3 className="text-lg font-bold text-foreground">No employees found</h3>
-                <p className="text-muted-foreground mt-1 mb-6 max-w-xs">
+                <h3 className="text-lg font-semibold text-foreground">No employees found</h3>
+                <p className="text-sm text-muted-foreground mt-1 mb-6 max-w-xs">
                   We couldn't find any employees matching your current filters.
                 </p>
                 <Button
@@ -445,7 +444,7 @@ export default function EmployeesPage() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: 0.3 }}
-                        className="text-xs font-bold text-muted-foreground/60 uppercase tracking-widest text-center"
+                        className="text-xs font-medium text-muted-foreground/60 uppercase tracking-wider text-center"
                     >
                         Showing {filteredEmployees.length} of {mockEmployees.length} employees
                     </motion.div>

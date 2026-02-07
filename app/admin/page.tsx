@@ -11,7 +11,6 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
-// Mock data
 const mockEvents = [
   {
     id: 1,
@@ -56,6 +55,12 @@ const mockActivity = [
   { time: '1:15 PM', message: 'Emails sent to 10 employees', type: 'info' },
 ]
 
+const statusStyles: Record<string, string> = {
+  active: 'bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400',
+  pending: 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400',
+  completed: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400',
+}
+
 export default function AdminDashboard() {
   const [events] = useState(mockEvents)
 
@@ -67,128 +72,85 @@ export default function AdminDashboard() {
           description="Manage your corporate travel events and policy compliance"
           actions={
             <Link href="/admin/itineraries/new">
-              <Button className="bg-primary hover:bg-green-600 text-primary-foreground gap-2 h-10 px-5 shadow-lg shadow-green-500/10 transition-all active:scale-95">
+              <Button className="gap-2">
                 <Plus className="w-4 h-4" />
-                Create New Event
+                Create Event
               </Button>
             </Link>
           }
         />
 
-        {/* Stats Grid */}
+        {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard 
-            label="Active Events"
-            value="2"
-            icon={TrendingUp}
-            trend={{ value: 12, label: "vs last month", isPositive: true }}
-            index={0}
-          />
-          <StatCard 
-            label="Total Spend"
-            value="$36,000"
-            description="Across all events this month"
-            icon={Users}
-            index={1}
-          />
-          <StatCard 
-            label="Employees Booked"
-            value="15 / 30"
-            icon={AlertCircle}
-            index={2}
-          />
-          <StatCard 
-            label="Policy Compliance"
-            value="98%"
-            icon={CheckCircle2}
-            trend={{ value: 2, label: "vs last month", isPositive: true }}
-            index={3}
-          />
+          <StatCard label="Active Events" value="2" icon={TrendingUp} trend={{ value: 12, label: "vs last month", isPositive: true }} index={0} />
+          <StatCard label="Total Spend" value="$36,000" description="Across all events" icon={Users} index={1} />
+          <StatCard label="Employees Booked" value="15 / 30" icon={AlertCircle} index={2} />
+          <StatCard label="Policy Compliance" value="98%" icon={CheckCircle2} trend={{ value: 2, label: "vs last month", isPositive: true }} index={3} />
         </div>
 
         {/* Events and Activity */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Events Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Events */}
           <div className="lg:col-span-2 space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-bold text-foreground">Recent Events</h2>
-              <Link href="/admin/itineraries" className="text-xs font-bold text-primary hover:underline flex items-center gap-1">
-                View All <ArrowRight className="w-3 h-3" />
+              <h2 className="text-base font-semibold text-foreground">Recent Events</h2>
+              <Link href="/admin/itineraries" className="text-sm text-primary hover:underline flex items-center gap-1">
+                View all <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-3">
               {events.map((event, index) => (
                 <motion.div
                   key={event.id}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.2 + index * 0.1 }}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 + index * 0.06 }}
                 >
                   <Link href={`/admin/itineraries/${event.id}`}>
-                    <Card className="p-5 hover:shadow-lg hover:border-primary/20 transition-all cursor-pointer group border-border/60">
+                    <Card className="p-5 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer group">
                       <div className="flex items-start justify-between mb-4">
-                        <div className="flex-1">
-                          <h3 className="font-bold text-foreground group-hover:text-primary transition-colors">{event.name}</h3>
+                        <div>
+                          <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors text-[15px]">{event.name}</h3>
                           <p className="text-xs text-muted-foreground mt-0.5">{event.destination}</p>
                         </div>
-                        <span
-                          className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                            event.status === 'active'
-                              ? 'bg-blue-50 text-blue-600 border border-blue-100'
-                              : event.status === 'pending'
-                              ? 'bg-amber-50 text-amber-600 border border-amber-100'
-                              : 'bg-green-50 text-green-600 border border-green-100'
-                          }`}
-                        >
+                        <span className={cn(
+                          "px-2.5 py-1 rounded-md text-[11px] font-medium capitalize",
+                          statusStyles[event.status]
+                        )}>
                           {event.status}
                         </span>
                       </div>
 
-                      <div className="grid grid-cols-4 gap-4 mb-5">
-                        <div className="space-y-1">
-                          <p className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-tight">Dates</p>
-                          <p className="text-xs font-semibold text-foreground">{event.dates}</p>
-                        </div>
-                        <div className="space-y-1">
-                          <p className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-tight">Budget</p>
-                          <p className="text-xs font-semibold text-foreground">${(event.budget / 1000).toFixed(0)}k</p>
-                        </div>
-                        <div className="space-y-1">
-                          <p className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-tight">Booked</p>
-                          <p className="text-xs font-semibold text-foreground">
-                            {event.booked}/{event.employees}
-                          </p>
-                        </div>
-                        <div className="space-y-1">
-                          <p className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-tight">Spend</p>
-                          <p className="text-xs font-semibold text-foreground">
-                            {((event.spent / event.budget) * 100).toFixed(0)}%
-                          </p>
-                        </div>
+                      <div className="grid grid-cols-4 gap-4 mb-4">
+                        {[
+                          { label: 'Dates', value: event.dates },
+                          { label: 'Budget', value: `$${(event.budget / 1000).toFixed(0)}k` },
+                          { label: 'Booked', value: `${event.booked}/${event.employees}` },
+                          { label: 'Spent', value: `${((event.spent / event.budget) * 100).toFixed(0)}%` },
+                        ].map((col) => (
+                          <div key={col.label} className="space-y-0.5">
+                            <p className="text-[11px] text-muted-foreground uppercase tracking-wider">{col.label}</p>
+                            <p className="text-sm font-medium text-foreground">{col.value}</p>
+                          </div>
+                        ))}
                       </div>
 
-                      {/* Progress Bar */}
-                      <div className="relative pt-1">
-                        <div className="flex mb-2 items-center justify-between">
-                            <div>
-                                <span className="text-[10px] font-bold inline-block text-primary uppercase tracking-widest">
-                                    Booking Progress
-                                </span>
-                            </div>
-                            <div className="text-right">
-                                <span className="text-[10px] font-bold inline-block text-primary">
-                                    {Math.round((event.booked / event.employees) * 100)}%
-                                </span>
-                            </div>
+                      {/* Progress */}
+                      <div>
+                        <div className="flex justify-between mb-1.5">
+                          <span className="text-[11px] text-muted-foreground">Progress</span>
+                          <span className="text-[11px] font-medium text-foreground">
+                            {Math.round((event.booked / event.employees) * 100)}%
+                          </span>
                         </div>
-                        <div className="overflow-hidden h-1.5 mb-1 text-xs flex rounded-full bg-slate-100 dark:bg-slate-800">
-                            <motion.div
-                                initial={{ width: 0 }}
-                                animate={{ width: `${(event.booked / event.employees) * 100}%` }}
-                                transition={{ duration: 1, delay: 0.5 }}
-                                className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-primary"
-                            />
+                        <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                          <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${(event.booked / event.employees) * 100}%` }}
+                            transition={{ duration: 0.8, delay: 0.3 }}
+                            className="h-full rounded-full bg-primary"
+                          />
                         </div>
                       </div>
                     </Card>
@@ -198,35 +160,37 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          {/* Activity Feed */}
+          {/* Activity */}
           <div className="space-y-4">
-            <h2 className="text-lg font-bold text-foreground">Activity Feed</h2>
-            <Card className="p-0 overflow-hidden border-border/60">
+            <h2 className="text-base font-semibold text-foreground">Activity</h2>
+            <Card className="p-0 overflow-hidden">
               <div className="divide-y divide-border/40">
                 {mockActivity.map((item, index) => (
                   <motion.div
                     key={index}
-                    initial={{ opacity: 0, x: 10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.3 + index * 0.1 }}
-                    className="p-4 hover:bg-muted/30 transition-colors flex items-start gap-3"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.2 + index * 0.06 }}
+                    className="px-4 py-3.5 hover:bg-muted/30 transition-colors flex items-start gap-3"
                   >
                     <div className={cn(
-                        "w-2 h-2 rounded-full mt-1.5 flex-shrink-0",
-                        item.type === 'booking' ? "bg-blue-500" :
-                        item.type === 'success' ? "bg-green-500" :
-                        item.type === 'warning' ? "bg-amber-500" : "bg-slate-400"
+                      "w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0",
+                      item.type === 'booking' ? "bg-blue-500" :
+                      item.type === 'success' ? "bg-emerald-500" :
+                      item.type === 'warning' ? "bg-amber-500" : "bg-slate-400"
                     )} />
                     <div className="flex-1 min-w-0">
-                      <p className="text-[13px] text-foreground leading-snug font-medium">{item.message}</p>
-                      <p className="text-[11px] text-muted-foreground mt-1 font-semibold">{item.time}</p>
+                      <p className="text-[13px] text-foreground leading-snug">{item.message}</p>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">{item.time}</p>
                     </div>
                   </motion.div>
                 ))}
               </div>
-              <Button variant="ghost" className="w-full rounded-none h-11 text-xs font-bold text-primary hover:bg-primary/5">
-                View All Activity
-              </Button>
+              <div className="border-t border-border/40">
+                <Button variant="ghost" className="w-full rounded-none h-10 text-xs font-medium text-primary hover:bg-primary/5">
+                  View all activity
+                </Button>
+              </div>
             </Card>
           </div>
         </div>

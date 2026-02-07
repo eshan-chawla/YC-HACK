@@ -57,7 +57,7 @@ export default function PoliciesPage() {
           title="Travel Policies" 
           description="Create and manage policy templates to automate booking compliance"
           actions={
-            <Button className="gap-2 bg-primary hover:bg-green-600 h-10 shadow-lg shadow-green-500/10">
+            <Button className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white h-10 shadow-lg shadow-emerald-500/10">
               <Plus className="w-4 h-4" />
               New Policy
             </Button>
@@ -72,15 +72,15 @@ export default function PoliciesPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
             >
-              <Card className="p-0 overflow-hidden hover:shadow-md transition-all border-border/60 group">
+              <Card className="p-0 overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 border-border/60 group">
                 <div className="p-6">
                     <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-6">
                         <div className="flex items-start gap-4">
-                            <div className="w-12 h-12 rounded-xl bg-primary/5 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors duration-300">
+                            <div className="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400 group-hover:bg-emerald-600 group-hover:text-white dark:group-hover:bg-emerald-500 transition-colors duration-300">
                                 <ShieldCheck className="w-6 h-6" />
                             </div>
                             <div>
-                                <h3 className="text-xl font-bold text-foreground group-hover:text-primary transition-colors">{policy.name}</h3>
+                                <h3 className="text-xl font-bold text-foreground group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">{policy.name}</h3>
                                 <p className="text-sm text-muted-foreground mt-0.5">{policy.description}</p>
                             </div>
                         </div>
@@ -97,13 +97,13 @@ export default function PoliciesPage() {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pt-6 border-t border-border/40">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pt-6 border-t border-border/60">
                         <div className="flex items-center gap-3">
                             <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center text-muted-foreground">
                                 <Plane className="w-4 h-4" />
                             </div>
                             <div>
-                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight">Airlines</p>
+                                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Airlines</p>
                                 <p className="text-sm font-bold">{policy.airlines.length} Allowed</p>
                             </div>
                         </div>
@@ -112,7 +112,7 @@ export default function PoliciesPage() {
                                 <Building2 className="w-4 h-4" />
                             </div>
                             <div>
-                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight">Hotels</p>
+                                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Hotels</p>
                                 <p className="text-sm font-bold">{policy.hotels.length} Preferred</p>
                             </div>
                         </div>
@@ -121,7 +121,7 @@ export default function PoliciesPage() {
                                 <Coffee className="w-4 h-4" />
                             </div>
                             <div>
-                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight">Meals</p>
+                                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Meals</p>
                                 <p className="text-sm font-bold">${policy.mealAllowance}/day</p>
                             </div>
                         </div>
@@ -130,14 +130,14 @@ export default function PoliciesPage() {
                                 <Car className="w-4 h-4" />
                             </div>
                             <div>
-                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight">Transport</p>
+                                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Transport</p>
                                 <p className="text-sm font-bold">${policy.groundTransport} Max</p>
                             </div>
                         </div>
                     </div>
                 </div>
                 
-                <div className="bg-muted/30 px-6 py-3 border-t border-border/40 flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
+                <div className="bg-muted/30 px-6 py-3 border-t border-border/60 flex items-center justify-between text-xs font-medium uppercase tracking-wider text-muted-foreground/60">
                     <span>Created {policy.createdAt}</span>
                     <span>Used in {policy.usedInEvents} active events</span>
                 </div>
