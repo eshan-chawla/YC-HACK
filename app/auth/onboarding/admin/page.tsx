@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useMutation } from "convex/react";
+import { useMutation, useQuery, useConvexAuth } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -68,8 +68,17 @@ const LANGUAGES = [
 
 export default function AdminOnboardingPage() {
   const router = useRouter();
+  const { isAuthenticated } = useConvexAuth();
+  const status = useQuery(api.onboarding.getOnboardingStatus);
   const completeOnboarding = useMutation(api.onboarding.completeAdminOnboarding);
-  
+
+  // Already onboarded: go to dashboard
+  useEffect(() => {
+    if (isAuthenticated && status !== undefined && status?.onboardingCompleted) {
+      router.replace(`/admin`);
+    }
+  }, [isAuthenticated, status, router]);
+
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   
@@ -121,6 +130,15 @@ export default function AdminOnboardingPage() {
       setCurrentStep(currentStep - 1);
     }
   };
+
+  // Wait for auth/status before showing form (avoid flash then redirect)
+  if (isAuthenticated && status === undefined) {
+    return (
+      <div className="min-h-screen bg-[#020617] flex items-center justify-center">
+        <Loader2 className="w-6 h-6 animate-spin text-emerald-500" />
+      </div>
+    );
+  }
 
   const handleComplete = async () => {
     setIsLoading(true);

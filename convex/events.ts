@@ -74,6 +74,41 @@ export const list = query({
   },
 });
 
+// Admin: list events with trip stats (booked count, spent) for dashboard
+export const listWithTripStats = query({
+  args: { limit: v.optional(v.number()) },
+  handler: async (ctx, args) => {
+    const user = await requireAdmin(ctx);
+    const events = await ctx.db
+      .query("events")
+      .order("desc")
+      .take(args.limit ?? 100);
+
+    const withStats = await Promise.all(
+      events.map(async (event) => {
+        const trips = await ctx.db
+          .query("trips")
+          .withIndex("by_eventId", (q) => q.eq("eventId", event._id))
+          .collect();
+        const bookedCount = trips.filter(
+          (t) => t.status === "booked" || t.status === "in_progress" || t.status === "completed"
+        ).length;
+        const totalSpent = trips.reduce((sum, t) => sum + (t.costBreakdown?.total ?? 0), 0);
+        const complianceCount = trips.filter((t) => t.policyCompliance === true).length;
+        return {
+          ...event,
+          bookedCount,
+          totalSpent,
+          complianceCount,
+          tripCount: trips.length,
+        };
+      })
+    );
+
+    return withStats;
+  },
+});
+
 // Get a single event by ID
 export const get = query({
   args: { id: v.id("events") },

@@ -22,13 +22,8 @@
     "test:all": "vitest run && playwright test"
   },
   "dependencies": {
-    "@anthropic-ai/claude-agent-sdk": "^0.1.42",
-    "@anthropic-ai/claude-code": "^2.0.42",
-    "@anthropic-ai/sdk": "^0.69.0",
-    "@auth/core": "^0.37.0",
     "@clerk/nextjs": "^6.37.3",
     "@convex-dev/auth": "^0.0.90",
-    "@emotion/is-prop-valid": "latest",
     "@google/generative-ai": "^0.24.1",
     "@hookform/resolvers": "^3.10.0",
     "@modelcontextprotocol/sdk": "^1.25.3",
@@ -61,24 +56,23 @@
     "@radix-ui/react-tooltip": "1.1.6",
     "@supabase/ssr": "latest",
     "@supabase/supabase-js": "latest",
-    "@vercel/analytics": "1.3.1",
     "autoprefixer": "^10.4.20",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "1.0.4",
     "convex": "^1.31.7",
     "date-fns": "4.1.0",
-    "dotenv": "^17.2.3",
     "embla-carousel-react": "8.5.1",
     "framer-motion": "latest",
     "input-otp": "1.4.1",
     "lucide-react": "^0.454.0",
-    "next": "^16.1.0",
+    "next": "^16.1.6",
     "next-themes": "^0.4.6",
     "react": "19.2.0",
     "react-day-picker": "9.8.0",
     "react-dom": "19.2.0",
     "react-hook-form": "^7.60.0",
+    "react-is": "^19.0.0",
     "react-markdown": "^10.1.0",
     "react-resizable-panels": "^2.1.7",
     "recharts": "latest",
@@ -104,5 +98,10 @@
     "tw-animate-css": "1.3.3",
     "typescript": "^5",
     "vitest": "^4.0.18"
+  },
+  "pnpm": {
+    "overrides": {
+      "mdast-util-to-hast": ">=13.2.1"
+    }
   }
 }

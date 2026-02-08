@@ -98,8 +98,8 @@ export async function chatWithAgent(
 }
 
 /**
- * Legacy export for backward compatibility
- * This is now handled by the Gemini agent internally
+ * Legacy constant for backward compatibility (used internally by Gemini agent).
+ * Not exported: "use server" files may only export async functions.
  */
-export const DESTINATION_WALLET = '0x57ba59033233c750b434636e86e385294d43eeba'
+const DESTINATION_WALLET = '0x57ba59033233c750b434636e86e385294d43eeba'
 

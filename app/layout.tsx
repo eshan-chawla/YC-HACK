@@ -48,7 +48,10 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${plusJakarta.variable} ${dmMono.variable} font-sans antialiased`}>
-        <ClerkProvider>
+        <ClerkProvider
+          signInFallbackRedirectUrl="/auth/login"
+          signUpFallbackRedirectUrl="/auth/select-role"
+        >
           <Providers>{children}</Providers>
         </ClerkProvider>
       </body>

@@ -1,6 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo } from 'react'
+import { useQuery } from 'convex/react'
+import { api } from '@/convex/_generated/api'
+import type { Id } from '@/convex/_generated/dataModel'
 import { AppShell } from '@/components/layout/AppShell'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Button } from '@/components/ui/button'
@@ -8,125 +11,123 @@ import { StatsCard } from '@/components/EventDetail/StatsCard'
 import { BookingsTable } from '@/components/EventDetail/BookingsTable'
 import { ActivityFeed } from '@/components/EventDetail/ActivityFeed'
 import { EventConfiguration } from '@/components/EventConfig/EventConfiguration'
-import { useEventPolling } from '@/hooks/useEventPolling'
-import { ArrowLeft, RefreshCw, MoreVertical, Settings2, Users2, History, Pause, Plane, Building2, Car } from 'lucide-react'
+import { ArrowLeft, RefreshCw, MoreVertical, Settings2, Users2, History, Plane, Building2, Car } from 'lucide-react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-} from '@/components/ui/dropdown-menu'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Badge } from '@/components/ui/badge'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card } from '@/components/ui/card'
 
-interface MockEventData {
-  id: string
-  name: string
-  destination: string
-  startDate: string
-  endDate: string
-  status: 'active' | 'pending' | 'completed'
-  createdAt: string
-  totalBudget: number
-  spent: number
-  totalEmployees: number
-  employees: Array<{
-    id: string
-    name: string
-    status: 'pending' | 'in_progress' | 'booked' | 'failed' | 'alert'
-    tripCost?: number
-  }>
-  activities: Array<{
-    id: string
-    time: string
-    message: string
-    type: 'booking' | 'email' | 'alert' | 'system'
-  }>
-  logistics: {
-    flights: {
-        total: number
-        booked: number
-        airlines: string[]
-    }
-    hotels: {
-        totalRooms: number
-        booked: number
-        mainHotel: string
-    }
-    ground: {
-        carRentals: number
-        rideShareEnabled: boolean
-    }
-  }
+type TripStatus = 'pending' | 'generating' | 'booked' | 'in_progress' | 'failed' | 'completed' | 'cancelled'
+function mapTripStatusToTable(s: TripStatus | undefined): 'pending' | 'in_progress' | 'booked' | 'failed' | 'alert' {
+  if (!s) return 'pending'
+  if (s === 'booked' || s === 'completed') return 'booked'
+  if (s === 'in_progress') return 'in_progress'
+  if (s === 'failed') return 'failed'
+  return 'pending'
 }
 
-const mockEventData: MockEventData = {
-  id: '1',
-  name: 'Team Q4 Offsite 2025',
-  destination: 'Miami, Florida',
-  startDate: 'Nov 20, 2025',
-  endDate: 'Nov 24, 2025',
-  status: 'active',
-  createdAt: 'Nov 15, 2025',
-  totalBudget: 25000,
-  spent: 7500,
-  totalEmployees: 10,
-  employees: [
-    { id: '1', name: 'John Smith', status: 'booked', tripCost: 2450 },
-    { id: '2', name: 'Sarah Chen', status: 'pending' },
-    { id: '3', name: 'Mike Johnson', status: 'in_progress', tripCost: 2350 },
-    { id: '4', name: 'Lisa Wong', status: 'alert' },
-    { id: '5', name: 'James Taylor', status: 'failed' },
-    { id: '6', name: 'Emma Davis', status: 'booked', tripCost: 2400 },
-    { id: '7', name: 'Alex Martin', status: 'in_progress', tripCost: 2300 },
-    { id: '8', name: 'Rachel Green', status: 'pending' },
-    { id: '9', name: 'Chris Lee', status: 'booked', tripCost: 2380 },
-    { id: '10', name: 'Diana Prince', status: 'pending' },
-  ],
-  activities: [
-    { id: '1', time: '2:34 PM', message: 'John Smith: Flight booked (United UA-487)', type: 'booking' },
-    { id: '2', time: '2:15 PM', message: 'Sarah Chen: Email opened (clicked link)', type: 'email' },
-    { id: '3', time: '1:52 PM', message: 'Mike Johnson: Hotel booking confirmed (Marriott)', type: 'booking' },
-    { id: '4', time: '1:30 PM', message: 'Lisa Wong: Budget alert - exceeds limit by $150', type: 'alert' },
-    { id: '5', time: '1:15 PM', message: 'Event invitations sent to 10 employees', type: 'system' },
-    { id: '6', time: '12:45 PM', message: 'Emma Davis: Trip details received and confirmed', type: 'booking' },
-  ],
-  logistics: {
-    flights: {
-        total: 10,
-        booked: 4,
-        airlines: ['United', 'Delta', 'American']
-    },
-    hotels: {
-        totalRooms: 10,
-        booked: 6,
-        mainHotel: 'Marriott Marquis Miami'
-    },
-    ground: {
-        carRentals: 3,
-        rideShareEnabled: true
-    }
-  }
+function formatActivityTime(ts: number) {
+  const d = new Date(ts)
+  return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+}
+
+function formatDate(ts: number) {
+  return new Date(ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
 export default function EventDetailPage({ params }: { params: { id: string } }) {
-  const { data, isRefreshing, refresh } = useEventPolling(mockEventData, { interval: 10000 })
-  const [autoRefresh, setAutoRefresh] = useState(true)
+  const eventId = params.id as Id<'events'>
+  const eventData = useQuery(api.events.getWithEmployees, { id: eventId })
+  const trips = useQuery(api.trips.listByEvent, { eventId })
+  const recentActivity = useQuery(api.auditLogs.getRecentActivity, { limit: 50 })
+  const auditLogs = useMemo(
+    () => (recentActivity ?? []).filter((log) => log.resourceId === params.id),
+    [recentActivity, params.id]
+  )
 
-  const bookedCount = data.employees.filter(e => e.status === 'booked').length
-  const pendingCount = data.employees.filter(e => e.status === 'pending').length
-  const failedCount = data.employees.filter(e => e.status === 'failed').length
-  const bookingProgress = ((bookedCount / data.totalEmployees) * 100).toFixed(0)
-  const spendProgress = ((data.spent / data.totalBudget) * 100).toFixed(0)
+  const isLoading = eventData === undefined || trips === undefined
+  const notFound = !isLoading && eventData === null
+
+  const { employeesForTable, bookedCount, totalSpent, spendProgress, bookingProgress, pendingOrFailed, activityItems } =
+    useMemo(() => {
+      if (!eventData || !trips) {
+        return {
+          employeesForTable: [],
+          bookedCount: 0,
+          totalSpent: 0,
+          spendProgress: 0,
+          bookingProgress: 0,
+          pendingOrFailed: 0,
+          activityItems: [],
+        }
+      }
+      const event = eventData
+      const employeesForTable = event.employees.map((emp) => {
+        const trip = trips.find((t) => t.employeeId === emp._id)
+        return {
+          id: trip ? String(trip._id) : String(emp._id),
+          name: emp.name,
+          status: mapTripStatusToTable(trip?.status),
+          tripCost: trip?.costBreakdown?.total,
+        }
+      })
+      const bookedCount = trips.filter(
+        (t) => t.status === 'booked' || t.status === 'in_progress' || t.status === 'completed'
+      ).length
+      const totalSpent = trips.reduce((sum, t) => sum + (t.costBreakdown?.total ?? 0), 0)
+      const totalEmployees = event.employeeIds.length
+      const spendProgress = event.totalBudget > 0 ? Math.round((totalSpent / event.totalBudget) * 100) : 0
+      const bookingProgress = totalEmployees > 0 ? Math.round((bookedCount / totalEmployees) * 100) : 0
+      const pendingOrFailed = trips.filter((t) => t.status === 'pending' || t.status === 'failed').length
+      const activityItems = auditLogs.map((log: { _id: string; timestamp: number; action: string; resourceType: string; userName?: string }) => ({
+        id: log._id,
+        time: formatActivityTime(log.timestamp),
+        message: `${log.userName ?? 'System'}: ${log.action} (${log.resourceType})`,
+        type: 'system' as const,
+      }))
+      return {
+        employeesForTable,
+        bookedCount,
+        totalSpent,
+        spendProgress,
+        bookingProgress,
+        pendingOrFailed,
+        activityItems,
+      }
+    }, [eventData, trips, auditLogs])
+
+  if (notFound) {
+    return (
+      <AppShell role="admin">
+        <div className="space-y-6">
+          <Link href="/admin/itineraries">
+            <Button variant="outline" size="icon" className="h-10 w-10 rounded-xl">
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+          </Link>
+          <p className="text-muted-foreground">Event not found.</p>
+        </div>
+      </AppShell>
+    )
+  }
+
+  if (isLoading || !eventData) {
+    return (
+      <AppShell role="admin">
+        <div className="flex items-center justify-center py-24 text-muted-foreground text-sm">
+          Loading event…
+        </div>
+      </AppShell>
+    )
+  }
+
+  const event = eventData
 
   return (
     <AppShell role="admin">
       <div className="space-y-8">
-        {/* Header */}
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-2">
           <div className="flex items-start gap-4">
             <Link href="/admin/itineraries">
@@ -136,32 +137,22 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
             </Link>
             <div>
               <div className="flex items-center gap-3 mb-1.5">
-                <h1 className="text-2xl font-bold tracking-[-0.02em] text-foreground">{data.name}</h1>
+                <h1 className="text-2xl font-bold tracking-[-0.02em] text-foreground">{event.name}</h1>
                 <Badge className="bg-emerald-50 text-emerald-700 hover:bg-emerald-50 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20 uppercase text-[10px] font-bold tracking-wider px-2.5 py-1 rounded-md">
-                    {data.status}
+                  {event.status}
                 </Badge>
               </div>
               <div className="flex flex-wrap items-center gap-y-2 gap-x-4 text-sm text-muted-foreground font-medium">
-                <span className="flex items-center gap-1.5"><RefreshCw className="w-3.5 h-3.5" /> Created {data.createdAt}</span>
+                <span>Created {formatDate(event.createdAt)}</span>
                 <span className="hidden md:inline text-muted-foreground/30">&bull;</span>
-                <span className="flex items-center gap-1.5">Ends {data.endDate}</span>
+                <span>Ends {formatDate(event.returnDate)}</span>
                 <span className="hidden md:inline text-muted-foreground/30">&bull;</span>
-                <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">{data.destination}</span>
+                <span className="text-emerald-600 dark:text-emerald-400">{event.destination}</span>
               </div>
             </div>
           </div>
 
           <div className="flex items-center gap-2 self-end md:self-start">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => refresh()}
-              disabled={isRefreshing}
-              className="h-10 gap-2 px-4 font-bold text-xs uppercase tracking-widest rounded-xl"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
-              {isRefreshing ? 'Refreshing...' : 'Refresh'}
-            </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="icon" className="h-10 w-10 rounded-xl">
@@ -169,28 +160,19 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem onClick={() => setAutoRefresh(!autoRefresh)} className="gap-2 cursor-pointer font-medium">
-                  {autoRefresh ? <Pause className="w-4 h-4" /> : <RefreshCw className="w-4 h-4" />}
-                  {autoRefresh ? 'Stop' : 'Resume'} Auto-Refresh
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem className="gap-2 cursor-pointer font-medium">Pause Event</DropdownMenuItem>
-                <DropdownMenuItem className="gap-2 cursor-pointer font-medium">Edit Event Details</DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem className="gap-2 cursor-pointer font-bold text-destructive focus:text-destructive">
-                    Cancel Event
+                <DropdownMenuItem className="gap-2 cursor-pointer font-medium" asChild>
+                  <Link href={`/admin/itineraries/${event._id}`}>Refresh</Link>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
         </div>
 
-        {/* Stats Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatsCard
             label="Bookings"
-            value={`${bookedCount} / ${data.totalEmployees}`}
-            progress={parseInt(bookingProgress)}
+            value={`${bookedCount} / ${event.employeeIds.length}`}
+            progress={bookingProgress}
             delay={0}
           />
           <StatsCard
@@ -201,33 +183,41 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
           />
           <StatsCard
             label="Spend Tracking"
-            value={`$${data.spent.toLocaleString()}`}
-            unit={`of $${data.totalBudget.toLocaleString()}`}
-            progress={parseInt(spendProgress)}
+            value={`$${totalSpent.toLocaleString()}`}
+            unit={`of $${event.totalBudget.toLocaleString()}`}
+            progress={spendProgress}
             delay={0.2}
           />
           <StatsCard
             label="Alerts & Pending"
-            value={pendingCount + failedCount}
-            unit={`${failedCount} critical alerts`}
+            value={pendingOrFailed}
+            unit={pendingOrFailed > 0 ? 'pending or failed' : 'none'}
             delay={0.3}
           />
         </div>
 
-        {/* Main Content with Tabs */}
         <Tabs defaultValue="overview" className="w-full">
           <TabsList className="bg-muted/40 p-1 rounded-xl h-11 mb-6">
-            <TabsTrigger value="overview" className="gap-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm px-6 font-bold text-xs uppercase tracking-widest">
-                <Users2 className="w-4 h-4" />
-                Overview
+            <TabsTrigger
+              value="overview"
+              className="gap-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm px-6 font-bold text-xs uppercase tracking-widest"
+            >
+              <Users2 className="w-4 h-4" />
+              Overview
             </TabsTrigger>
-            <TabsTrigger value="configuration" className="gap-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm px-6 font-bold text-xs uppercase tracking-widest">
-                <Settings2 className="w-4 h-4" />
-                Configuration
+            <TabsTrigger
+              value="configuration"
+              className="gap-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm px-6 font-bold text-xs uppercase tracking-widest"
+            >
+              <Settings2 className="w-4 h-4" />
+              Configuration
             </TabsTrigger>
-            <TabsTrigger value="logistics" className="gap-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm px-6 font-bold text-xs uppercase tracking-widest">
-                <Plane className="w-4 h-4" />
-                Logistics &amp; Coverage
+            <TabsTrigger
+              value="logistics"
+              className="gap-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm px-6 font-bold text-xs uppercase tracking-widest"
+            >
+              <Plane className="w-4 h-4" />
+              Logistics &amp; Coverage
             </TabsTrigger>
           </TabsList>
 
@@ -235,119 +225,80 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <div className="lg:col-span-2 space-y-4">
                 <div className="flex items-center justify-between px-1">
-                  <h2 className="text-base font-semibold text-foreground tracking-wider">Employee Directory</h2>
+                  <h2 className="text-base font-semibold text-foreground tracking-wider">
+                    Employee Directory
+                  </h2>
                   <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Showing {data.employees.length} participants
+                    Showing {employeesForTable.length} participants
                   </div>
                 </div>
                 <Card className="border-border/60 overflow-hidden shadow-sm">
-                    <BookingsTable employees={data.employees} eventId={data.id} />
+                  <BookingsTable employees={employeesForTable} eventId={params.id} />
                 </Card>
               </div>
 
               <div className="space-y-4">
                 <div className="flex items-center gap-2 px-1">
-                    <History className="w-5 h-5 text-muted-foreground" />
-                    <h2 className="text-base font-semibold text-foreground tracking-wider">Live Activity</h2>
+                  <History className="w-5 h-5 text-muted-foreground" />
+                  <h2 className="text-base font-semibold text-foreground tracking-wider">Live Activity</h2>
                 </div>
-                <ActivityFeed items={data.activities} />
+                <ActivityFeed items={activityItems} />
               </div>
             </div>
           </TabsContent>
 
           <TabsContent value="logistics" className="mt-0 outline-none">
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <Card className="p-6 border-border/60 shadow-sm relative overflow-hidden group hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
-                    <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:scale-110 transition-transform">
-                        <Plane className="w-24 h-24 rotate-12" />
-                    </div>
-                    <div className="flex items-center gap-3 mb-6">
-                        <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
-                            <Plane className="w-5 h-5" />
-                        </div>
-                        <div>
-                            <h3 className="text-base font-semibold text-foreground tracking-wider">Flight Coverage</h3>
-                            <p className="text-xs font-medium text-muted-foreground">Aggregate ticket status</p>
-                        </div>
-                    </div>
-                    <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                            <span className="text-xs font-medium text-muted-foreground">Booked Tickets</span>
-                            <span className="text-sm font-bold text-foreground">{data.logistics.flights.booked} / {data.logistics.flights.total}</span>
-                        </div>
-                        <div className="w-full bg-muted rounded-full h-1.5 overflow-hidden">
-                            <div className="bg-emerald-500 h-full rounded-full" style={{ width: `${(data.logistics.flights.booked / data.logistics.flights.total) * 100}%` }} />
-                        </div>
-                        <div className="pt-2 flex flex-wrap gap-2">
-                            {data.logistics.flights.airlines.map(airline => (
-                                <Badge key={airline} variant="secondary" className="text-[8px] font-bold uppercase tracking-tighter px-1.5 py-0 rounded-md">
-                                    {airline}
-                                </Badge>
-                            ))}
-                        </div>
-                    </div>
-                </Card>
-
-                <Card className="p-6 border-border/60 shadow-sm relative overflow-hidden group hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
-                    <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:scale-110 transition-transform">
-                        <Building2 className="w-24 h-24" />
-                    </div>
-                    <div className="flex items-center gap-3 mb-6">
-                        <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
-                            <Building2 className="w-5 h-5" />
-                        </div>
-                        <div>
-                            <h3 className="text-base font-semibold text-foreground tracking-wider">Room Blocks</h3>
-                            <p className="text-xs font-medium text-muted-foreground">Hotel reservations</p>
-                        </div>
-                    </div>
-                    <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                            <span className="text-xs font-medium text-muted-foreground">Reserved Rooms</span>
-                            <span className="text-sm font-bold text-foreground">{data.logistics.hotels.booked} / {data.logistics.hotels.totalRooms}</span>
-                        </div>
-                        <div className="w-full bg-muted rounded-full h-1.5 overflow-hidden">
-                            <div className="bg-emerald-500 h-full rounded-full" style={{ width: `${(data.logistics.hotels.booked / data.logistics.hotels.totalRooms) * 100}%` }} />
-                        </div>
-                        <div className="pt-2">
-                            <p className="text-xs font-medium text-muted-foreground uppercase mb-1 tracking-wider">Primary Partner</p>
-                            <p className="text-xs font-bold text-foreground truncate">{data.logistics.hotels.mainHotel}</p>
-                        </div>
-                    </div>
-                </Card>
-
-                <Card className="p-6 border-border/60 shadow-sm relative overflow-hidden group hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
-                    <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:scale-110 transition-transform">
-                        <Car className="w-24 h-24 -rotate-12" />
-                    </div>
-                    <div className="flex items-center gap-3 mb-6">
-                        <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-600">
-                            <Car className="w-5 h-5" />
-                        </div>
-                        <div>
-                            <h3 className="text-base font-semibold text-foreground tracking-wider">Ground Transport</h3>
-                            <p className="text-xs font-medium text-muted-foreground">Vehicle coverage</p>
-                        </div>
-                    </div>
-                    <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                            <span className="text-xs font-medium text-muted-foreground">Active Rentals</span>
-                            <span className="text-sm font-bold text-foreground">{data.logistics.ground.carRentals} vehicles</span>
-                        </div>
-                        <div className="pt-4 p-3 bg-muted/30 rounded-xl border border-border/60">
-                            <div className="flex items-center justify-between mb-1">
-                                <span className="text-xs font-medium uppercase text-muted-foreground tracking-wider">Ride Share (Uber/Lyft)</span>
-                                <Badge className="bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 text-[8px] font-bold border-none shadow-none rounded-md">ENABLED</Badge>
-                            </div>
-                            <p className="text-[10px] text-muted-foreground leading-relaxed">Enterprise vouchers applied to all participants.</p>
-                        </div>
-                    </div>
-                </Card>
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="grid grid-cols-1 md:grid-cols-3 gap-6"
+            >
+              <Card className="p-6 border-border/60 shadow-sm">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                    <Plane className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-semibold text-foreground tracking-wider">Flight Coverage</h3>
+                    <p className="text-xs font-medium text-muted-foreground">Booked / Total</p>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-sm font-bold text-foreground">
+                    {bookedCount} / {event.employeeIds.length} participants
+                  </p>
+                  <p className="text-xs text-muted-foreground">Trip status drives coverage.</p>
+                </div>
+              </Card>
+              <Card className="p-6 border-border/60 shadow-sm">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                    <Building2 className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-semibold text-foreground tracking-wider">Accommodation</h3>
+                    <p className="text-xs font-medium text-muted-foreground">Per itinerary</p>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground">Hotel and room details appear on each trip when generated.</p>
+              </Card>
+              <Card className="p-6 border-border/60 shadow-sm">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-600">
+                    <Car className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-semibold text-foreground tracking-wider">Ground Transport</h3>
+                    <p className="text-xs font-medium text-muted-foreground">Per itinerary</p>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground">Ground transport is included in generated itineraries.</p>
+              </Card>
             </motion.div>
           </TabsContent>
 
           <TabsContent value="configuration" className="mt-0 outline-none">
-            <EventConfiguration eventId={data.id} />
+            <EventConfiguration eventId={params.id} />
           </TabsContent>
         </Tabs>
       </div>

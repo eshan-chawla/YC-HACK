@@ -1,10 +1,15 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@clerk/nextjs";
+import { useConvexAuth, useConvex } from "convex/react";
+import { api } from "@/convex/_generated/api";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { TripWeaverLogo } from "@/components/TripWeaverLogo";
-import { ShieldCheck, Globe, ArrowRight, ArrowLeft } from "lucide-react";
+import { ShieldCheck, Globe, ArrowRight, ArrowLeft, Loader2 } from "lucide-react";
 
 const roles = [
   {
@@ -36,6 +41,42 @@ const roles = [
 ];
 
 export default function SelectRolePage() {
+  const { isSignedIn } = useAuth();
+  const { isAuthenticated } = useConvexAuth();
+  const convex = useConvex();
+  const router = useRouter();
+  const [redirectChecked, setRedirectChecked] = useState(false);
+
+  // Already signed-in: send to onboarding or dashboard (same as login)
+  useEffect(() => {
+    if (!isSignedIn || !isAuthenticated) {
+      setRedirectChecked(true);
+      return;
+    }
+    let cancelled = false;
+    convex.query(api.onboarding.getOnboardingStatus).then((status) => {
+      if (cancelled) return;
+      if (status) {
+        if (status.onboardingCompleted) {
+          router.push(`/${status.role}`);
+        } else {
+          router.push(`/auth/onboarding/${status.role}`);
+        }
+      } else {
+        setRedirectChecked(true);
+      }
+    }).catch(() => setRedirectChecked(true));
+    return () => { cancelled = true; };
+  }, [isSignedIn, isAuthenticated, convex, router]);
+
+  if (isSignedIn && isAuthenticated && !redirectChecked) {
+    return (
+      <div className="min-h-screen bg-[#020617] flex items-center justify-center">
+        <Loader2 className="w-6 h-6 animate-spin text-emerald-500" />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#020617] flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-[720px]">

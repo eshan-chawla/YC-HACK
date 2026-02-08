@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { getCurrentUser, requireAdmin, requireAuth, canAccessEmployee } from "./auth.helpers";
+import { getAdminUserIds, notifyUsers } from "./notifications";
 
 // Cost breakdown validator
 const costBreakdownValidator = v.object({
@@ -82,6 +83,45 @@ export const listMine = query({
     }
 
     return trips;
+  },
+});
+
+// Get trips for current user with event populated (for employee dashboard)
+export const listMineWithEvents = query({
+  args: {
+    status: v.optional(v.union(
+      v.literal("pending"),
+      v.literal("generating"),
+      v.literal("booked"),
+      v.literal("in_progress"),
+      v.literal("failed"),
+      v.literal("completed"),
+      v.literal("cancelled")
+    )),
+  },
+  handler: async (ctx, args) => {
+    const user = await requireAuth(ctx);
+
+    if (!user.employeeId) {
+      return [];
+    }
+
+    const trips = await ctx.db
+      .query("trips")
+      .withIndex("by_employeeId", (q) => q.eq("employeeId", user.employeeId!))
+      .collect();
+
+    const filtered = args.status ? trips.filter((t) => t.status === args.status) : trips;
+
+    const withEvents = await Promise.all(
+      filtered.map(async (trip) => {
+        const event = await ctx.db.get(trip.eventId);
+        const itinerary = trip.itineraryId ? await ctx.db.get(trip.itineraryId) : null;
+        return { ...trip, event, itinerary };
+      })
+    );
+
+    return withEvents;
   },
 });
 
@@ -183,6 +223,71 @@ export const updateStatus = mutation({
 
     await ctx.db.patch(args.id, updates);
 
+    if (args.status === "booked" || args.status === "failed") {
+      const event = await ctx.db.get(trip.eventId);
+      const employee = await ctx.db.get(trip.employeeId);
+      const eventName = event?.name ?? "Event";
+      const employeeName = employee?.name ?? "Employee";
+      const adminIds = await getAdminUserIds(ctx);
+      const linkedProfile = await ctx.db
+        .query("userProfiles")
+        .withIndex("by_employeeId", (q) => q.eq("employeeId", trip.employeeId))
+        .first();
+
+      if (args.status === "booked") {
+        await notifyUsers(ctx, adminIds, {
+          type: "success",
+          title: "Booking confirmed",
+          message: `${employeeName}'s booking for ${eventName} has been confirmed.`,
+          eventId: trip.eventId,
+          tripId: args.id,
+        });
+        if (linkedProfile && !adminIds.includes(linkedProfile._id)) {
+          await notifyUsers(ctx, [linkedProfile._id], {
+            type: "success",
+            title: "Booking confirmed",
+            message: `Your booking for ${eventName} is confirmed.`,
+            eventId: trip.eventId,
+            tripId: args.id,
+          });
+        }
+      } else {
+        const failMsg = args.failureReason
+          ? `${employeeName}'s booking failed. ${args.failureReason}`
+          : `${employeeName}'s booking failed. Please retry.`;
+        await notifyUsers(ctx, adminIds, {
+          type: "error",
+          title: "Booking failed",
+          message: failMsg,
+          eventId: trip.eventId,
+          tripId: args.id,
+        });
+        if (linkedProfile && !adminIds.includes(linkedProfile._id)) {
+          await notifyUsers(ctx, [linkedProfile._id], {
+            type: "error",
+            title: "Booking failed",
+            message: `Your booking for ${eventName} failed. Please retry or contact support.`,
+            eventId: trip.eventId,
+            tripId: args.id,
+          });
+        }
+      }
+
+      if (args.status === "booked" && trip.costBreakdown && event) {
+        const budgetLimit = event.budgetPerEmployee ?? event.totalBudget;
+        if (budgetLimit != null && trip.costBreakdown.total > budgetLimit) {
+          const over = trip.costBreakdown.total - budgetLimit;
+          await notifyUsers(ctx, adminIds, {
+            type: "warning",
+            title: "Budget alert",
+            message: `${employeeName}'s trip exceeds budget by $${Math.round(over).toLocaleString()}. Requires approval.`,
+            eventId: trip.eventId,
+            tripId: args.id,
+          });
+        }
+      }
+    }
+
     return args.id;
   },
 });
@@ -205,6 +310,22 @@ export const updateCostBreakdown = mutation({
       costBreakdown: args.costBreakdown,
       updatedAt: Date.now(),
     });
+
+    const event = await ctx.db.get(trip.eventId);
+    const budgetLimit = event?.budgetPerEmployee ?? event?.totalBudget;
+    if (event && budgetLimit != null && args.costBreakdown.total > budgetLimit) {
+      const employee = await ctx.db.get(trip.employeeId);
+      const employeeName = employee?.name ?? "Employee";
+      const over = args.costBreakdown.total - budgetLimit;
+      const adminIds = await getAdminUserIds(ctx);
+      await notifyUsers(ctx, adminIds, {
+        type: "warning",
+        title: "Budget alert",
+        message: `${employeeName}'s trip exceeds budget by $${Math.round(over).toLocaleString()}. Requires approval.`,
+        eventId: trip.eventId,
+        tripId: args.id,
+      });
+    }
 
     return args.id;
   },

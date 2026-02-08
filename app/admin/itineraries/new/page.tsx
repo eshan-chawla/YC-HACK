@@ -1,6 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useMemo } from 'react'
+import { useQuery, useMutation } from 'convex/react'
+import { api } from '@/convex/_generated/api'
+import type { Id } from '@/convex/_generated/dataModel'
 import { AppShell } from '@/components/layout/AppShell'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Button } from '@/components/ui/button'
@@ -9,21 +12,16 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Calendar, DollarSign, MapPin, Clock, Users, Loader2, CheckCircle2, ArrowLeft } from 'lucide-react'
+import { Calendar, DollarSign, MapPin, Clock, Users, Loader2, CheckCircle2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
 } from '@/components/ui/dialog'
-import Link from 'next/link'
 import { cn } from '@/lib/utils'
 
-interface Employee {
-  id: string
+interface EmployeeOption {
+  id: Id<'employees'>
   name: string
   email: string
   team: string
@@ -32,71 +30,30 @@ interface Employee {
 
 export default function NewEventPage() {
   const router = useRouter()
+  const employeesFromDb = useQuery(api.employees.list, { status: 'active' })
+  const createEvent = useMutation(api.events.create)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [showSuccessDialog, setShowSuccessDialog] = useState(false)
   const [successData, setSuccessData] = useState<{
     eventName: string
     employeeCount: number
     totalBudget: number
+    eventId?: Id<'events'>
   } | null>(null)
 
-  const demoEmployees = [
-    {
-      "id": "e7f8c1b2-a345-6789-b0c1-d2e3f4a5b6c7",
-      "name": "Alice Johnson",
-      "email": "alice.johnson@example.com",
-      "team": "Engineering",
-      "location": "New York, NY"
-    },
-    {
-      "id": "f9a0b1c2-d3e4-f5a6-b7c8-d9e0f1a2b3c4",
-      "name": "Bob Smith",
-      "email": "bob.smith@example.com",
-      "team": "Marketing",
-      "location": "San Francisco, CA"
-    },
-    {
-      "id": "a1b2c3d4-e5f6-a7b8-c9d0-e1f2a3b4c5d6",
-      "name": "Carol White",
-      "email": "carol.white@example.com",
-      "team": "Sales",
-      "location": "Chicago, IL"
-    },
-    {
-      "id": "b4c5d6e7-f8a9-b0c1-d2e3-f4a5b6c7d8e9",
-      "name": "David Brown",
-      "email": "david.brown@example.com",
-      "team": "Engineering",
-      "location": "Austin, TX"
-    },
-    {
-      "id": "c6d7e8f9-a0b1-c2d3-e4f5-a6b7c8d9e0f1",
-      "name": "Eve Davis",
-      "email": "eve.davis@example.com",
-      "team": "Product",
-      "location": "Remote"
-    },
-    {
-      "id": "d8e9f0a1-b2c3-d4e5-f6a7-b8c9d0e1f2a3",
-      "name": "Frank Miller",
-      "email": "frank.miller@example.com",
-      "team": "Sales",
-      "location": "London, UK"
-    },
-    {
-      "id": "e0f1a2b3-c4d5-e6f7-a8b9-c0d1e2f3a4b5",
-      "name": "Grace Wilson",
-      "email": "grace.wilson@example.com",
-      "team": "Human Resources",
-      "location": "New York, NY"
-    }
-  ];
+  const availableEmployees: EmployeeOption[] = useMemo(() => {
+    if (!employeesFromDb) return []
+    return employeesFromDb.map((emp) => ({
+      id: emp._id,
+      name: emp.name,
+      email: emp.email,
+      team: emp.team,
+      location: emp.location ?? '',
+    }))
+  }, [employeesFromDb])
 
-  // Available employees from database
-  const [availableEmployees, setAvailableEmployees] = useState<Employee[]>([])
-  const [selectedEmployeeIds, setSelectedEmployeeIds] = useState<Set<string>>(new Set())
+  const [selectedEmployeeIds, setSelectedEmployeeIds] = useState<Set<Id<'employees'>>>(new Set())
 
   // Form state
   const [eventName, setEventName] = useState('')
@@ -106,13 +63,7 @@ export default function NewEventPage() {
   const [budgetPerPerson, setBudgetPerPerson] = useState('')
   const [restrictions, setRestrictions] = useState('')
 
-  useEffect(() => {
-    // Use the demo data instead of fetching
-    setAvailableEmployees(demoEmployees);
-    setIsLoading(false);
-  }, [])
-
-  const toggleEmployee = (employeeId: string) => {
+  const toggleEmployee = (employeeId: Id<'employees'>) => {
     const newSelected = new Set(selectedEmployeeIds)
     if (newSelected.has(employeeId)) {
       newSelected.delete(employeeId)
@@ -123,7 +74,7 @@ export default function NewEventPage() {
   }
 
   const selectAll = () => {
-    setSelectedEmployeeIds(new Set(availableEmployees.map(emp => emp.id)))
+    setSelectedEmployeeIds(new Set(availableEmployees.map((emp) => emp.id)))
   }
 
   const deselectAll = () => {
@@ -141,19 +92,10 @@ export default function NewEventPage() {
     setError(null)
 
     try {
-      // Validate required fields
-      if (!eventName.trim()) {
-        throw new Error('Please enter an event name')
-      }
-      if (!location.trim()) {
-        throw new Error('Please enter a location')
-      }
-      if (!eventDate) {
-        throw new Error('Please select an event date')
-      }
-      if (!eventTime) {
-        throw new Error('Please select an event time')
-      }
+      if (!eventName.trim()) throw new Error('Please enter an event name')
+      if (!location.trim()) throw new Error('Please enter a destination')
+      if (!eventDate) throw new Error('Please select an event date')
+      if (!eventTime) throw new Error('Please select a time')
       if (!budgetPerPerson || parseFloat(budgetPerPerson) <= 0) {
         throw new Error('Please enter a valid budget per person')
       }
@@ -161,20 +103,32 @@ export default function NewEventPage() {
         throw new Error('Please select at least one employee')
       }
 
-      // Simulate API call delay for better UX
-      await new Promise(resolve => setTimeout(resolve, 800))
+      const budgetPer = parseFloat(budgetPerPerson)
+      const totalBudget = budgetPer * selectedEmployeeIds.size
+      const departureDate = new Date(`${eventDate}T${eventTime}`).getTime()
+      const returnDate = departureDate + 24 * 60 * 60 * 1000 // 1 day later
 
-      const totalBudget = calculateTotalBudget()
-      
-      // Store success data and show dialog
+      const eventId = await createEvent({
+        name: eventName.trim(),
+        destination: location.trim(),
+        departureDate,
+        returnDate,
+        departureTime: eventTime,
+        budgetPerEmployee: budgetPer,
+        totalBudget,
+        employeeIds: Array.from(selectedEmployeeIds),
+        requirements: restrictions.trim()
+          ? { customRestrictions: restrictions.trim() }
+          : undefined,
+      })
+
       setSuccessData({
-        eventName,
+        eventName: eventName.trim(),
         employeeCount: selectedEmployeeIds.size,
         totalBudget,
+        eventId,
       })
       setShowSuccessDialog(true)
-      
-      // Clear form
       setEventName('')
       setLocation('')
       setEventDate('')
@@ -183,14 +137,14 @@ export default function NewEventPage() {
       setRestrictions('')
       setSelectedEmployeeIds(new Set())
     } catch (err) {
-      console.error('[v0] Error creating event:', err)
-      const errorMessage = err instanceof Error ? err.message : 'Failed to create event'
-      setError(errorMessage)
+      console.error('Error creating event:', err)
+      setError(err instanceof Error ? err.message : 'Failed to create event')
     } finally {
       setIsSubmitting(false)
     }
   }
 
+  const isLoading = employeesFromDb === undefined
   if (isLoading) {
     return (
       <AppShell role="admin">
@@ -321,7 +275,12 @@ export default function NewEventPage() {
                     </div>
 
                     <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-                        {availableEmployees.map((employee) => (
+                        {availableEmployees.length === 0 ? (
+                          <p className="text-sm text-muted-foreground py-6 text-center">
+                            No active employees. Add employees in the Employees section first.
+                          </p>
+                        ) : (
+                        availableEmployees.map((employee) => (
                         <div
                             key={employee.id}
                             className={cn(
@@ -352,7 +311,8 @@ export default function NewEventPage() {
                                 </div>
                             </div>
                         </div>
-                        ))}
+                        ))
+                        )}
                     </div>
                 </Card>
             </div>
@@ -477,11 +437,11 @@ export default function NewEventPage() {
                 <Button
                     onClick={() => {
                         setShowSuccessDialog(false)
-                        router.push('/admin/itineraries')
+                        router.push(successData?.eventId ? `/admin/itineraries/${successData.eventId}` : '/admin/itineraries')
                     }}
                     className="w-full h-12 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl"
                 >
-                    Return to Itineraries
+                    {successData?.eventId ? 'View Event' : 'Return to Itineraries'}
                 </Button>
                 <Button
                     variant="ghost"

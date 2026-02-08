@@ -1,6 +1,9 @@
 'use client'
 
 import { useState, useEffect, FormEvent, useRef } from 'react'
+import { useQuery, useMutation } from 'convex/react'
+import { api } from '@/convex/_generated/api'
+import type { Id } from '@/convex/_generated/dataModel'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { chatWithAgent, type SerializedChatMessage, type AgentResponse } from '@/lib/agent'
@@ -13,37 +16,41 @@ import { cn } from '@/lib/utils'
 
 interface ChatInterfaceProps {
   role: 'admin' | 'employee'
+  /** When set, show messages from this Convex conversation. When null, "new chat" – no messages until user sends. */
+  conversationId: Id<'conversations'> | null
+  /** Called when a new conversation is created (e.g. first send in "new chat") so the layout can select it. */
+  onConversationCreated?: (id: Id<'conversations'>) => void
   initialMessage?: string
 }
 
-const INITIAL_MESSAGES: Record<'admin' | 'employee', SerializedChatMessage> = {
-  employee: {
-    role: 'agent',
-    content: 'Hi John, you have been invited to team Q4 Offsite from Dec 05 to Dec 10 in SF. I see that you are based out of the NYC office. I would love to help you find flights for your journey. Before I start can you confirm that you indeed are flying from NYC and are available for those days?',
-    timestamp: '' 
-  },
-  admin: {
-    role: 'agent',
-    content: 'Welcome back, Admin. I am monitoring 3 active events. There are 2 pending itinerary proposals that require your review. How can I assist you today?',
-    timestamp: ''
+/** Map Convex message to UI shape; filter out system messages for display. */
+function convexToSerialized(m: { role: string; content: string; timestamp: number; paymentTriggered?: boolean }): SerializedChatMessage {
+  return {
+    role: m.role === 'assistant' ? 'agent' : (m.role === 'user' ? 'user' : 'agent'),
+    content: m.content,
+    timestamp: new Date(m.timestamp).toISOString(),
+    paymentCompleted: m.paymentTriggered,
   }
 }
 
-export function ChatInterface({ role, initialMessage }: ChatInterfaceProps) {
+export function ChatInterface({ role, conversationId, onConversationCreated, initialMessage }: ChatInterfaceProps) {
   const [message, setMessage] = useState('')
-  const [chatHistory, setChatHistory] = useState<SerializedChatMessage[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [showPaymentAnimation, setShowPaymentAnimation] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
-    if (chatHistory.length === 0) {
-      setChatHistory([{
-        ...(INITIAL_MESSAGES[role]),
-        timestamp: new Date().toISOString()
-      }])
-    }
-  }, [role])
+  const convexMessages = useQuery(
+    api.conversations.getMessages,
+    conversationId ? { conversationId } : 'skip'
+  )
+  const createConversation = useMutation(api.conversations.create)
+  const addMessage = useMutation(api.conversations.addMessage)
+
+  const chatHistory: SerializedChatMessage[] = convexMessages
+    ? convexMessages
+        .filter((m) => m.role !== 'system')
+        .map((m) => convexToSerialized(m))
+    : []
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -62,31 +69,45 @@ export function ChatInterface({ role, initialMessage }: ChatInterfaceProps) {
     const isBookingMessage = userMessage.toLowerCase().startsWith('go ahead and book')
     setShowPaymentAnimation(isBookingMessage)
 
-    const userMessageEntry: SerializedChatMessage = {
-      role: 'user',
-      content: userMessage,
-      timestamp: new Date().toISOString()
+    let activeConversationId = conversationId
+    if (!activeConversationId) {
+      try {
+        activeConversationId = await createConversation({ initialMessage: userMessage })
+        onConversationCreated?.(activeConversationId)
+      } catch (err) {
+        console.error('Failed to create conversation:', err)
+        setIsLoading(false)
+        setShowPaymentAnimation(false)
+        return
+      }
+    } else {
+      await addMessage({
+        conversationId: activeConversationId,
+        role: 'user',
+        content: userMessage,
+      })
     }
-    const updatedHistoryWithUser = [...chatHistory, userMessageEntry]
-    setChatHistory(updatedHistoryWithUser)
+
+    const historyForAgent: SerializedChatMessage[] = [
+      ...chatHistory,
+      { role: 'user', content: userMessage, timestamp: new Date().toISOString() },
+    ]
 
     try {
-      const agentResponse = await chatWithAgent(userMessage, updatedHistoryWithUser)
-      const agentMessageEntry: SerializedChatMessage = {
-        role: 'agent',
+      const agentResponse = await chatWithAgent(userMessage, historyForAgent)
+      await addMessage({
+        conversationId: activeConversationId,
+        role: 'assistant',
         content: agentResponse.content,
-        timestamp: new Date().toISOString(),
-        paymentCompleted: agentResponse.paymentCompleted
-      }
-      setChatHistory([...updatedHistoryWithUser, agentMessageEntry])
+        paymentTriggered: agentResponse.paymentCompleted,
+      })
     } catch (error) {
       console.error('Error chatting with agent:', error)
-      const errorMessageEntry: SerializedChatMessage = {
-        role: 'agent',
+      await addMessage({
+        conversationId: activeConversationId,
+        role: 'assistant',
         content: 'Sorry, I encountered an error. Please try again.',
-        timestamp: new Date().toISOString()
-      }
-      setChatHistory([...updatedHistoryWithUser, errorMessageEntry])
+      })
     } finally {
       setIsLoading(false)
       setShowPaymentAnimation(false)
@@ -94,8 +115,7 @@ export function ChatInterface({ role, initialMessage }: ChatInterfaceProps) {
   }
 
   return (
-    <div className="flex h-full flex-col max-w-4xl mx-auto">
-      {/* Header */}
+    <div className="h-full flex flex-col max-w-4xl mx-auto">
       <div className="flex items-center justify-between mb-5">
         <div>
           <h1 className="text-xl font-bold text-foreground tracking-[-0.02em]">
@@ -111,30 +131,29 @@ export function ChatInterface({ role, initialMessage }: ChatInterfaceProps) {
         </div>
       </div>
 
-      {/* Messages */}
-      <div className="flex-1 flex flex-col overflow-hidden rounded-xl border border-border/60 bg-card shadow-sm">
+      <div className="flex-1 flex flex-col overflow-hidden rounded-xl border border-border/60 bg-card shadow-sm min-h-0">
         <div ref={scrollRef} className="flex-1 overflow-y-auto p-5 space-y-6 scrollbar-thin">
           {chatHistory.map((msg, index) => {
             const isProposal = msg.role === 'agent' && msg.content.includes('Proposed Itinerary')
-            
+
             return (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.2 }}
-                className={cn("flex gap-3", msg.role === 'user' ? 'justify-end' : 'justify-start')}
+                className={cn('flex gap-3', msg.role === 'user' ? 'justify-end' : 'justify-start')}
               >
                 {msg.role === 'agent' && (
                   <div className="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center shrink-0">
                     <Bot className="w-4 h-4" />
                   </div>
                 )}
-                
+
                 <div className="flex flex-col gap-1 max-w-[80%]">
                   <div
                     className={cn(
-                      "rounded-xl px-4 py-3 text-sm leading-relaxed",
+                      'rounded-xl px-4 py-3 text-sm leading-relaxed',
                       msg.role === 'user'
                         ? 'bg-primary text-primary-foreground'
                         : 'bg-muted/50 text-foreground border border-border/40'
@@ -145,7 +164,7 @@ export function ChatInterface({ role, initialMessage }: ChatInterfaceProps) {
                         <PaymentFlowAnimation showCompletion={true} />
                       </div>
                     )}
-                    
+
                     {msg.role === 'agent' ? (
                       <ReactMarkdown
                         remarkPlugins={[remarkGfm]}
@@ -171,9 +190,7 @@ export function ChatInterface({ role, initialMessage }: ChatInterfaceProps) {
                           ),
                           table: ({ children }) => (
                             <div className="overflow-x-auto my-3 rounded-lg border border-border/40">
-                              <table className="min-w-full divide-y divide-border/40">
-                                {children}
-                              </table>
+                              <table className="min-w-full divide-y divide-border/40">{children}</table>
                             </div>
                           ),
                           th: ({ children }) => <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground bg-muted/50">{children}</th>,
@@ -205,11 +222,13 @@ export function ChatInterface({ role, initialMessage }: ChatInterfaceProps) {
                       </div>
                     )}
                   </div>
-                  
-                  <span className={cn(
-                    "text-[10px] text-muted-foreground/50 px-1",
-                    msg.role === 'user' ? 'text-right' : 'text-left'
-                  )}>
+
+                  <span
+                    className={cn(
+                      'text-[10px] text-muted-foreground/50 px-1',
+                      msg.role === 'user' ? 'text-right' : 'text-left'
+                    )}
+                  >
                     {msg.role === 'user' ? 'You' : 'TripWeaver AI'} &middot; {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </span>
                 </div>
@@ -222,7 +241,7 @@ export function ChatInterface({ role, initialMessage }: ChatInterfaceProps) {
               </motion.div>
             )
           })}
-          
+
           <AnimatePresence>
             {isLoading && (
               <motion.div
@@ -252,7 +271,6 @@ export function ChatInterface({ role, initialMessage }: ChatInterfaceProps) {
           </AnimatePresence>
         </div>
 
-        {/* Input */}
         <div className="p-4 border-t border-border/40">
           <form onSubmit={handleSubmit} className="relative flex items-center gap-3">
             <div className="relative flex-1">
@@ -260,25 +278,15 @@ export function ChatInterface({ role, initialMessage }: ChatInterfaceProps) {
                 type="text"
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                placeholder={role === 'admin' ? "Issue a command or policy override..." : "Ask anything about your trip..."}
+                placeholder={role === 'admin' ? 'Issue a command or policy override...' : 'Ask anything about your trip...'}
                 disabled={isLoading}
                 className="w-full pl-4 pr-24 h-11 bg-muted/30 border-border/40 rounded-lg focus-visible:ring-1 focus-visible:ring-primary/20 text-sm"
               />
               <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                <Button 
-                  type="button" 
-                  variant="ghost" 
-                  size="icon-sm" 
-                  className="text-muted-foreground/50 hover:text-muted-foreground"
-                >
+                <Button type="button" variant="ghost" size="icon-sm" className="text-muted-foreground/50 hover:text-muted-foreground">
                   <Paperclip className="w-4 h-4" />
                 </Button>
-                <Button
-                  type="submit"
-                  disabled={!message.trim() || isLoading}
-                  size="icon-sm"
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground disabled:opacity-40"
-                >
+                <Button type="submit" disabled={!message.trim() || isLoading} size="icon-sm" className="bg-primary hover:bg-primary/90 text-primary-foreground disabled:opacity-40">
                   <Send className="w-4 h-4" />
                 </Button>
               </div>

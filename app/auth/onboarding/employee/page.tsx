@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useMutation } from "convex/react";
+import { useMutation, useQuery, useConvexAuth } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -75,8 +75,17 @@ const HOTEL_PREFERENCES = [
 
 export default function EmployeeOnboardingPage() {
   const router = useRouter();
+  const { isAuthenticated } = useConvexAuth();
+  const status = useQuery(api.onboarding.getOnboardingStatus);
   const completeOnboarding = useMutation(api.onboarding.completeEmployeeOnboarding);
-  
+
+  // Already onboarded: go to dashboard
+  useEffect(() => {
+    if (isAuthenticated && status !== undefined && status?.onboardingCompleted) {
+      router.replace(`/employee`);
+    }
+  }, [isAuthenticated, status, router]);
+
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   
@@ -188,6 +197,15 @@ export default function EmployeeOnboardingPage() {
       setIsLoading(false);
     }
   };
+
+  // Wait for auth/status before showing form (avoid flash then redirect)
+  if (isAuthenticated && status === undefined) {
+    return (
+      <div className="min-h-screen bg-[#020617] flex items-center justify-center">
+        <Loader2 className="w-6 h-6 animate-spin text-emerald-500" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#020617] p-4">

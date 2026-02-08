@@ -1,5 +1,7 @@
 'use client'
 
+import { useMutation } from 'convex/react'
+import { api } from '@/convex/_generated/api'
 import { AppShell } from '@/components/layout/AppShell'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Card } from '@/components/ui/card'
@@ -7,8 +9,10 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { motion } from 'framer-motion'
-import { Save, Bell, Lock, User, Zap, Shield, Mail, Globe, ArrowRight } from 'lucide-react'
+import { Save, Bell, Lock, User, Zap, Shield, Mail, Globe, Megaphone } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { EmptyState } from '@/components/layout/EmptyState'
 import { useState } from 'react'
@@ -24,6 +28,23 @@ const settingsSections = [
 export default function SettingsPage() {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState('notifications')
+  const createAnnouncement = useMutation(api.notifications.createAnnouncement)
+  const [announceTitle, setAnnounceTitle] = useState('')
+  const [announceMessage, setAnnounceMessage] = useState('')
+  const [announceTarget, setAnnounceTarget] = useState<'all' | 'admin' | 'employee'>('all')
+  const [announceSending, setAnnounceSending] = useState(false)
+
+  const handleSendAnnouncement = async () => {
+    if (!announceTitle.trim() || !announceMessage.trim()) return
+    setAnnounceSending(true)
+    try {
+      await createAnnouncement({ title: announceTitle.trim(), message: announceMessage.trim(), targetRole: announceTarget })
+      setAnnounceTitle('')
+      setAnnounceMessage('')
+    } finally {
+      setAnnounceSending(false)
+    }
+  }
 
   const handleDiscard = () => {
     // Navigate back to admin dashboard
@@ -95,6 +116,56 @@ export default function SettingsPage() {
                             description="Real-time alerts for booking errors or system downtime"
                             defaultChecked
                         />
+                    </div>
+                </Card>
+
+                <Card className="p-6 border-border/60 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                            <Megaphone className="w-4 h-4" />
+                        </div>
+                        <h3 className="text-base font-semibold text-foreground">Send announcement</h3>
+                    </div>
+                    <p className="text-xs text-muted-foreground mb-4">Notify admins, employees, or everyone about travel updates or company news.</p>
+                    <div className="space-y-4">
+                        <div className="grid gap-2">
+                            <Label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Title</Label>
+                            <Input
+                                value={announceTitle}
+                                onChange={(e) => setAnnounceTitle(e.target.value)}
+                                placeholder="e.g. Q4 travel policy update"
+                                className="h-11 rounded-xl"
+                            />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Message</Label>
+                            <Textarea
+                                value={announceMessage}
+                                onChange={(e) => setAnnounceMessage(e.target.value)}
+                                placeholder="Write your announcement..."
+                                className="min-h-[100px] rounded-xl"
+                            />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Send to</Label>
+                            <Select value={announceTarget} onValueChange={(v: 'all' | 'admin' | 'employee') => setAnnounceTarget(v)}>
+                                <SelectTrigger className="h-11 rounded-xl">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All users</SelectItem>
+                                    <SelectItem value="admin">Admins only</SelectItem>
+                                    <SelectItem value="employee">Employees only</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <Button
+                            onClick={handleSendAnnouncement}
+                            disabled={!announceTitle.trim() || !announceMessage.trim() || announceSending}
+                            className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs uppercase tracking-wider h-11 px-6 rounded-xl"
+                        >
+                            <Megaphone className="w-4 h-4" /> {announceSending ? 'Sending…' : 'Send announcement'}
+                        </Button>
                     </div>
                 </Card>
               </div>

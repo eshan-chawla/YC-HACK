@@ -1,10 +1,15 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { useAuth } from '@clerk/nextjs'
+import { useConvexAuth, useConvex } from 'convex/react'
+import { api } from '@/convex/_generated/api'
 import { Button } from '@/components/ui/button'
 import { TripWeaverLogo } from '@/components/TripWeaverLogo'
 import { motion } from 'framer-motion'
-import { ShieldCheck, UserCircle, Plane, Building2, CreditCard, BarChart3, Globe, ArrowRight, Lock, Zap, Clock } from 'lucide-react'
+import { ShieldCheck, UserCircle, Plane, Building2, CreditCard, BarChart3, Globe, ArrowRight, Lock, Zap, Clock, Loader2 } from 'lucide-react'
 
 const features = [
   {
@@ -51,6 +56,41 @@ const fadeUp = {
 }
 
 export default function LandingPage() {
+  const { isSignedIn } = useAuth()
+  const { isAuthenticated } = useConvexAuth()
+  const convex = useConvex()
+  const router = useRouter()
+  const [redirectChecked, setRedirectChecked] = useState(false)
+
+  // Signed-in users: send to login flow (onboarding or dashboard)
+  useEffect(() => {
+    if (!isSignedIn || !isAuthenticated) {
+      setRedirectChecked(true)
+      return
+    }
+    let cancelled = false
+    convex.query(api.onboarding.getOnboardingStatus)
+      .then((status) => {
+        if (cancelled) return
+        if (status) {
+          if (status.onboardingCompleted) router.push(`/${status.role}`)
+          else router.push(`/auth/onboarding/${status.role}`)
+        } else {
+          router.push('/auth/select-role')
+        }
+      })
+      .catch(() => setRedirectChecked(true))
+    return () => { cancelled = true }
+  }, [isSignedIn, isAuthenticated, convex, router])
+
+  if (isSignedIn && isAuthenticated && !redirectChecked) {
+    return (
+      <div className="min-h-screen bg-[#020617] flex items-center justify-center">
+        <Loader2 className="w-6 h-6 animate-spin text-emerald-500" />
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-[#020617] text-slate-100 overflow-hidden">
       {/* Grain texture overlay */}
