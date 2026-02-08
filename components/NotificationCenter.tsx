@@ -1,5 +1,8 @@
 'use client'
 
+import { useQuery, useMutation } from 'convex/react'
+import { api } from '@/convex/_generated/api'
+import type { Id } from '@/convex/_generated/dataModel'
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Badge } from '@/components/ui/badge'
@@ -9,52 +12,8 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { X, CheckCircle2, AlertTriangle, Info, AlertCircle, Bell, MailOpen } from 'lucide-react'
+import { CheckCircle2, AlertTriangle, Info, AlertCircle, Bell, MailOpen } from 'lucide-react'
 import { cn } from '@/lib/utils'
-
-interface NotificationItem {
-  id: string
-  type: 'success' | 'error' | 'warning' | 'info'
-  title: string
-  message: string
-  timestamp: string
-  read: boolean
-}
-
-const mockNotifications: NotificationItem[] = [
-  {
-    id: '1',
-    type: 'success',
-    title: 'Booking Confirmed',
-    message: 'John Smith\'s flight booking for Team Q4 Offsite has been confirmed',
-    timestamp: '2 mins ago',
-    read: false,
-  },
-  {
-    id: '2',
-    type: 'warning',
-    title: 'Budget Alert',
-    message: 'Lisa Wong\'s trip exceeds budget by $150. Requires approval.',
-    timestamp: '15 mins ago',
-    read: false,
-  },
-  {
-    id: '3',
-    type: 'info',
-    title: 'Email Opened',
-    message: 'Sarah Chen opened the event invitation email',
-    timestamp: '1 hour ago',
-    read: true,
-  },
-  {
-    id: '4',
-    type: 'error',
-    title: 'Booking Failed',
-    message: 'James Taylor\'s hotel booking failed. Please retry.',
-    timestamp: '2 hours ago',
-    read: true,
-  },
-]
 
 const iconConfig = {
   success: { icon: CheckCircle2, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-500/10' },
@@ -63,24 +22,29 @@ const iconConfig = {
   info: { icon: Info, color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-50 dark:bg-blue-500/10' },
 }
 
+function formatRelativeTime(ts: number): string {
+  const diff = Date.now() - ts
+  if (diff < 60 * 1000) return 'Just now'
+  if (diff < 60 * 60 * 1000) return `${Math.floor(diff / 60000)} mins ago`
+  if (diff < 24 * 60 * 60 * 1000) return `${Math.floor(diff / 3600000)} hours ago`
+  if (diff < 7 * 24 * 60 * 60 * 1000) return `${Math.floor(diff / (24 * 3600000))} days ago`
+  return new Date(ts).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })
+}
+
 export function NotificationCenter() {
-  const [notifications, setNotifications] = useState(mockNotifications)
   const [isOpen, setIsOpen] = useState(false)
+  const notifications = useQuery(api.notifications.listForUser, { limit: 50 }) ?? []
+  const markRead = useMutation(api.notifications.markRead)
+  const markAllRead = useMutation(api.notifications.markAllRead)
 
-  const unreadCount = notifications.filter(n => !n.read).length
+  const unreadCount = notifications.filter((n) => !n.read).length
 
-  const markAsRead = (id: string) => {
-    setNotifications(prev =>
-      prev.map(n => (n.id === id ? { ...n, read: true } : n))
-    )
+  const handleMarkAsRead = (id: Id<'notifications'>) => {
+    markRead({ id })
   }
 
-  const markAllAsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })))
-  }
-
-  const clearNotification = (id: string) => {
-    setNotifications(prev => prev.filter(n => n.id !== id))
+  const handleMarkAllAsRead = () => {
+    markAllRead({})
   }
 
   return (
@@ -90,7 +54,7 @@ export function NotificationCenter() {
           <Bell className="w-4 h-4" />
           {unreadCount > 0 && (
             <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-primary text-primary-foreground text-[9px] font-bold flex items-center justify-center rounded-full ring-2 ring-background">
-              {unreadCount}
+              {unreadCount > 99 ? '99+' : unreadCount}
             </span>
           )}
         </Button>
@@ -110,7 +74,7 @@ export function NotificationCenter() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={markAllAsRead}
+              onClick={handleMarkAllAsRead}
               className="text-xs text-primary hover:text-primary hover:bg-primary/5 h-7 px-2"
             >
               Mark all read
@@ -135,50 +99,41 @@ export function NotificationCenter() {
 
                 return (
                   <motion.div
-                    key={notification.id}
+                    key={notification._id}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0, x: -20 }}
                     transition={{ duration: 0.15 }}
                     className={cn(
-                      "group relative px-4 py-3 border-b border-border/30 hover:bg-muted/30 transition-colors cursor-pointer",
-                      !notification.read && "bg-primary/[0.02]"
+                      'group relative px-4 py-3 border-b border-border/30 hover:bg-muted/30 transition-colors cursor-pointer',
+                      !notification.read && 'bg-primary/2'
                     )}
-                    onClick={() => markAsRead(notification.id)}
+                    onClick={() => !notification.read && handleMarkAsRead(notification._id)}
                   >
                     {!notification.read && (
                       <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-primary" />
                     )}
-                    
+
                     <div className="flex items-start gap-3">
-                      <div className={cn("p-1.5 rounded-lg flex-shrink-0", config.bg)}>
-                        <Icon className={cn("w-3.5 h-3.5", config.color)} />
+                      <div className={cn('p-1.5 rounded-lg shrink-0', config.bg)}>
+                        <Icon className={cn('w-3.5 h-3.5', config.color)} />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2">
-                          <p className={cn(
-                            "text-sm leading-tight truncate",
-                            notification.read ? "text-foreground/70" : "text-foreground font-medium"
-                          )}>
+                          <p
+                            className={cn(
+                              'text-sm leading-tight truncate',
+                              notification.read ? 'text-foreground/70' : 'text-foreground font-medium'
+                            )}
+                          >
                             {notification.title}
                           </p>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="w-5 h-5 rounded opacity-0 group-hover:opacity-100 transition-opacity -mt-0.5 -mr-1"
-                            onClick={e => {
-                              e.stopPropagation()
-                              clearNotification(notification.id)
-                            }}
-                          >
-                            <X className="w-3 h-3" />
-                          </Button>
                         </div>
                         <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">
                           {notification.message}
                         </p>
                         <span className="text-[10px] text-muted-foreground/50 mt-1.5 block">
-                          {notification.timestamp}
+                          {formatRelativeTime(notification.timestamp)}
                         </span>
                       </div>
                     </div>
@@ -190,8 +145,8 @@ export function NotificationCenter() {
         </div>
 
         <div className="p-2 border-t border-border/30">
-          <Button variant="ghost" className="w-full h-8 text-xs text-muted-foreground hover:text-foreground">
-            View all notifications
+          <Button variant="ghost" className="w-full h-8 text-xs text-muted-foreground hover:text-foreground" asChild>
+            <a href="/admin/notifications">View all notifications</a>
           </Button>
         </div>
       </DropdownMenuContent>

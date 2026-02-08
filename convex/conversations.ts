@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { requireAuth, getCurrentUser } from "./auth.helpers";
+import { notifyUsers } from "./notifications";
 
 // Tool call validator
 const toolCallValidator = v.object({
@@ -155,6 +156,16 @@ export const addMessage = mutation({
     }
 
     await ctx.db.patch(args.conversationId, updates);
+
+    if (args.role === "assistant") {
+      const preview = args.content.slice(0, 80) + (args.content.length > 80 ? "..." : "");
+      await notifyUsers(ctx, [conversation.userId], {
+        type: "info",
+        title: "New AI reply",
+        message: preview,
+        conversationId: args.conversationId,
+      });
+    }
 
     return messageId;
   },

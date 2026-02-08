@@ -280,6 +280,54 @@ const schema = defineSchema({
     .index("by_conversationId", ["conversationId"])
     .index("by_timestamp", ["timestamp"]),
 
+  // Travel policies (admin-created templates)
+  policies: defineTable({
+    name: v.string(),
+    description: v.optional(v.string()),
+    maxBudget: v.number(),
+    airlines: v.array(v.string()),
+    hotels: v.array(v.string()),
+    mealAllowance: v.number(),
+    groundTransport: v.number(),
+    createdBy: v.id("userProfiles"),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_createdBy", ["createdBy"]),
+
+  // User-facing notifications (real-time, per recipient)
+  notifications: defineTable({
+    userId: v.id("userProfiles"),
+    type: v.union(
+      v.literal("success"),
+      v.literal("error"),
+      v.literal("warning"),
+      v.literal("info")
+    ),
+    title: v.string(),
+    message: v.string(),
+    read: v.boolean(),
+    timestamp: v.number(),
+    eventId: v.optional(v.id("events")),
+    tripId: v.optional(v.id("trips")),
+    conversationId: v.optional(v.id("conversations")),
+  })
+    .index("by_userId", ["userId"])
+    .index("by_userId_read", ["userId", "read"])
+    .index("by_userId_timestamp", ["userId", "timestamp"])
+    .index("by_timestamp", ["timestamp"]),
+
+  // Event invitation opens (for "email opened" notifications)
+  eventInvitationOpens: defineTable({
+    eventId: v.id("events"),
+    employeeId: v.optional(v.id("employees")),
+    userId: v.optional(v.id("userProfiles")),
+    openedAt: v.number(),
+  })
+    .index("by_eventId", ["eventId"])
+    .index("by_employeeId", ["employeeId"])
+    .index("by_eventId_employeeId", ["eventId", "employeeId"]),
+
   // Rate limiting table
   rateLimits: defineTable({
     key: v.string(), // e.g., "auth:user@email.com" or "api:userId"

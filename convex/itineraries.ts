@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { mutation, query, internalMutation } from "./_generated/server";
 import { requireAdmin, requireAuth, getCurrentUser } from "./auth.helpers";
 import { Id } from "./_generated/dataModel";
+import { getAdminUserIds, notifyUsers } from "./notifications";
 
 // Flight segment validator
 const flightSegmentValidator = v.object({
@@ -203,6 +204,16 @@ export const upsert = mutation({
     await ctx.db.patch(args.tripId, {
       itineraryId: itineraryId,
       updatedAt: now,
+    });
+
+    const event = await ctx.db.get(args.eventId);
+    const eventName = event?.name ?? "Event";
+    const adminIds = await getAdminUserIds(ctx);
+    await notifyUsers(ctx, adminIds, {
+      type: "info",
+      title: "New proposed itinerary",
+      message: `Proposed itinerary for ${eventName}.`,
+      eventId: args.eventId,
     });
 
     return itineraryId;

@@ -6,7 +6,7 @@ import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { X } from 'lucide-react'
 
-const teams = ['Engineering', 'Sales', 'Product', 'Design', 'Finance', 'HR', 'Marketing']
+const DEFAULT_TEAMS = ['Engineering', 'Sales', 'Product', 'Design', 'Finance', 'HR', 'Marketing']
 const statuses = ['Active', 'Inactive']
 
 interface EmployeeFiltersProps {
@@ -16,6 +16,8 @@ interface EmployeeFiltersProps {
   setSelectedTeams: (teams: string[]) => void
   selectedStatus: string[]
   setSelectedStatus: (status: string[]) => void
+  /** When provided, team filter chips use this list (e.g. from Convex data); otherwise use default list. */
+  teams?: string[]
 }
 
 export function EmployeeFilters({
@@ -25,7 +27,9 @@ export function EmployeeFilters({
   setSelectedTeams,
   selectedStatus,
   setSelectedStatus,
+  teams = DEFAULT_TEAMS,
 }: EmployeeFiltersProps) {
+  const teamsToShow = teams.length > 0 ? teams : DEFAULT_TEAMS
   const toggleTeam = (team: string) => {
     setSelectedTeams(
       selectedTeams.includes(team)
@@ -63,7 +67,7 @@ export function EmployeeFilters({
           Filter by Team
         </label>
         <div className="flex flex-wrap gap-2">
-          {teams.map(team => (
+          {teamsToShow.map(team => (
             <Badge
               key={team}
               variant={selectedTeams.includes(team) ? 'default' : 'outline'}

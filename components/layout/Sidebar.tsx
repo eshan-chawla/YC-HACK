@@ -20,6 +20,7 @@ import { TripWeaverLogo } from '@/components/TripWeaverLogo'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { motion } from 'framer-motion'
+import { useCurrentUser } from '@/hooks/useCurrentUser'
 
 interface NavItem {
   href: string
@@ -50,8 +51,10 @@ const employeeNavItems: NavItem[] = [
 export function Sidebar({ role = 'admin' }: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
+  const { user } = useCurrentUser()
   const [isCollapsed, setIsCollapsed] = useState(false)
   const navItems = role === 'admin' ? adminNavItems : employeeNavItems
+  const canSwitchRole = user?.role === 'admin'
 
   const handleSignOut = () => {
     localStorage.removeItem('tripweaver_session')
@@ -142,17 +145,19 @@ export function Sidebar({ role = 'admin' }: SidebarProps) {
 
       {/* Footer */}
       <div className="px-3 pb-4 pt-2 border-t border-border/60 space-y-0.5">
-        <Link 
-          href={role === 'admin' ? '/employee' : '/admin'}
-          onClick={handleRoleSwitch}
-          className={cn(
-            "flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium transition-colors",
-            "text-muted-foreground hover:bg-muted hover:text-foreground"
-          )}
-        >
-          <Shield className="w-[18px] h-[18px]" />
-          {!isCollapsed && <span>Switch to {role === 'admin' ? 'Employee' : 'Admin'}</span>}
-        </Link>
+        {canSwitchRole && (
+          <Link 
+            href={role === 'admin' ? '/employee' : '/admin'}
+            onClick={handleRoleSwitch}
+            className={cn(
+              "flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium transition-colors",
+              "text-muted-foreground hover:bg-muted hover:text-foreground"
+            )}
+          >
+            <Shield className="w-[18px] h-[18px]" />
+            {!isCollapsed && <span>Switch to {role === 'admin' ? 'Employee' : 'Admin'}</span>}
+          </Link>
+        )}
 
         <div 
           onClick={handleSignOut}

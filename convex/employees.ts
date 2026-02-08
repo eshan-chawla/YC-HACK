@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { getCurrentUser, requireAdmin, requireAuth } from "./auth.helpers";
+import { getAdminUserIds, notifyUsers } from "./notifications";
 
 // Employee restrictions validator (duplicated for use in mutations)
 const employeeRestrictionsValidator = v.object({
@@ -121,6 +122,13 @@ export const create = mutation({
       totalTripsBooked: 0,
       createdAt: now,
       updatedAt: now,
+    });
+
+    const adminIds = await getAdminUserIds(ctx);
+    await notifyUsers(ctx, adminIds, {
+      type: "info",
+      title: "New team member",
+      message: `${args.name} has been added to the team.`,
     });
 
     return id;

@@ -212,23 +212,39 @@ export const createInternal = internalMutation({
   },
 });
 
-// Update own profile
+// Update own profile (includes admin/employee onboarding fields)
 export const updateProfile = mutation({
   args: {
     displayName: v.optional(v.string()),
     avatarUrl: v.optional(v.string()),
+    companyName: v.optional(v.string()),
+    department: v.optional(v.string()),
+    jobTitle: v.optional(v.string()),
+    phoneNumber: v.optional(v.string()),
+    timezone: v.optional(v.string()),
+    currency: v.optional(v.string()),
+    language: v.optional(v.string()),
+    notificationPreferences: v.optional(v.object({
+      email: v.boolean(),
+      sms: v.boolean(),
+      push: v.boolean(),
+    })),
   },
   handler: async (ctx, args) => {
     const user = await requireAuth(ctx);
 
     const updates: Record<string, unknown> = { updatedAt: Date.now() };
-    
-    if (args.displayName !== undefined) {
-      updates.displayName = args.displayName;
-    }
-    if (args.avatarUrl !== undefined) {
-      updates.avatarUrl = args.avatarUrl;
-    }
+
+    if (args.displayName !== undefined) updates.displayName = args.displayName;
+    if (args.avatarUrl !== undefined) updates.avatarUrl = args.avatarUrl;
+    if (args.companyName !== undefined) updates.companyName = args.companyName;
+    if (args.department !== undefined) updates.department = args.department;
+    if (args.jobTitle !== undefined) updates.jobTitle = args.jobTitle;
+    if (args.phoneNumber !== undefined) updates.phoneNumber = args.phoneNumber;
+    if (args.timezone !== undefined) updates.timezone = args.timezone;
+    if (args.currency !== undefined) updates.currency = args.currency;
+    if (args.language !== undefined) updates.language = args.language;
+    if (args.notificationPreferences !== undefined) updates.notificationPreferences = args.notificationPreferences;
 
     await ctx.db.patch(user._id, updates);
     return user._id;
