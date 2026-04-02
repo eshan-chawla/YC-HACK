@@ -130,7 +130,7 @@ export default function AdminDashboard() {
                     transition={{ delay: 0.1 + index * 0.06 }}
                   >
                     <Link href={`/admin/itineraries/${event._id}`}>
-                      <Card className="p-5 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer group">
+                      <Card className="p-5 hover:shadow-md transition-shadow duration-200 cursor-pointer group">
                         <div className="flex items-start justify-between mb-4">
                           <div>
                             <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors text-[15px]">

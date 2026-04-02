@@ -7,7 +7,8 @@ import { ItineraryCard } from '@/components/TripDetail/ItineraryCard'
 import { CostBreakdown } from '@/components/TripDetail/CostBreakdown'
 import { AgentNotes } from '@/components/TripDetail/AgentNotes'
 import { Badge } from '@/components/ui/badge'
-import { ArrowLeft, Download, Share2, MoreVertical, Edit2, Trash2, Plane, Building2, Car } from 'lucide-react'
+import { Skeleton } from '@/components/ui/skeleton'
+import { ArrowLeft, Download, Share2, MoreVertical, Edit2, Trash2, Plane, Building2, Car, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import {
@@ -17,68 +18,108 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu'
+import { useTripWithDetails } from '@/hooks/useTrips'
+import { useMemo } from 'react'
 
-const mockTripData = {
-  employeeName: 'John Smith',
-  status: 'booked' as const,
-  confirmationNumber: 'TW-12345',
-  eventName: 'Team Q4 Offsite 2025',
-  segments: [
-    {
-      type: 'flight' as const,
+interface Segment {
+  type: 'flight' | 'hotel' | 'transport'
+  icon: React.ReactNode
+  title: string
+  details: string[]
+  cost: number
+}
+
+function formatCurrency(amount: number): string {
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount)
+}
+
+function formatDate(timestamp: number): string {
+  return new Date(timestamp * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+}
+
+function formatTime(timestamp: number): string {
+  return new Date(timestamp * 1000).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+}
+
+function buildSegments(trip: any): Segment[] {
+  const segments: Segment[] = []
+  const itinerary = trip.itinerary as any
+  
+  if (itinerary?.outboundFlight) {
+    const f = itinerary.outboundFlight as any
+    segments.push({
+      type: 'flight',
       icon: <Plane className="w-5 h-5" />,
       title: 'Outbound Flight',
       details: [
-        'United UA-487 | Nov 20, 9:00 AM - 1:15 PM',
-        'San Francisco (SFO) → Miami (MIA)',
-        'Seat: 12A | Economy | Baggage: 1 included',
-      ],
-      cost: 450,
-    },
-    {
-      type: 'hotel' as const,
+        `${f.airline || 'Airline'} | ${formatDate(f.departure.time)} ${formatTime(f.departure.time)} - ${formatTime(f.arrival.time)}`,
+        `${f.departure.airport} → ${f.arrival.airport}`,
+        f.seat ? `Seat: ${f.seat}` : '', f.cabin ? f.cabin : '', f.baggage ? `Baggage: ${f.baggage}` : '',
+      ].filter(Boolean).join(' | ').split(' | '),
+      cost: f.cost || 0,
+    })
+  }
+  
+  if (itinerary?.hotel) {
+    const h = itinerary.hotel as any
+    segments.push({
+      type: 'hotel',
       icon: <Building2 className="w-5 h-5" />,
       title: 'Hotel',
       details: [
-        'Marriott Marquis Miami',
-        'Nov 20-24, 2025 (4 nights)',
-        'Room: Ocean View King | $450/night',
-      ],
-      cost: 1800,
-    },
-    {
-      type: 'transport' as const,
+        h.name,
+        `${formatDate(h.checkIn)} - ${formatDate(h.checkOut)} (${h.nights} nights)`,
+        `Room: ${h.room}`,
+        h.costPerNight ? `${formatCurrency(h.costPerNight)}/night` : '',
+      ].filter(Boolean),
+      cost: h.totalCost || 0,
+    })
+  }
+  
+  if (itinerary?.groundTransport) {
+    const t = itinerary.groundTransport as any
+    segments.push({
+      type: 'transport',
       icon: <Car className="w-5 h-5" />,
       title: 'Ground Transport',
       details: [
-        'Uber from SFO to hotel (estimated)',
-        'Departure: Nov 20, 1:45 PM',
-      ],
-      cost: 150,
-    },
-    {
-      type: 'flight' as const,
+        t.type || 'Transport',
+        t.from && t.to ? `${t.from} to ${t.to}` : '',
+        t.time ? formatDate(t.time) : '',
+      ].filter(Boolean),
+      cost: t.cost || 0,
+    })
+  }
+  
+  if (itinerary?.returnFlight) {
+    const f = itinerary.returnFlight as any
+    segments.push({
+      type: 'flight',
       icon: <Plane className="w-5 h-5" />,
       title: 'Return Flight',
       details: [
-        'United UA-502 | Nov 24, 5:00 PM - 9:15 PM',
-        'Miami (MIA) → San Francisco (SFO)',
-        'Seat: 15C | Economy',
-      ],
-      cost: 450,
-    },
-  ],
-  costItems: [
-    { label: 'Flights (2)', amount: 900 },
-    { label: 'Hotel (4 nights)', amount: 1800 },
-    { label: 'Ground Transport', amount: 150 },
-    { label: 'Meal Allowance (4 days)', amount: 300 },
-  ],
-  total: 3150,
-  budget: 2500,
-  isCompliant: true,
-  agentNotes:
-    'Selected United flights to match preferred airline. Marriott chosen to maximize loyalty points. Hotel within allocated budget; added meal allowance per company policy. All bookings confirmed and paid via TripWeaver. Ground transport via rideshare for reliability.',
+        `${f.airline || 'Airline'} | ${formatDate(f.departure.time)} ${formatTime(f.departure.time)} - ${formatTime(f.arrival.time)}`,
+        `${f.departure.airport} → ${f.arrival.airport}`,
+        f.seat ? `Seat: ${f.seat}` : '', f.cabin ? f.cabin : '',
+      ].filter(Boolean).join(' | ').split(' | '),
+      cost: f.cost || 0,
+    })
+  }
+  
+  return segments
+}
+
+function buildCostItems(segments: Segment[], event: any): { label: string; amount: number }[] {
+  const flights = segments.filter(s => s.type === 'flight').reduce((sum, s) => sum + s.cost, 0)
+  const hotel = segments.filter(s => s.type === 'hotel').reduce((sum, s) => sum + s.cost, 0)
+  const transport = segments.filter(s => s.type === 'transport').reduce((sum, s) => sum + s.cost, 0)
+  
+  const items: { label: string; amount: number }[] = []
+  if (flights > 0) items.push({ label: 'Flights', amount: flights })
+  if (hotel > 0) items.push({ label: 'Hotel', amount: hotel })
+  if (transport > 0) items.push({ label: 'Ground Transport', amount: transport })
+  
+  return items
 }
 
 export default function TripDetailPage({
@@ -86,6 +127,65 @@ export default function TripDetailPage({
 }: {
   params: { id: string; tripId: string }
 }) {
+  const { trip, isLoading } = useTripWithDetails(params.tripId as any)
+
+  const segments = useMemo(() => {
+    if (!trip) return []
+    return buildSegments(trip)
+  }, [trip])
+
+  const costItems = useMemo(() => {
+    if (!trip || !trip.event) return []
+    return buildCostItems(segments, trip.event)
+  }, [segments, trip])
+
+  const totalCost = useMemo(() => {
+    return costItems.reduce((sum, item) => sum + item.amount, 0)
+  }, [costItems])
+
+  const isCompliant = trip?.event ? totalCost <= (trip.event.budgetPerEmployee || 0) : true
+
+  if (isLoading) {
+    return (
+      <AppShell role="admin">
+        <div className="space-y-8">
+          <div className="flex items-start gap-4">
+            <Skeleton className="h-10 w-10 rounded-xl" />
+            <div className="space-y-2">
+              <Skeleton className="h-6 w-48" />
+              <Skeleton className="h-4 w-64" />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-4">
+              <Skeleton className="h-64 w-full rounded-xl" />
+            </div>
+            <div className="space-y-4">
+              <Skeleton className="h-48 w-full rounded-xl" />
+              <Skeleton className="h-32 w-full rounded-xl" />
+            </div>
+          </div>
+        </div>
+      </AppShell>
+    )
+  }
+
+  if (!trip) {
+    return (
+      <AppShell role="admin">
+        <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
+          <p className="text-muted-foreground">Trip not found</p>
+          <Link href={`/admin/itineraries/${params.id}`}>
+            <Button variant="outline">Back to Itineraries</Button>
+          </Link>
+        </div>
+      </AppShell>
+    )
+  }
+
+  const employee = trip.employee as any
+  const event = trip.event as any
+
   return (
     <AppShell role="admin">
       <div className="space-y-8">
@@ -99,15 +199,23 @@ export default function TripDetailPage({
             </Link>
             <div>
               <div className="flex items-center gap-3 mb-1.5">
-                <h1 className="text-2xl font-bold tracking-[-0.02em] text-foreground">{mockTripData.employeeName}</h1>
-                <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20 uppercase text-[10px] font-bold tracking-wider px-2.5 py-1 rounded-md">
-                    {mockTripData.status}
+                <h1 className="text-2xl font-bold tracking-[-0.02em] text-foreground">
+                  {employee?.name || 'Employee'}
+                </h1>
+                <Badge className={`uppercase text-[10px] font-bold tracking-wider px-2.5 py-1 rounded-md ${
+                  trip.status === 'booked' 
+                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20'
+                    : trip.status === 'generating'
+                    ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20'
+                    : trip.status === 'pending'
+                    ? 'bg-slate-50 text-slate-700 border-slate-200 dark:bg-slate-500/10 dark:text-slate-400 dark:border-slate-500/20'
+                    : 'bg-red-50 text-red-700 border-red-200 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20'
+                }`}>
+                  {trip.status}
                 </Badge>
               </div>
               <p className="text-sm text-muted-foreground font-medium flex items-center gap-2">
-                <span className="text-foreground font-bold uppercase tracking-wider text-[10px] bg-muted px-2 py-0.5 rounded">Conf # {mockTripData.confirmationNumber}</span>
-                <span className="text-muted-foreground/30">&bull;</span>
-                <span>{mockTripData.eventName}</span>
+                <span>{event?.name || 'Event'}</span>
               </p>
             </div>
           </div>
@@ -129,7 +237,7 @@ export default function TripDetailPage({
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuItem className="gap-2 cursor-pointer font-medium">
-                    <Edit2 className="w-4 h-4" /> Edit Trip
+                  <Edit2 className="w-4 h-4" /> Edit Trip
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem className="gap-2 cursor-pointer font-bold text-destructive focus:text-destructive">
@@ -144,22 +252,38 @@ export default function TripDetailPage({
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-4">
             <h2 className="text-base font-semibold text-foreground px-1 tracking-wider">Itinerary Details</h2>
-            <ItineraryCard segments={mockTripData.segments} />
+            {segments.length > 0 ? (
+              <ItineraryCard segments={segments} />
+            ) : (
+              <div className="flex flex-col items-center justify-center py-16 px-8 rounded-xl border border-dashed border-border/60 bg-muted/30">
+                <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-4">
+                  <Plane className="w-5 h-5 text-muted-foreground/60" />
+                </div>
+                <h3 className="text-base font-semibold text-foreground mb-1">No Itinerary Generated</h3>
+                <p className="text-sm text-muted-foreground max-w-[280px]">
+                  {trip.status === 'generating' 
+                    ? 'The AI agent is currently generating this itinerary. Please check back soon.'
+                    : 'This trip does not have an itinerary yet. Click "Generate" to create one.'}
+                </p>
+              </div>
+            )}
           </div>
 
           <div className="space-y-6">
             <div className="space-y-4">
-                <h2 className="text-base font-semibold text-foreground px-1 tracking-wider">Financials</h2>
-                <CostBreakdown
-                items={mockTripData.costItems}
-                total={mockTripData.total}
-                budget={mockTripData.budget}
-                isCompliant={mockTripData.isCompliant}
-                />
+              <h2 className="text-base font-semibold text-foreground px-1 tracking-wider">Financials</h2>
+              <CostBreakdown
+                items={costItems}
+                total={totalCost}
+                budget={event?.budgetPerEmployee || 0}
+                isCompliant={isCompliant}
+              />
             </div>
             <div className="space-y-4">
-                <h2 className="text-base font-semibold text-foreground px-1 tracking-wider">Agent Notes</h2>
-                <AgentNotes notes={mockTripData.agentNotes} />
+              <h2 className="text-base font-semibold text-foreground px-1 tracking-wider">Agent Notes</h2>
+              <AgentNotes 
+                notes={trip.agentNotes || 'No notes available. The itinerary was generated based on company policies and employee preferences.'} 
+              />
             </div>
           </div>
         </div>
