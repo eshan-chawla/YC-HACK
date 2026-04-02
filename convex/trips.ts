@@ -207,6 +207,11 @@ export const updateStatus = mutation({
     if (args.status === "booked" && !trip.bookedAt) {
       updates.bookedAt = Date.now();
       
+      // Generate confirmation number: TW-{timestamp}-{shortHash}
+      const timestamp = Date.now().toString(36).slice(-6);
+      const shortHash = Math.random().toString(36).slice(2, 6).toUpperCase();
+      updates.confirmationNumber = `TW-${timestamp}-${shortHash}`;
+      
       // Update employee's trip count
       const employee = await ctx.db.get(trip.employeeId);
       if (employee) {
