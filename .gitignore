@@ -145,3 +145,6 @@ supabase/.temp/
 # package-lock.json
 # yarn.lock
 
+
+# clerk configuration (can include secrets)
+/.clerk/

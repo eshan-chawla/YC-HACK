@@ -9,7 +9,7 @@ import { api } from '@/convex/_generated/api'
 import { Button } from '@/components/ui/button'
 import { TripWeaverLogo } from '@/components/TripWeaverLogo'
 import { motion } from 'framer-motion'
-import { ShieldCheck, UserCircle, Plane, Building2, CreditCard, BarChart3, Globe, ArrowRight, Lock, Zap, Clock, Loader2 } from 'lucide-react'
+import { ShieldCheck, UserCircle, Plane, Building2, CreditCard, BarChart3, Globe, ArrowRight, Loader2 } from 'lucide-react'
 
 const features = [
   {
@@ -45,9 +45,9 @@ const features = [
 ]
 
 const stats = [
-  { value: "40%", label: "Average savings on corporate travel" },
   { value: "< 2min", label: "Time to generate a full itinerary" },
-  { value: "99.9%", label: "Platform uptime guarantee" },
+  { value: "2 APIs", label: "Kiwi.com flights + Locus payments" },
+  { value: "1 AI", label: "Gemini 2.5 Pro powering everything" },
 ]
 
 const fadeUp = {
@@ -85,19 +85,19 @@ export default function LandingPage() {
 
   if (isSignedIn && isAuthenticated && !redirectChecked) {
     return (
-      <div className="min-h-screen bg-[#020617] flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="w-6 h-6 animate-spin text-emerald-500" />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-[#020617] text-slate-100 overflow-hidden">
+    <div className="min-h-screen bg-background text-slate-100 overflow-hidden">
       {/* Grain texture overlay */}
       <div className="fixed inset-0 pointer-events-none z-[100] opacity-[0.015]" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noise\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noise)\'/%3E%3C/svg%3E")', backgroundRepeat: 'repeat', backgroundSize: '128px 128px' }} />
 
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#020617]/80 backdrop-blur-xl border-b border-white/[0.04]">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-white/[0.04]">
         <div className="max-w-[1200px] mx-auto px-6 lg:px-8 h-16 flex items-center justify-between">
           <TripWeaverLogo size="sm" />
           <div className="flex items-center gap-2">
@@ -159,7 +159,7 @@ export default function LandingPage() {
             >
               <Link href="/auth/select-role">
                 <Button size="lg" className="bg-emerald-600 hover:bg-emerald-500 text-white h-12 px-7 text-[15px] shadow-xl shadow-emerald-900/30 group">
-                  Start for free
+                  Try the demo
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                 </Button>
               </Link>
@@ -184,33 +184,6 @@ export default function LandingPage() {
               </div>
             ))}
           </motion.div>
-        </div>
-      </section>
-
-      {/* Trust bar */}
-      <section className="py-16 px-6 lg:px-8 border-y border-white/[0.04]">
-        <div className="max-w-[1200px] mx-auto">
-          <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-4 text-sm text-slate-500">
-            <div className="flex items-center gap-2.5">
-              <Lock className="w-4 h-4 text-emerald-500/70" />
-              <span>Enterprise-grade security</span>
-            </div>
-            <div className="w-px h-4 bg-white/[0.06] hidden sm:block" />
-            <div className="flex items-center gap-2.5">
-              <Zap className="w-4 h-4 text-emerald-500/70" />
-              <span>99.9% uptime SLA</span>
-            </div>
-            <div className="w-px h-4 bg-white/[0.06] hidden sm:block" />
-            <div className="flex items-center gap-2.5">
-              <ShieldCheck className="w-4 h-4 text-emerald-500/70" />
-              <span>SOC 2 Type II compliant</span>
-            </div>
-            <div className="w-px h-4 bg-white/[0.06] hidden sm:block" />
-            <div className="flex items-center gap-2.5">
-              <Clock className="w-4 h-4 text-emerald-500/70" />
-              <span>24/7 support</span>
-            </div>
-          </div>
         </div>
       </section>
 
@@ -246,7 +219,7 @@ export default function LandingPage() {
                 whileInView={{ opacity: 1 }}
                 viewport={{ once: true, margin: "-40px" }}
                 transition={{ duration: 0.4, delay: i * 0.06 }}
-                className="group bg-[#020617] p-8 lg:p-10 hover:bg-slate-900/50 transition-colors duration-300"
+                className="group bg-background p-8 lg:p-10 hover:bg-slate-900/50 transition-colors duration-300"
               >
                 <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center mb-5 group-hover:bg-emerald-500/15 transition-colors duration-300">
                   <feature.icon className="w-5 h-5 text-emerald-400" />
@@ -364,7 +337,7 @@ export default function LandingPage() {
             transition={{ duration: 0.5, delay: 0.05 }}
             className="text-lg text-slate-400 mb-10"
           >
-            Join companies saving time and money with TripWeaver.
+            A demo built for the Locus (YC F25) Agentic Payments Hackathon.
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 16 }}
@@ -374,7 +347,7 @@ export default function LandingPage() {
           >
             <Link href="/auth/select-role">
               <Button size="lg" className="bg-emerald-600 hover:bg-emerald-500 text-white h-12 px-8 text-[15px] shadow-xl shadow-emerald-900/30 group">
-                Get started for free
+                Try the demo
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
               </Button>
             </Link>
@@ -383,53 +356,12 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="py-16 px-6 lg:px-8 border-t border-white/[0.04]">
-        <div className="max-w-[1200px] mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-14">
-            <div>
-              <h4 className="text-xs font-semibold text-slate-300 uppercase tracking-wider mb-4">Product</h4>
-              <ul className="space-y-3 text-sm">
-                <li><Link href="#" className="text-slate-500 hover:text-slate-300 transition-colors">Features</Link></li>
-                <li><Link href="#" className="text-slate-500 hover:text-slate-300 transition-colors">Pricing</Link></li>
-                <li><Link href="#" className="text-slate-500 hover:text-slate-300 transition-colors">Security</Link></li>
-                <li><Link href="#" className="text-slate-500 hover:text-slate-300 transition-colors">Integrations</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-xs font-semibold text-slate-300 uppercase tracking-wider mb-4">Company</h4>
-              <ul className="space-y-3 text-sm">
-                <li><Link href="#" className="text-slate-500 hover:text-slate-300 transition-colors">About</Link></li>
-                <li><Link href="#" className="text-slate-500 hover:text-slate-300 transition-colors">Blog</Link></li>
-                <li><Link href="#" className="text-slate-500 hover:text-slate-300 transition-colors">Careers</Link></li>
-                <li><Link href="#" className="text-slate-500 hover:text-slate-300 transition-colors">Contact</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-xs font-semibold text-slate-300 uppercase tracking-wider mb-4">Resources</h4>
-              <ul className="space-y-3 text-sm">
-                <li><Link href="#" className="text-slate-500 hover:text-slate-300 transition-colors">Documentation</Link></li>
-                <li><Link href="#" className="text-slate-500 hover:text-slate-300 transition-colors">Help Center</Link></li>
-                <li><Link href="#" className="text-slate-500 hover:text-slate-300 transition-colors">API Reference</Link></li>
-                <li><Link href="#" className="text-slate-500 hover:text-slate-300 transition-colors">Status</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-xs font-semibold text-slate-300 uppercase tracking-wider mb-4">Legal</h4>
-              <ul className="space-y-3 text-sm">
-                <li><Link href="#" className="text-slate-500 hover:text-slate-300 transition-colors">Privacy</Link></li>
-                <li><Link href="#" className="text-slate-500 hover:text-slate-300 transition-colors">Terms</Link></li>
-                <li><Link href="#" className="text-slate-500 hover:text-slate-300 transition-colors">Cookies</Link></li>
-                <li><Link href="#" className="text-slate-500 hover:text-slate-300 transition-colors">GDPR</Link></li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="pt-8 border-t border-white/[0.04] flex flex-col md:flex-row items-center justify-between gap-4">
-            <TripWeaverLogo size="sm" />
-            <p className="text-xs text-slate-600">
-              &copy; {new Date().getFullYear()} TripWeaver. All rights reserved.
-            </p>
-          </div>
+      <footer className="py-10 px-6 lg:px-8 border-t border-white/[0.04]">
+        <div className="max-w-[1200px] mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+          <TripWeaverLogo size="sm" />
+          <p className="text-xs text-slate-600 text-center">
+            Built for Stripe Sessions 2026. Powered by Gemini 2.5 Pro × Convex × Locus.
+          </p>
         </div>
       </footer>
     </div>

@@ -6,13 +6,19 @@ interface PageHeaderProps {
   title: string
   description?: string
   actions?: React.ReactNode
+  breadcrumb?: React.ReactNode
   className?: string
 }
 
-export function PageHeader({ title, description, actions, className }: PageHeaderProps) {
+export function PageHeader({ title, description, actions, breadcrumb, className }: PageHeaderProps) {
   return (
     <div className={cn("flex flex-col md:flex-row md:items-center justify-between gap-4", className)}>
       <div className="space-y-0.5">
+        {breadcrumb && (
+          <div className="mb-1">
+            {breadcrumb}
+          </div>
+        )}
         <h1 className="text-2xl font-bold tracking-[-0.02em] text-foreground">{title}</h1>
         {description && (
           <p className="text-sm text-muted-foreground">

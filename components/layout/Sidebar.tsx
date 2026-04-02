@@ -114,10 +114,10 @@ export function Sidebar({ role = 'admin' }: SidebarProps) {
               key={item.href}
               href={item.href}
               className={cn(
-                'flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium transition-all duration-150 group relative',
+                'flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium transition-all duration-150 group relative border-l-2',
                 isActive
-                  ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400'
-                  : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                  ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 border-emerald-600 dark:border-emerald-500 pl-[10px]'
+                  : 'text-muted-foreground hover:bg-muted hover:text-foreground border-transparent'
               )}
             >
               <Icon className={cn(
@@ -134,7 +134,7 @@ export function Sidebar({ role = 'admin' }: SidebarProps) {
                 </motion.span>
               )}
               {isCollapsed && (
-                <div className="absolute left-full ml-3 px-2.5 py-1.5 bg-slate-900 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 shadow-lg">
+                <div className="absolute left-full ml-3 px-2.5 py-1.5 bg-popover border border-border text-popover-foreground text-xs rounded-md opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 shadow-lg">
                   {item.label}
                 </div>
               )}

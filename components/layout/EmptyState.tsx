@@ -3,6 +3,7 @@
 import { LucideIcon, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { motion } from 'framer-motion'
 
 interface EmptyStateProps {
   icon?: LucideIcon
@@ -23,10 +24,15 @@ export function EmptyState({
   className 
 }: EmptyStateProps) {
   return (
-    <div className={cn(
-      "flex flex-col items-center justify-center text-center py-16 px-8 rounded-xl border border-dashed border-border/60",
-      className
-    )}>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+      className={cn(
+        "flex flex-col items-center justify-center text-center py-16 px-8 rounded-xl border border-dashed border-border/60",
+        className
+      )}
+    >
       <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-4">
         <Icon className="w-5 h-5 text-muted-foreground/60" />
       </div>
@@ -39,6 +45,6 @@ export function EmptyState({
           {action.label}
         </Button>
       )}
-    </div>
+    </motion.div>
   )
 }
