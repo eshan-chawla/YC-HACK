@@ -142,6 +142,21 @@ const schema = defineSchema({
     lastEventBooking: v.optional(v.number()), // Unix timestamp
     totalTripsBooked: v.optional(v.number()),
     profileImage: v.optional(v.string()),
+    // Agent memory: travel history for personalization
+    travelHistory: v.optional(v.array(v.object({
+      destination: v.string(),
+      departureDate: v.number(),
+      returnDate: v.number(),
+      hotelChain: v.optional(v.string()),
+      airline: v.optional(v.string()),
+      preferences: v.optional(v.string()), // Free-text notes about preferences
+    }))),
+    inferredPreferences: v.optional(v.object({
+      seatPreference: v.optional(v.string()),
+      hotelTier: v.optional(v.string()),
+      budgetRange: v.optional(v.string()),
+      notes: v.optional(v.string()),
+    })),
     // Encrypted fields stored as base64 strings
     encryptedData: v.optional(v.string()), // For sensitive personal info
     createdAt: v.number(),
