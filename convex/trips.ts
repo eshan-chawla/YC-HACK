@@ -437,3 +437,161 @@ export const getEventStats = query({
     return stats;
   },
 });
+
+// Get all change requests for a trip
+export const listChangeRequestsByTrip = query({
+  args: { tripId: v.id("trips") },
+  handler: async (ctx, args) => {
+    const user = await requireAuth(ctx);
+    
+    const requests = await ctx.db
+      .query("changeRequests")
+      .withIndex("by_tripId", (q) => q.eq("tripId", args.tripId))
+      .order("desc")
+      .collect();
+    
+    // Filter for employee users (they can only see their own)
+    if (user.role === "employee" && user.employeeId) {
+      return requests.filter((r) => r.employeeId === user.employeeId);
+    }
+    
+    return requests;
+  },
+});
+
+// Get all pending change requests (admin only)
+export const listPendingChangeRequests = query({
+  args: { eventId: v.optional(v.id("events")) },
+  handler: async (ctx, args) => {
+    await requireAdmin(ctx);
+    
+    let requests = await ctx.db
+      .query("changeRequests")
+      .withIndex("by_status", (q) => q.eq("status", "pending"))
+      .order("desc")
+      .collect();
+    
+    if (args.eventId) {
+      requests = requests.filter((r) => r.eventId === args.eventId);
+    }
+    
+    // Populate trip and employee info
+    const withDetails = await Promise.all(
+      requests.map(async (r) => {
+        const trip = await ctx.db.get(r.tripId);
+        const employee = await ctx.db.get(r.employeeId);
+        return { ...r, trip, employee };
+      })
+    );
+    
+    return withDetails;
+  },
+});
+
+// Submit a change request (employee)
+export const submitChangeRequest = mutation({
+  args: {
+    tripId: v.id("trips"),
+    requestType: v.union(
+      v.literal("flight_change"),
+      v.literal("hotel_change"),
+      v.literal("transport_change"),
+      v.literal("general")
+    ),
+    description: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const user = await requireAuth(ctx);
+    
+    if (!user.employeeId) {
+      throw new Error("Only employees can submit change requests");
+    }
+    
+    // Verify the trip belongs to this employee
+    const trip = await ctx.db.get(args.tripId);
+    if (!trip) {
+      throw new Error("Trip not found");
+    }
+    if (trip.employeeId !== user.employeeId) {
+      throw new Error("Unauthorized: Cannot request changes for another employee's trip");
+    }
+    
+    const now = Date.now();
+    const requestId = await ctx.db.insert("changeRequests", {
+      tripId: args.tripId,
+      employeeId: user.employeeId,
+      eventId: trip.eventId,
+      status: "pending",
+      requestType: args.requestType,
+      description: args.description,
+      createdAt: now,
+      updatedAt: now,
+    });
+    
+    // Notify admins
+    const adminIds = await getAdminUserIds(ctx);
+    const event = await ctx.db.get(trip.eventId);
+    await notifyUsers(ctx, adminIds, {
+      type: "info",
+      title: "Change request submitted",
+      message: `Employee requested a change for ${event?.name || 'event'}`,
+      eventId: trip.eventId,
+      tripId: args.tripId,
+    });
+    
+    return requestId;
+  },
+});
+
+// Approve or reject a change request (admin)
+export const respondToChangeRequest = mutation({
+  args: {
+    requestId: v.id("changeRequests"),
+    action: v.union(v.literal("approved"), v.literal("rejected")),
+    adminNotes: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    await requireAdmin(ctx);
+    
+    const request = await ctx.db.get(args.requestId);
+    if (!request) {
+      throw new Error("Change request not found");
+    }
+    
+    if (request.status !== "pending") {
+      throw new Error("Change request has already been processed");
+    }
+    
+    const now = Date.now();
+    await ctx.db.patch(args.requestId, {
+      status: args.action,
+      adminNotes: args.adminNotes,
+      updatedAt: now,
+      respondedAt: now,
+    });
+    
+    // Notify employee
+    const trip = await ctx.db.get(request.tripId);
+    const employee = await ctx.db.get(request.employeeId);
+    const event = await ctx.db.get(request.eventId);
+    
+    const linkedProfile = await ctx.db
+      .query("userProfiles")
+      .withIndex("by_employeeId", (q) => q.eq("employeeId", request.employeeId))
+      .first();
+    
+    if (linkedProfile) {
+      await notifyUsers(ctx, [linkedProfile._id], {
+        type: args.action === "approved" ? "success" : "warning",
+        title: args.action === "approved" ? "Change request approved" : "Change request declined",
+        message: args.adminNotes 
+          ? `Your request for ${event?.name || 'trip'} was ${args.action}. ${args.adminNotes}`
+          : `Your request for ${event?.name || 'trip'} was ${args.action}.`,
+        eventId: request.eventId,
+        tripId: request.tripId,
+      });
+    }
+    
+    return { success: true, status: args.action };
+  },
+});
