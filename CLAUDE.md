@@ -124,3 +124,29 @@ See `envdotexample` for the full template.
 - Timestamps are Unix timestamps (numbers), not ISO strings
 - Sensitive data is encrypted with AES-256-GCM (`lib/encryption.ts`)
 - shadcn/ui components live in `components/ui/` — add new ones via CLI, don't hand-write
+
+## UI / Design System
+
+TripWeaver targets a **calm, minimal, professional B2B SaaS** aesthetic:
+
+- 8px spacing grid; strong typography hierarchy; brand color used sparingly (CTAs, active states, highlights only)
+- Keep the existing TripWeaver logo and brand colors — don't change them
+- Framer Motion is for subtle micro-interactions only: sidebar collapse/expand, page transition fade, dialog open/close. Use CSS for everything else.
+- Layout system lives in `components/layout/`: `AppShell`, `Sidebar`, `Topbar`, `PageHeader`, `StatCard`, `EmptyState`, `Skeletons`
+
+**Frontend security constraints:**
+- Frontend RBAC is UX-only — access control must be enforced by Convex backend, never frontend-only checks
+- Never use `dangerouslySetInnerHTML` without explicit sanitization (DOM XSS risk)
+- Never store tokens or PII in `localStorage`; don't expose internal IDs that shouldn't be visible in client bundles
+
+## Deployment (Vercel)
+
+1. Push to GitHub → import project in Vercel
+2. Set environment variables in Vercel dashboard (Production + Preview + Development):
+   - `NEXT_PUBLIC_CONVEX_URL`
+   - `ANTHROPIC_API_KEY` (if using Claude SDK features)
+   - `LOCUS_API_KEY`, `KIWI_API_KEY` (for MCP integrations)
+3. Deploy Convex backend: `npx convex deploy`
+4. Verify `pnpm-lock.yaml` is committed — Vercel requires it for pnpm builds
+
+**Serverless limitation:** The Claude Code executable cannot run in Vercel serverless. The agent detects this automatically and disables code-execution features; chat and MCP tool usage (flights, payments) still work. After deploying, test the chat interface at `/employee`.

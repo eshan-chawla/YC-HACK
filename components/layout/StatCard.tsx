@@ -34,7 +34,7 @@ export function StatCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.06, duration: 0.3 }}
     >
-      <Card className={cn("p-5 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200", className)}>
+      <Card className={cn("p-5 hover:shadow-md transition-shadow duration-200", className)}>
         <div className="flex items-start justify-between">
           <div className="space-y-1">
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">

@@ -9,6 +9,7 @@ import { api } from "@/convex/_generated/api";
 import Link from "next/link";
 import { Loader2, ArrowLeft } from "lucide-react";
 import { TripWeaverLogo } from "@/components/TripWeaverLogo";
+import { clerkDarkAppearance } from "@/lib/clerk-theme";
 
 function LoginForm() {
   const { isSignedIn } = useAuth();
@@ -40,7 +41,7 @@ function LoginForm() {
   }, [isSignedIn, isAuthenticated, convex, router]);
 
   return (
-    <div className="min-h-screen bg-[#020617] flex items-center justify-center px-4 py-12">
+    <div className="min-h-screen bg-background flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-[440px]">
         {/* Back link */}
         <Link
@@ -68,29 +69,7 @@ function LoginForm() {
         <div className="clerk-container">
           <SignIn
             routing="hash"
-            appearance={{
-              elements: {
-                rootBox: "w-full",
-                card: "bg-transparent shadow-none p-0 w-full",
-                headerTitle: "hidden",
-                headerSubtitle: "hidden",
-                socialButtonsBlockButton:
-                  "h-11 border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.06] text-slate-300",
-                socialButtonsBlockButtonText: "text-slate-300 font-medium",
-                dividerLine: "bg-white/[0.06]",
-                dividerText: "text-slate-600 text-xs uppercase tracking-wider",
-                formFieldLabel: "text-xs font-medium text-slate-400",
-                formFieldInput:
-                  "h-11 bg-white/[0.02] border-white/[0.08] text-white placeholder:text-slate-600 focus:border-emerald-500/40 focus:ring-emerald-500/10",
-                formButtonPrimary:
-                  "h-11 bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-900/30",
-                footerActionLink:
-                  "text-emerald-400 hover:text-emerald-300 font-medium",
-                identityPreviewEditButton: "text-emerald-400",
-                formFieldAction: "text-emerald-400",
-                footer: "hidden",
-              },
-            }}
+            appearance={clerkDarkAppearance}
           />
         </div>
 
@@ -111,7 +90,7 @@ function LoginForm() {
 
 function LoginLoading() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#020617]">
+    <div className="min-h-screen flex items-center justify-center bg-background">
       <Loader2 className="w-6 h-6 animate-spin text-emerald-500" />
     </div>
   );
