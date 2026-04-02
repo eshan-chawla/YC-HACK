@@ -3,6 +3,11 @@
  * 
  * This module provides access to MCP servers using the official MCP SDK,
  * transforming requests/responses between Gemini function calls and MCP tools.
+ * 
+ * Multi-Source Flight Data Architecture:
+ * - Primary: Kiwi MCP (real flight data)
+ * - Fallback: Amadeus API (future integration)
+ * - Last Resort: Realistic mock data (clearly labeled)
  */
 
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
@@ -10,6 +15,22 @@ import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/
 import type { FlightSearchParams, FlightSearchResult, Flight, MCPTool } from "./types";
 
 const isDev = process.env.NODE_ENV === "development";
+
+// Flight data provider types for multi-source fallback
+export type FlightDataProvider = 'kiwi' | 'amadeus' | 'mock';
+
+export interface FlightProviderConfig {
+  priority: number;
+  enabled: boolean;
+  timeout: number; // ms
+}
+
+// Provider configuration - extend this to add Amadeus or other sources
+const FLIGHT_PROVIDERS: Record<FlightDataProvider, FlightProviderConfig> = {
+  kiwi: { priority: 1, enabled: true, timeout: 10000 },
+  amadeus: { priority: 2, enabled: false, timeout: 8000 }, // Not yet implemented
+  mock: { priority: 99, enabled: true, timeout: 100 }, // Always available as fallback
+};
 
 // MCP Server configurations
 const MCP_SERVERS = {
@@ -189,16 +210,16 @@ export class KiwiClient {
       });
 
       // Parse the MCP response
-      const content = result.content;
+      const content = result.content as { type: string; text?: string }[];
       if (!content || content.length === 0) {
-        if (isDev) console.warn("Empty response from Kiwi MCP server");
+        if (isDev) console.warn("Empty response from Kiwi MCP server - falling back to mock");
         return getMockFlightResults(params);
       }
 
       // Extract text content from MCP response
-      const textContent = content.find((c) => c.type === "text");
-      if (!textContent || textContent.type !== "text") {
-        if (isDev) console.warn("No text content in Kiwi MCP response");
+      const textContent = content.find((c: { type: string }) => c.type === "text");
+      if (!textContent || textContent.type !== "text" || !textContent.text) {
+        if (isDev) console.warn("No text content in Kiwi MCP response - falling back to mock");
         return getMockFlightResults(params);
       }
 
