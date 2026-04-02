@@ -194,6 +194,7 @@ const schema = defineSchema({
       v.literal("completed"),
       v.literal("cancelled")
     ),
+    confirmationNumber: v.optional(v.string()), // Generated on booking: TW-{timestamp}-{hash}
     itineraryId: v.optional(v.id("itineraries")), // Link to cached itinerary
     costBreakdown: v.optional(costBreakdownValidator),
     agentNotes: v.optional(v.string()),
