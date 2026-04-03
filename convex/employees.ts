@@ -247,6 +247,71 @@ export const remove = mutation({
   },
 });
 
+// Append a completed trip to an employee's travel history (internal use)
+export const appendTravelHistory = mutation({
+  args: {
+    employeeId: v.id("employees"),
+    entry: v.object({
+      destination: v.string(),
+      departureDate: v.number(),
+      returnDate: v.number(),
+      hotelChain: v.optional(v.string()),
+      airline: v.optional(v.string()),
+      preferences: v.optional(v.string()),
+    }),
+  },
+  handler: async (ctx, args) => {
+    const employee = await ctx.db.get(args.employeeId);
+    if (!employee) throw new Error("Employee not found");
+
+    const history = employee.travelHistory ?? [];
+    await ctx.db.patch(args.employeeId, {
+      travelHistory: [...history, args.entry],
+      updatedAt: Date.now(),
+    });
+  },
+});
+
+// Update inferred preferences for an employee (internal use)
+export const updateInferredPreferences = mutation({
+  args: {
+    employeeId: v.id("employees"),
+    preferences: v.object({
+      seatPreference: v.optional(v.string()),
+      hotelTier: v.optional(v.string()),
+      budgetRange: v.optional(v.string()),
+      notes: v.optional(v.string()),
+    }),
+  },
+  handler: async (ctx, args) => {
+    const employee = await ctx.db.get(args.employeeId);
+    if (!employee) throw new Error("Employee not found");
+
+    await ctx.db.patch(args.employeeId, {
+      inferredPreferences: args.preferences,
+      updatedAt: Date.now(),
+    });
+  },
+});
+
+// Get employee with memory context (for agent personalization)
+export const getWithMemory = query({
+  args: { employeeId: v.id("employees") },
+  handler: async (ctx, args) => {
+    const employee = await ctx.db.get(args.employeeId);
+    if (!employee) return null;
+
+    return {
+      name: employee.name,
+      restrictions: employee.restrictions,
+      travelHistory: employee.travelHistory ?? [],
+      inferredPreferences: employee.inferredPreferences ?? null,
+      frequentFlyerNumbers: employee.frequentFlyerNumbers ?? [],
+      loyaltyPrograms: employee.loyaltyPrograms ?? [],
+    };
+  },
+});
+
 // Get employee statistics (admin only)
 export const getStats = query({
   args: {},

@@ -1,13 +1,15 @@
 'use client'
 
-import { useQuery } from 'convex/react'
+import { useQuery, useMutation } from 'convex/react'
 import { api } from '@/convex/_generated/api'
+import type { Id } from '@/convex/_generated/dataModel'
 import { AppShell } from '@/components/layout/AppShell'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { StatCard } from '@/components/layout/StatCard'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Plus, TrendingUp, Users, AlertCircle, CheckCircle2, ArrowRight, Calendar } from 'lucide-react'
+import { Plus, TrendingUp, Users, AlertCircle, CheckCircle2, ArrowRight, Calendar, MessageSquare, Check, X } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
@@ -39,6 +41,8 @@ function formatActivityTime(ts: number) {
 export default function AdminDashboard() {
   const eventsWithStats = useQuery(api.events.listWithTripStats, { limit: 10 })
   const activity = useQuery(api.auditLogs.getRecentActivity, { limit: 20 })
+  const pendingRequests = useQuery(api.trips.listPendingChangeRequests, {})
+  const respond = useMutation(api.trips.respondToChangeRequest)
 
   const isLoading = eventsWithStats === undefined
   const events = eventsWithStats ?? []
@@ -95,6 +99,58 @@ export default function AdminDashboard() {
             index={3}
           />
         </div>
+
+        {/* Pending Approvals */}
+        {pendingRequests && pendingRequests.length > 0 && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <h2 className="text-base font-semibold text-foreground">Pending Approvals</h2>
+              <Badge className="bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400 text-[11px] font-bold px-2 py-0.5">
+                {pendingRequests.length}
+              </Badge>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {pendingRequests.map((req, index) => (
+                <motion.div
+                  key={req._id}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.05 + index * 0.04 }}
+                >
+                  <Card className="p-4 space-y-3">
+                    <div className="flex items-start justify-between">
+                      <div className="space-y-0.5">
+                        <p className="text-sm font-semibold text-foreground">{req.employeeName}</p>
+                        <p className="text-[11px] text-muted-foreground capitalize">
+                          {req.requestType.replace('_', ' ')} &middot; {req.eventName}
+                        </p>
+                      </div>
+                      <MessageSquare className="w-4 h-4 text-amber-500 shrink-0" />
+                    </div>
+                    <p className="text-xs text-foreground leading-relaxed line-clamp-2">{req.description}</p>
+                    <div className="flex gap-2 pt-1">
+                      <Button
+                        size="sm"
+                        className="flex-1 h-8 text-xs font-bold gap-1.5 bg-emerald-600 hover:bg-emerald-700"
+                        onClick={() => respond({ requestId: req._id as Id<'changeRequests'>, action: 'approved' })}
+                      >
+                        <Check className="w-3.5 h-3.5" /> Approve
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="flex-1 h-8 text-xs font-bold gap-1.5"
+                        onClick={() => respond({ requestId: req._id as Id<'changeRequests'>, action: 'rejected' })}
+                      >
+                        <X className="w-3.5 h-3.5" /> Reject
+                      </Button>
+                    </div>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Events and Activity */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
