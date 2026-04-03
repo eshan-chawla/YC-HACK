@@ -1,6 +1,6 @@
 'use client'
 
-import { useQuery } from 'convex/react'
+import { useQuery, useMutation } from 'convex/react'
 import { api } from '@/convex/_generated/api'
 import type { Id } from '@/convex/_generated/dataModel'
 import { AppShell } from '@/components/layout/AppShell'
@@ -23,11 +23,13 @@ import {
   Info,
   MessageSquare,
   Shield,
+  Send,
+  Loader2,
 } from 'lucide-react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
-import { use } from 'react'
+import { use, useState } from 'react'
 
 function formatDate(ts: number) {
   return new Date(ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
@@ -77,6 +79,27 @@ export default function TripDetailPage({ params }: { params: Promise<{ id: strin
   }
 
   const { trip, event, itinerary } = details
+  const changeRequests = useQuery(api.trips.listChangeRequestsByTrip, { tripId: id })
+  const submitChange = useMutation(api.trips.submitChangeRequest)
+  const [requestType, setRequestType] = useState<'flight_change' | 'hotel_change' | 'transport_change' | 'general'>('general')
+  const [description, setDescription] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
+
+  const handleSubmitRequest = async () => {
+    if (!description.trim()) return
+    setSubmitting(true)
+    try {
+      await submitChange({ tripId: id, requestType, description: description.trim() })
+      setDescription('')
+      setRequestType('general')
+      setSubmitted(true)
+      setTimeout(() => setSubmitted(false), 3000)
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
   const data = itinerary?.data
   const outbound = data?.outboundFlight
   const hotel = data?.hotel
@@ -314,19 +337,76 @@ export default function TripDetailPage({ params }: { params: Promise<{ id: strin
               )}
             </Card>
 
-            <Card className="p-6 bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/20 flex flex-col items-center text-center">
-              <div className="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400 mb-4">
-                <MessageSquare className="w-6 h-6" />
-              </div>
-              <h4 className="text-sm font-bold text-foreground mb-2">Need a change?</h4>
-              <p className="text-xs text-muted-foreground mb-6 leading-relaxed">
-                Our AI Travel Agent can help you reschedule flights, upgrade rooms, or add rental extensions.
-              </p>
-              <Link href="/employee" className="w-full">
-                <Button className="w-full bg-emerald-600 hover:bg-emerald-700 font-bold text-xs uppercase tracking-widest rounded-xl">
-                  Chat with Agent
+            <Card className="p-6 border-border/60 shadow-sm space-y-5">
+              <h4 className="text-xs font-medium uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                <MessageSquare className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                Request a Change
+              </h4>
+
+              {submitted && (
+                <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-xs font-medium flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4" /> Request submitted
+                </div>
+              )}
+
+              <div className="space-y-3">
+                <select
+                  value={requestType}
+                  onChange={(e) => setRequestType(e.target.value as typeof requestType)}
+                  className="w-full h-9 rounded-lg border border-border/60 bg-background px-3 text-xs font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+                >
+                  <option value="general">General</option>
+                  <option value="flight_change">Flight Change</option>
+                  <option value="hotel_change">Hotel Change</option>
+                  <option value="transport_change">Transport Change</option>
+                </select>
+                <textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Describe the change you need..."
+                  rows={3}
+                  className="w-full rounded-lg border border-border/60 bg-background px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
+                />
+                <Button
+                  onClick={handleSubmitRequest}
+                  disabled={submitting || !description.trim()}
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 font-bold text-xs uppercase tracking-widest rounded-xl gap-2"
+                >
+                  {submitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+                  Submit Request
                 </Button>
-              </Link>
+              </div>
+
+              {changeRequests && changeRequests.length > 0 && (
+                <div className="pt-4 border-t border-border/60 space-y-3">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Past Requests</p>
+                  {changeRequests.map((req) => (
+                    <div key={req._id} className="p-3 rounded-lg bg-muted/20 border border-border/40 space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-medium text-muted-foreground capitalize">
+                          {req.requestType.replace('_', ' ')}
+                        </span>
+                        <Badge
+                          className={cn(
+                            'text-[10px] font-bold uppercase px-2 py-0.5 rounded',
+                            req.status === 'approved'
+                              ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400'
+                              : req.status === 'rejected'
+                                ? 'bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-400'
+                                : 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400'
+                          )}
+                        >
+                          {req.status}
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-foreground leading-relaxed">{req.description}</p>
+                      {req.adminNotes && (
+                        <p className="text-[11px] text-muted-foreground italic">Admin: {req.adminNotes}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </Card>
           </div>
         </div>

@@ -201,14 +201,14 @@ export default function EmployeeOnboardingPage() {
   // Wait for auth/status before showing form (avoid flash then redirect)
   if (isAuthenticated && status === undefined) {
     return (
-      <div className="min-h-screen bg-[#020617] flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="w-6 h-6 animate-spin text-emerald-500" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#020617] p-4">
+    <div className="min-h-screen bg-background p-4">
       <div className="max-w-2xl mx-auto pt-8">
         {/* Logo and Back to home */}
         <div className="flex items-center justify-between mb-10">

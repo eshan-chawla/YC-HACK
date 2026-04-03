@@ -293,6 +293,33 @@ export const updateStatus = mutation({
       }
     }
 
+    // When trip completes, append to employee's travel history for agent memory
+    if (args.status === "completed") {
+      const event = trip.eventId ? await ctx.db.get(trip.eventId) : null;
+      const itinerary = trip.itineraryId ? await ctx.db.get(trip.itineraryId) : null;
+
+      if (event) {
+        const employee = await ctx.db.get(trip.employeeId);
+        const history = employee?.travelHistory ?? [];
+        await ctx.db.patch(trip.employeeId, {
+          travelHistory: [
+            ...history,
+            {
+              destination: event.destination,
+              departureDate: event.departureDate,
+              returnDate: event.returnDate,
+              hotelChain: itinerary?.data?.hotel?.name,
+              airline: itinerary?.data?.outboundFlight?.airline,
+              preferences: employee?.restrictions?.seating
+                ? `Seat: ${employee.restrictions.seating}`
+                : undefined,
+            },
+          ],
+          updatedAt: Date.now(),
+        });
+      }
+    }
+
     return args.id;
   },
 });
@@ -475,15 +502,21 @@ export const listPendingChangeRequests = query({
       requests = requests.filter((r) => r.eventId === args.eventId);
     }
     
-    // Populate trip and employee info
+    // Populate trip, employee, and event info
     const withDetails = await Promise.all(
       requests.map(async (r) => {
         const trip = await ctx.db.get(r.tripId);
         const employee = await ctx.db.get(r.employeeId);
-        return { ...r, trip, employee };
+        const event = await ctx.db.get(r.eventId);
+        return {
+          ...r,
+          employeeName: employee?.name ?? "Unknown",
+          eventName: event?.name ?? "Unknown Event",
+          tripStatus: trip?.status,
+        };
       })
     );
-    
+
     return withDetails;
   },
 });
