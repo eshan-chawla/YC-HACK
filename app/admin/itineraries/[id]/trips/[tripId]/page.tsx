@@ -19,7 +19,7 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu'
 import { useTripWithDetails } from '@/hooks/useTrips'
-import { useMemo } from 'react'
+import { use, useMemo } from 'react'
 
 interface Segment {
   type: 'flight' | 'hotel' | 'transport'
@@ -34,16 +34,16 @@ function formatCurrency(amount: number): string {
 }
 
 function formatDate(timestamp: number): string {
-  return new Date(timestamp * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+  return new Date(timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
 function formatTime(timestamp: number): string {
-  return new Date(timestamp * 1000).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+  return new Date(timestamp).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
 }
 
 function buildSegments(trip: any): Segment[] {
   const segments: Segment[] = []
-  const itinerary = trip.itinerary as any
+  const itinerary = trip.itinerary?.data as any
   
   if (itinerary?.outboundFlight) {
     const f = itinerary.outboundFlight as any
@@ -125,9 +125,10 @@ function buildCostItems(segments: Segment[], event: any): { label: string; amoun
 export default function TripDetailPage({
   params,
 }: {
-  params: { id: string; tripId: string }
+  params: Promise<{ id: string; tripId: string }>
 }) {
-  const { trip, isLoading } = useTripWithDetails(params.tripId as any)
+  const { id, tripId } = use(params)
+  const { trip, isLoading } = useTripWithDetails(tripId as any)
 
   const segments = useMemo(() => {
     if (!trip) return []
@@ -175,7 +176,7 @@ export default function TripDetailPage({
       <AppShell role="admin">
         <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
           <p className="text-muted-foreground">Trip not found</p>
-          <Link href={`/admin/itineraries/${params.id}`}>
+          <Link href={`/admin/itineraries/${id}`}>
             <Button variant="outline">Back to Itineraries</Button>
           </Link>
         </div>
@@ -192,7 +193,7 @@ export default function TripDetailPage({
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
           <div className="flex items-start gap-4">
-            <Link href={`/admin/itineraries/${params.id}`}>
+            <Link href={`/admin/itineraries/${id}`}>
               <Button variant="outline" size="icon" className="h-10 w-10 rounded-xl bg-background shadow-sm">
                 <ArrowLeft className="w-5 h-5" />
               </Button>

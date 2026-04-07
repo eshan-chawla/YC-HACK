@@ -14,6 +14,34 @@ import { allFunctionDeclarations } from "./function-definitions";
 import { executeTool, executeTools, DatabaseContext } from "./tool-executor";
 import type { AgentMessage, AgentResponse, ToolCall, ToolResult, GeneratedItinerary } from "./types";
 
+/** Employee context passed from the client for personalization */
+export interface EmployeeContext {
+  name: string;
+  restrictions?: {
+    dietary?: string[];
+    mobility?: string;
+    seating?: string;
+    hotelPreferences?: string[];
+    other?: string;
+  } | null;
+  travelHistory: {
+    destination: string;
+    departureDate: number;
+    returnDate: number;
+    hotelChain?: string;
+    airline?: string;
+    preferences?: string;
+  }[];
+  inferredPreferences?: {
+    seatPreference?: string;
+    hotelTier?: string;
+    budgetRange?: string;
+    notes?: string;
+  } | null;
+  frequentFlyerNumbers: { airline: string; number: string }[];
+  loyaltyPrograms: { program: string; memberId: string }[];
+}
+
 // System prompt for the travel assistant
 const SYSTEM_PROMPT = `You are TripWeaver AI, an intelligent corporate travel assistant. Your role is to help companies manage employee travel for business events.
 
@@ -41,6 +69,58 @@ const SYSTEM_PROMPT = `You are TripWeaver AI, an intelligent corporate travel as
 
 Remember: You're helping companies save time and money on corporate travel while ensuring employee comfort and policy compliance.`;
 
+/**
+ * Build a personalized system prompt by appending employee context when available.
+ */
+function buildSystemPrompt(employeeContext?: EmployeeContext): string {
+  if (!employeeContext) return SYSTEM_PROMPT;
+
+  const lines: string[] = [SYSTEM_PROMPT, '\n## Current Employee Context'];
+  lines.push(`- **Name**: ${employeeContext.name}`);
+
+  if (employeeContext.restrictions) {
+    const r = employeeContext.restrictions;
+    const parts: string[] = [];
+    if (r.dietary?.length) parts.push(`Dietary: ${r.dietary.join(', ')}`);
+    if (r.mobility) parts.push(`Mobility: ${r.mobility}`);
+    if (r.seating) parts.push(`Seating: ${r.seating}`);
+    if (r.hotelPreferences?.length) parts.push(`Hotel: ${r.hotelPreferences.join(', ')}`);
+    if (r.other) parts.push(`Other: ${r.other}`);
+    if (parts.length) lines.push(`- **Restrictions**: ${parts.join('; ')}`);
+  }
+
+  if (employeeContext.frequentFlyerNumbers?.length) {
+    lines.push(`- **Frequent Flyer**: ${employeeContext.frequentFlyerNumbers.map(f => `${f.airline} ${f.number}`).join(', ')}`);
+  }
+
+  if (employeeContext.loyaltyPrograms?.length) {
+    lines.push(`- **Loyalty Programs**: ${employeeContext.loyaltyPrograms.map(l => `${l.program} ${l.memberId}`).join(', ')}`);
+  }
+
+  if (employeeContext.inferredPreferences) {
+    const p = employeeContext.inferredPreferences;
+    const parts: string[] = [];
+    if (p.seatPreference) parts.push(`Seat: ${p.seatPreference}`);
+    if (p.hotelTier) parts.push(`Hotel tier: ${p.hotelTier}`);
+    if (p.budgetRange) parts.push(`Budget: ${p.budgetRange}`);
+    if (p.notes) parts.push(p.notes);
+    if (parts.length) lines.push(`- **Inferred Preferences** (from past trips): ${parts.join('; ')}`);
+  }
+
+  if (employeeContext.travelHistory?.length) {
+    const recent = employeeContext.travelHistory.slice(-5);
+    lines.push(`- **Recent Travel History** (${recent.length} trips):`);
+    for (const t of recent) {
+      const from = new Date(t.departureDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+      const details = [t.airline, t.hotelChain, t.preferences].filter(Boolean).join(', ');
+      lines.push(`  - ${t.destination} (${from})${details ? ` — ${details}` : ''}`);
+    }
+    lines.push('\nUse this history to personalize recommendations. Prefer airlines and hotels they have used before when available.');
+  }
+
+  return lines.join('\n');
+}
+
 // Initialize Gemini client
 function getGeminiClient() {
   const apiKey = process.env.GOOGLE_AI_API_KEY;
@@ -56,14 +136,15 @@ function getGeminiClient() {
 export async function chatWithGeminiAgent(
   userMessage: string,
   chatHistory: AgentMessage[] = [],
-  dbContext?: DatabaseContext
+  dbContext?: DatabaseContext,
+  employeeContext?: EmployeeContext
 ): Promise<AgentResponse> {
   const genAI = getGeminiClient();
-  
+
   // Get the Gemini 2.5 Pro model with function calling
   const model = genAI.getGenerativeModel({
     model: "gemini-2.5-pro",
-    systemInstruction: SYSTEM_PROMPT,
+    systemInstruction: buildSystemPrompt(employeeContext),
     tools: [{
       functionDeclarations: allFunctionDeclarations.map(fd => ({
         name: fd.name,

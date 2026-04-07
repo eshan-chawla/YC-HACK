@@ -50,8 +50,11 @@ export const list = query({
 export const get = query({
   args: { id: v.id("employees") },
   handler: async (ctx, args) => {
-    await requireAuth(ctx);
+    const user = await getCurrentUser(ctx);
     const employee = await ctx.db.get(args.id);
+    if (user.role === "employee" && user.employeeId !== args.id) {
+      throw new Error("Unauthorized: Cannot view other employees");
+    }
     return employee;
   },
 });
@@ -60,11 +63,15 @@ export const get = query({
 export const getByEmail = query({
   args: { email: v.string() },
   handler: async (ctx, args) => {
-    await requireAuth(ctx);
+    const user = await getCurrentUser(ctx);
     const employee = await ctx.db
       .query("employees")
       .withIndex("by_email", (q) => q.eq("email", args.email))
       .first();
+    // Admins can view any; employees can only view their own email
+    if (user.role === "employee" && employee && user.employeeId !== employee._id) {
+      throw new Error("Unauthorized: Cannot view other employees");
+    }
     return employee;
   },
 });

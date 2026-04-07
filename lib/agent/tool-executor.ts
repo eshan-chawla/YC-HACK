@@ -8,7 +8,7 @@
  * - Itinerary generator for creating travel plans
  */
 
-import { kiwiClient, locusClient } from "./mcp-integration";
+import { kiwiClient, locusClient, searchFlightsWithFallback } from "./mcp-integration";
 import { TOOL_CATEGORIES } from "./function-definitions";
 import type { ToolCall, ToolResult, FlightSearchParams, FlightSearchResult, GeneratedItinerary } from "./types";
 
@@ -83,7 +83,7 @@ async function executeKiwiTool(
         directOnly: args.directOnly as boolean | undefined,
         maxPrice: args.maxPrice as number | undefined,
       };
-      return kiwiClient.searchFlights(params);
+      return searchFlightsWithFallback(params);
     }
 
     case "get_flight_details": {
@@ -289,7 +289,7 @@ async function generateSingleItinerary(
   const budget = eventData?.budgetPerEmployee ?? 1500;
 
   // Search for flights
-  const flightResults = await kiwiClient.searchFlights({
+  const flightResults = await searchFlightsWithFallback({
     origin,
     destination,
     departureDate,

@@ -161,6 +161,104 @@ export async function enforceRateLimit(
   }
 }
 
+// Daily agent usage config
+const DAILY_AGENT_LIMIT = 50; // 50 agent calls per user per day
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * Check and record agent usage for a user.
+ * Enforces both per-minute and daily limits.
+ * Returns { allowed, remaining, message } — call BEFORE sending to Gemini.
+ */
+export const checkAgentUsage = mutation({
+  args: { userId: v.string() },
+  handler: async (ctx, args) => {
+    const now = Date.now();
+
+    // Check per-minute limit (api:agent)
+    const minuteKey = `api:agent:${args.userId}`;
+    const minuteConfig = RATE_LIMITS["api:agent"];
+    const minuteRecord = await ctx.db
+      .query("rateLimits")
+      .withIndex("by_key", (q) => q.eq("key", minuteKey))
+      .first();
+
+    if (minuteRecord && minuteRecord.windowStart >= now - minuteConfig.windowMs) {
+      if (minuteRecord.count >= minuteConfig.maxRequests) {
+        const retryAfter = Math.ceil((minuteRecord.expiresAt - now) / 1000);
+        return { allowed: false, remaining: 0, message: `Too many requests. Please wait ${retryAfter} seconds.` };
+      }
+    }
+
+    // Check daily limit
+    const dailyKey = `api:agent_daily:${args.userId}`;
+    const dailyRecord = await ctx.db
+      .query("rateLimits")
+      .withIndex("by_key", (q) => q.eq("key", dailyKey))
+      .first();
+
+    if (dailyRecord && dailyRecord.windowStart >= now - DAY_MS) {
+      if (dailyRecord.count >= DAILY_AGENT_LIMIT) {
+        return { allowed: false, remaining: 0, message: "You've reached today's daily limit. Please try again tomorrow." };
+      }
+    }
+
+    // Record per-minute usage
+    if (minuteRecord && minuteRecord.windowStart >= now - minuteConfig.windowMs) {
+      await ctx.db.patch(minuteRecord._id, { count: minuteRecord.count + 1 });
+    } else if (minuteRecord) {
+      await ctx.db.patch(minuteRecord._id, { count: 1, windowStart: now, expiresAt: now + minuteConfig.windowMs });
+    } else {
+      await ctx.db.insert("rateLimits", { key: minuteKey, count: 1, windowStart: now, expiresAt: now + minuteConfig.windowMs });
+    }
+
+    // Record daily usage
+    if (dailyRecord && dailyRecord.windowStart >= now - DAY_MS) {
+      await ctx.db.patch(dailyRecord._id, { count: dailyRecord.count + 1 });
+    } else if (dailyRecord) {
+      await ctx.db.patch(dailyRecord._id, { count: 1, windowStart: now, expiresAt: now + DAY_MS });
+    } else {
+      await ctx.db.insert("rateLimits", { key: dailyKey, count: 1, windowStart: now, expiresAt: now + DAY_MS });
+    }
+
+    const dailyUsed = (dailyRecord && dailyRecord.windowStart >= now - DAY_MS) ? dailyRecord.count + 1 : 1;
+    return { allowed: true, remaining: DAILY_AGENT_LIMIT - dailyUsed, message: null };
+  },
+});
+
+/**
+ * Get agent usage statistics for admin dashboard
+ */
+export const getAgentUsageStats = query({
+  args: {},
+  handler: async (ctx) => {
+    const now = Date.now();
+    const dayAgo = now - DAY_MS;
+
+    const dailyRecords = await ctx.db
+      .query("rateLimits")
+      .withIndex("by_key")
+      .filter((q) =>
+        q.and(
+          q.gte(q.field("windowStart"), dayAgo),
+          q.gte(q.field("count"), 1)
+        )
+      )
+      .collect();
+
+    const agentDailyRecords = dailyRecords.filter((r) => r.key.startsWith("api:agent_daily:"));
+    const totalCallsToday = agentDailyRecords.reduce((sum, r) => sum + r.count, 0);
+    const activeUsers = agentDailyRecords.length;
+
+    return {
+      totalCallsToday,
+      activeUsers,
+      dailyLimitPerUser: DAILY_AGENT_LIMIT,
+      perMinuteLimit: RATE_LIMITS["api:agent"].maxRequests,
+    };
+  },
+});
+
 // Clean up expired rate limit records
 export const cleanupExpired = internalMutation({
   args: {},

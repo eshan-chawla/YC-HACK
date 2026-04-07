@@ -54,6 +54,13 @@ export default function TripDetailPage({ params }: { params: Promise<{ id: strin
   const id = resolvedParams.id as Id<'trips'>
   const details = useQuery(api.trips.getWithDetails, { id })
 
+  const changeRequests = useQuery(api.trips.listChangeRequestsByTrip, { tripId: id })
+  const submitChange = useMutation(api.trips.submitChangeRequest)
+  const [requestType, setRequestType] = useState<'flight_change' | 'hotel_change' | 'transport_change' | 'general'>('general')
+  const [description, setDescription] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
+
   if (details === undefined) {
     return (
       <AppShell role="employee">
@@ -79,12 +86,6 @@ export default function TripDetailPage({ params }: { params: Promise<{ id: strin
   }
 
   const { trip, event, itinerary } = details
-  const changeRequests = useQuery(api.trips.listChangeRequestsByTrip, { tripId: id })
-  const submitChange = useMutation(api.trips.submitChangeRequest)
-  const [requestType, setRequestType] = useState<'flight_change' | 'hotel_change' | 'transport_change' | 'general'>('general')
-  const [description, setDescription] = useState('')
-  const [submitting, setSubmitting] = useState(false)
-  const [submitted, setSubmitted] = useState(false)
 
   const handleSubmitRequest = async () => {
     if (!description.trim()) return

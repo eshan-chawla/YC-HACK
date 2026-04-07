@@ -1,8 +1,7 @@
 'use client'
 
-import { Card } from '@/components/ui/card'
 import { motion } from 'framer-motion'
-import { CheckCircle2, AlertCircle } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 interface CostItem {
   label: string
@@ -18,84 +17,79 @@ interface CostBreakdownProps {
 
 export function CostBreakdown({ items, total, budget, isCompliant }: CostBreakdownProps) {
   const remaining = budget - total
-  const percent = ((total / budget) * 100).toFixed(1)
+  const percent = Math.min((total / budget) * 100, 100)
+  const percentDisplay = ((total / budget) * 100).toFixed(1)
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.2 }}
+      transition={{ delay: 0.15, duration: 0.25 }}
+      className="rounded-lg border border-border bg-card"
     >
-      <Card className="p-6 space-y-6">
-        <h3 className="font-semibold text-lg text-foreground">Cost Breakdown</h3>
+      <div className="px-5 py-4 border-b border-border">
+        <h3 className="text-[14px] font-medium text-foreground">Cost Breakdown</h3>
+      </div>
 
-        <div className="space-y-3">
-          {items.map((item, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.2 + index * 0.05 }}
-              className="flex items-center justify-between py-2"
-            >
-              <p className="text-sm text-muted-foreground">{item.label}</p>
-              <p className="font-medium text-foreground">${item.amount.toLocaleString()}</p>
-            </motion.div>
-          ))}
-        </div>
+      <div className="px-5 py-4 space-y-1">
+        {items.map((item, index) => (
+          <div key={index} className="flex items-center justify-between py-1.5">
+            <p className="text-[13px] text-muted-foreground">{item.label}</p>
+            <p className="text-[13px] font-medium text-foreground tabular-nums">${item.amount.toLocaleString()}</p>
+          </div>
+        ))}
 
-        <div className="border-t border-border pt-3">
-          <div className="flex items-center justify-between py-2 mb-4">
-            <p className="font-semibold text-foreground">Total</p>
-            <p className="text-2xl font-bold text-primary">${total.toLocaleString()}</p>
+        <div className="border-t border-border pt-3 mt-3">
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-[13px] font-medium text-foreground">Total</p>
+            <p className="text-[22px] font-semibold text-foreground tabular-nums tracking-tight">${total.toLocaleString()}</p>
           </div>
 
+          {/* Budget progress */}
           <div className="space-y-2">
-            <div className="flex items-center justify-between text-sm">
-              <p className="text-muted-foreground">Budget</p>
-              <p className="font-medium">${budget.toLocaleString()}</p>
-            </div>
-            <div className="w-full bg-muted rounded-full h-2">
-              <motion.div
-                className="bg-gradient-to-r from-blue-500 to-green-500 h-2 rounded-full"
-                initial={{ width: 0 }}
-                animate={{ width: `${Math.min(parseInt(percent), 100)}%` }}
-                transition={{ duration: 1 }}
-              />
-            </div>
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-muted-foreground">{percent}% used</span>
-              <span className={remaining < 0 ? 'text-red-600 font-medium' : 'text-green-600 font-medium'}>
+            <div className="flex items-center justify-between">
+              <span className="text-[12px] text-muted-foreground/60">Budget: ${budget.toLocaleString()}</span>
+              <span className={cn(
+                "text-[12px] font-medium tabular-nums",
+                remaining < 0 ? "text-destructive" : "text-primary"
+              )}>
                 {remaining < 0
-                  ? `$${Math.abs(remaining).toLocaleString()} over budget`
-                  : `$${remaining.toLocaleString()} remaining`}
+                  ? `$${Math.abs(remaining).toLocaleString()} over`
+                  : `$${remaining.toLocaleString()} left`}
               </span>
             </div>
+            <div className="h-1 rounded-full bg-muted overflow-hidden">
+              <motion.div
+                className={cn("h-full rounded-full", remaining < 0 ? "bg-destructive" : "bg-primary")}
+                initial={{ width: 0 }}
+                animate={{ width: `${percent}%` }}
+                transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
+              />
+            </div>
+            <p className="text-[11px] text-muted-foreground/40">{percentDisplay}% of budget used</p>
           </div>
         </div>
 
-        <div className={`p-3 rounded-lg flex items-start gap-2 ${
-          isCompliant
-            ? 'bg-green-100'
-            : 'bg-amber-100'
-        }`}>
-          {isCompliant ? (
-            <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-          ) : (
-            <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-          )}
+        {/* Compliance */}
+        <div className={cn(
+          "flex items-center gap-2.5 mt-3 pt-3 border-t border-border",
+        )}>
+          <div className={cn(
+            "w-1.5 h-1.5 rounded-full shrink-0",
+            isCompliant ? "bg-primary" : "bg-amber-500"
+          )} />
           <div>
-            <p className={`text-sm font-medium ${isCompliant ? 'text-green-700' : 'text-amber-700'}`}>
-              {isCompliant ? 'Policy Compliance: PASS' : 'Policy Compliance: ALERT'}
+            <p className="text-[12px] font-medium text-foreground">
+              Policy {isCompliant ? 'Compliant' : 'Review Required'}
             </p>
-            <p className={`text-xs ${isCompliant ? 'text-green-600' : 'text-amber-600'} mt-0.5`}>
+            <p className="text-[11px] text-muted-foreground/60 mt-0.5">
               {isCompliant
                 ? 'All bookings comply with company policy'
-                : 'This booking may have policy violations. Please review.'}
+                : 'This booking may have policy violations'}
             </p>
           </div>
         </div>
-      </Card>
+      </div>
     </motion.div>
   )
 }

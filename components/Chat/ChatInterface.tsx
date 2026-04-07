@@ -7,6 +7,8 @@ import type { Id } from '@/convex/_generated/dataModel'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { chatWithAgent, type SerializedChatMessage, type AgentResponse } from '@/lib/agent'
+import type { EmployeeContext } from '@/lib/agent/gemini-agent'
+import { useCurrentUser } from '@/hooks/useCurrentUser'
 import { Send, Bot, User, Info, Check, X, MessageSquare, Paperclip } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import ReactMarkdown from 'react-markdown'
@@ -39,12 +41,21 @@ export function ChatInterface({ role, conversationId, onConversationCreated, ini
   const [showPaymentAnimation, setShowPaymentAnimation] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
 
+  const { user: currentUser } = useCurrentUser()
+  const employeeMemory = useQuery(
+    api.employees.getWithMemory,
+    currentUser?.employeeId
+      ? { employeeId: currentUser.employeeId as Id<'employees'> }
+      : 'skip'
+  )
+
   const convexMessages = useQuery(
     api.conversations.getMessages,
     conversationId ? { conversationId } : 'skip'
   )
   const createConversation = useMutation(api.conversations.create)
   const addMessage = useMutation(api.conversations.addMessage)
+  const checkUsage = useMutation(api.rateLimits.checkAgentUsage)
 
   const chatHistory: SerializedChatMessage[] = convexMessages
     ? convexMessages
@@ -88,13 +99,36 @@ export function ChatInterface({ role, conversationId, onConversationCreated, ini
       })
     }
 
+    // Check rate limit before calling the agent
+    if (currentUser?.userId) {
+      try {
+        const usage = await checkUsage({ userId: currentUser.userId })
+        if (!usage.allowed) {
+          await addMessage({
+            conversationId: activeConversationId,
+            role: 'assistant',
+            content: usage.message ?? 'Rate limit reached. Please try again later.',
+          })
+          setIsLoading(false)
+          setShowPaymentAnimation(false)
+          return
+        }
+      } catch {
+        // Don't block on rate limit check failure
+      }
+    }
+
     const historyForAgent: SerializedChatMessage[] = [
       ...chatHistory,
       { role: 'user', content: userMessage, timestamp: new Date().toISOString() },
     ]
 
     try {
-      const agentResponse = await chatWithAgent(userMessage, historyForAgent)
+      const agentResponse = await chatWithAgent(
+        userMessage,
+        historyForAgent,
+        employeeMemory ?? undefined
+      )
       await addMessage({
         conversationId: activeConversationId,
         role: 'assistant',
