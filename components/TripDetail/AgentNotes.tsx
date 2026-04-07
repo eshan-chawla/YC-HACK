@@ -1,8 +1,6 @@
 'use client'
 
-import { Card } from '@/components/ui/card'
 import { motion } from 'framer-motion'
-import { Lightbulb } from 'lucide-react'
 
 interface AgentNotesProps {
   notes: string
@@ -11,19 +9,18 @@ interface AgentNotesProps {
 export function AgentNotes({ notes }: AgentNotesProps) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.3 }}
+      transition={{ delay: 0.2, duration: 0.25 }}
+      className="rounded-lg border border-border bg-card"
     >
-      <Card className="p-6">
-        <div className="flex items-start gap-3">
-          <Lightbulb className="w-5 h-5 text-amber-500 flex-shrink-0 mt-1" />
-          <div className="flex-1">
-            <h3 className="font-semibold text-foreground mb-2">Agent Notes & Reasoning</h3>
-            <p className="text-sm text-muted-foreground leading-relaxed">{notes}</p>
-          </div>
-        </div>
-      </Card>
+      <div className="px-5 py-4 border-b border-border flex items-center gap-2">
+        <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+        <h3 className="text-[14px] font-medium text-foreground">Agent Reasoning</h3>
+      </div>
+      <div className="px-5 py-4">
+        <p className="text-[13px] text-muted-foreground leading-relaxed">{notes}</p>
+      </div>
     </motion.div>
   )
 }

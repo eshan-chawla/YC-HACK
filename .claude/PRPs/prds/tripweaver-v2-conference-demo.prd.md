@@ -172,11 +172,11 @@ The minimum to validate the hypothesis at Stripe Sessions:
 | 1 | Design System Foundation | Establish design tokens, typography scale, color system, spacing grid. Update `tailwind.config.ts`, `globals.css`. Revamp landing page and auth pages. | complete | - | - | `.claude/PRPs/plans/phase-1-design-system-foundation.plan.md` |
 | 2 | Admin UI Revamp | Redesign dashboard, event management, itinerary list/detail. Fix admin trip detail page to use real Convex data (remove mockTripData entirely). | complete | with 3 | 1 | - |
 | 3 | Employee UI Revamp | Redesign employee trips portal, trip detail view, profile page, notification center. | complete | with 2 | 1 | - |
-| 4 | Multi-Source Data Layer | Research + implement flight data fallback chain (Kiwi → Amadeus → mock). Research rideshare/rental APIs. Add hotel data improvements. Implement `FlightDataProvider` abstraction. | in-progress | with 5 | 1 | - |
+| 4 | Multi-Source Data Layer | Research + implement flight data fallback chain (Kiwi → Amadeus → mock). Research rideshare/rental APIs. Add hotel data improvements. Implement `FlightDataProvider` abstraction. | complete | with 5 | 1 | - |
 | 5 | Agent Flow Completion | Add booking confirmation flow with generated confirmation numbers. Add rideshare/rental car to itinerary generator. Wire all itinerary data to real Convex queries. Add `bookingConfirmations` table. | complete | with 4 | 2, 3 | - |
 | 6 | Change Request & Approval Workflow | Add `changeRequests` table to schema. Employee UI to submit change requests. Admin approval inbox. Approval → itinerary update → employee notification loop. | complete | - | 4, 5 | - |
-| 7 | Chat Persistence & Agent Memory | Ensure employee↔admin, employee↔agent, admin↔agent chats all persist to Convex. Add `travelHistory` and `inferredPreferences` to employee records. Agent uses history in itinerary generation prompts. | pending | with 8 | 5 | - |
-| 8 | Cost Controls & Rate Limiting | Daily prompt/token limits per user using existing `rateLimits` table. Admin usage visibility. Graceful "limit reached" UX. Enforce in `gemini-agent.ts` before API call. | pending | with 7 | 5 | - |
+| 7 | Chat Persistence & Agent Memory | Ensure employee↔admin, employee↔agent, admin↔agent chats all persist to Convex. Add `travelHistory` and `inferredPreferences` to employee records. Agent uses history in itinerary generation prompts. | complete | with 8 | 5 | - |
+| 8 | Cost Controls & Rate Limiting | Daily prompt/token limits per user using existing `rateLimits` table. Admin usage visibility. Graceful "limit reached" UX. Enforce in `gemini-agent.ts` before API call. | complete | with 7 | 5 | - |
 | 9 | Demo Hardening | Seed realistic demo data (fictional company + 3 employees with varied profiles). End-to-end demo walkthrough test. Loading states, error states, edge case handling. Performance pass. Final UI polish. | pending | - | 6, 7, 8 | - |
 
 ### Phase Details

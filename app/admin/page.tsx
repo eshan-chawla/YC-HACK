@@ -9,17 +9,16 @@ import { StatCard } from '@/components/layout/StatCard'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Plus, TrendingUp, Users, AlertCircle, CheckCircle2, ArrowRight, Calendar, MessageSquare, Check, X } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
-const statusStyles: Record<string, string> = {
-  active: 'bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400',
-  pending: 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400',
-  draft: 'bg-slate-100 text-slate-700 dark:bg-slate-500/10 dark:text-slate-400',
-  completed: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400',
-  cancelled: 'bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-400',
+const statusBadge: Record<string, string> = {
+  active: 'badge badge-active',
+  pending: 'badge badge-pending',
+  draft: 'badge badge-draft',
+  completed: 'badge badge-completed',
+  cancelled: 'badge badge-cancelled',
 }
 
 function formatDateRange(departure: number, returnDate: number) {
@@ -104,10 +103,10 @@ export default function AdminDashboard() {
         {pendingRequests && pendingRequests.length > 0 && (
           <div className="space-y-4">
             <div className="flex items-center gap-2">
-              <h2 className="text-base font-semibold text-foreground">Pending Approvals</h2>
-              <Badge className="bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400 text-[11px] font-bold px-2 py-0.5">
+              <h2 className="text-[14px] font-semibold text-foreground tracking-[-0.01em]">Pending Approvals</h2>
+              <span className="inline-flex items-center justify-center h-5 min-w-5 px-1.5 rounded-full bg-amber-400/12 text-amber-400 text-[11px] font-semibold tabular-nums">
                 {pendingRequests.length}
-              </Badge>
+              </span>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {pendingRequests.map((req, index) => (
@@ -120,29 +119,29 @@ export default function AdminDashboard() {
                   <Card className="p-4 space-y-3">
                     <div className="flex items-start justify-between">
                       <div className="space-y-0.5">
-                        <p className="text-sm font-semibold text-foreground">{req.employeeName}</p>
-                        <p className="text-[11px] text-muted-foreground capitalize">
-                          {req.requestType.replace('_', ' ')} &middot; {req.eventName}
+                        <p className="text-[13px] font-medium text-foreground">{req.employeeName}</p>
+                        <p className="text-[11px] text-muted-foreground/60 capitalize">
+                          {req.requestType.replace('_', ' ')} · {req.eventName}
                         </p>
                       </div>
-                      <MessageSquare className="w-4 h-4 text-amber-500 shrink-0" />
+                      <div className="w-1.5 h-1.5 rounded-full bg-amber-400 mt-1 shrink-0" />
                     </div>
-                    <p className="text-xs text-foreground leading-relaxed line-clamp-2">{req.description}</p>
+                    <p className="text-[12px] text-muted-foreground leading-relaxed line-clamp-2">{req.description}</p>
                     <div className="flex gap-2 pt-1">
                       <Button
                         size="sm"
-                        className="flex-1 h-8 text-xs font-bold gap-1.5 bg-emerald-600 hover:bg-emerald-700"
+                        className="flex-1 h-7 text-[12px] gap-1 bg-primary hover:bg-primary/90"
                         onClick={() => respond({ requestId: req._id as Id<'changeRequests'>, action: 'approved' })}
                       >
-                        <Check className="w-3.5 h-3.5" /> Approve
+                        <Check className="w-3 h-3" /> Approve
                       </Button>
                       <Button
                         size="sm"
                         variant="outline"
-                        className="flex-1 h-8 text-xs font-bold gap-1.5"
+                        className="flex-1 h-7 text-[12px] gap-1"
                         onClick={() => respond({ requestId: req._id as Id<'changeRequests'>, action: 'rejected' })}
                       >
-                        <X className="w-3.5 h-3.5" /> Reject
+                        <X className="w-3 h-3" /> Reject
                       </Button>
                     </div>
                   </Card>
@@ -156,9 +155,9 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-base font-semibold text-foreground">Recent Events</h2>
-              <Link href="/admin/itineraries" className="text-sm text-primary hover:underline flex items-center gap-1">
-                View all <ArrowRight className="w-3.5 h-3.5" />
+              <h2 className="text-[14px] font-semibold text-foreground tracking-[-0.01em]">Recent Events</h2>
+              <Link href="/admin/itineraries" className="text-[12px] text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors duration-150">
+                View all <ArrowRight className="w-3 h-3" />
               </Link>
             </div>
 
@@ -186,20 +185,15 @@ export default function AdminDashboard() {
                     transition={{ delay: 0.1 + index * 0.06 }}
                   >
                     <Link href={`/admin/itineraries/${event._id}`}>
-                      <Card className="p-5 hover:shadow-md transition-shadow duration-200 cursor-pointer group">
+                      <Card className="p-5 cursor-pointer group card-hover border-border">
                         <div className="flex items-start justify-between mb-4">
                           <div>
-                            <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors text-[15px]">
+                            <h3 className="text-[14px] font-medium text-foreground group-hover:text-primary transition-colors">
                               {event.name}
                             </h3>
-                            <p className="text-xs text-muted-foreground mt-0.5">{event.destination}</p>
+                            <p className="text-[12px] text-muted-foreground/60 mt-0.5">{event.destination}</p>
                           </div>
-                          <span
-                            className={cn(
-                              'px-2.5 py-1 rounded-md text-[11px] font-medium capitalize',
-                              statusStyles[event.status] ?? 'bg-muted text-muted-foreground'
-                            )}
-                          >
+                          <span className={cn(statusBadge[event.status] ?? 'badge badge-draft', 'capitalize mt-0.5')}>
                             {event.status}
                           </span>
                         </div>
@@ -238,7 +232,7 @@ export default function AdminDashboard() {
                               %
                             </span>
                           </div>
-                          <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                          <div className="h-[3px] rounded-full bg-border overflow-hidden">
                             <motion.div
                               initial={{ width: 0 }}
                               animate={{
@@ -263,7 +257,7 @@ export default function AdminDashboard() {
 
           {/* Activity */}
           <div className="space-y-4">
-            <h2 className="text-base font-semibold text-foreground">Activity</h2>
+            <h2 className="text-[14px] font-semibold text-foreground tracking-[-0.01em]">Activity</h2>
             <Card className="p-0 overflow-hidden">
               {activity === undefined ? (
                 <div className="px-4 py-8 text-center text-sm text-muted-foreground">Loading…</div>
@@ -278,15 +272,15 @@ export default function AdminDashboard() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: 0.2 + index * 0.03 }}
-                        className="px-4 py-3.5 hover:bg-muted/30 transition-colors flex items-start gap-3"
+                        className="px-4 py-3 hover:bg-muted/20 transition-colors flex items-start gap-3"
                       >
-                        <div className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0 bg-slate-400" />
+                        <div className="w-1 h-1 rounded-full mt-2 flex-shrink-0 bg-border" />
                         <div className="flex-1 min-w-0">
-                          <p className="text-[13px] text-foreground leading-snug">
-                            {item.userName}: {item.action} ({item.resourceType}
-                            {item.resourceId ? ` ${item.resourceId}` : ''})
+                          <p className="text-[12px] text-foreground leading-snug">
+                            <span className="font-medium">{item.userName}</span>
+                            <span className="text-muted-foreground"> {item.action}</span>
                           </p>
-                          <p className="text-[11px] text-muted-foreground mt-0.5">
+                          <p className="text-[11px] text-muted-foreground/50 mt-0.5">
                             {formatActivityTime(item.timestamp)}
                           </p>
                         </div>
