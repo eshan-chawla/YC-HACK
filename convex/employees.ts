@@ -50,8 +50,11 @@ export const list = query({
 export const get = query({
   args: { id: v.id("employees") },
   handler: async (ctx, args) => {
-    await requireAuth(ctx);
+    const user = await getCurrentUser(ctx);
     const employee = await ctx.db.get(args.id);
+    if (user.role === "employee" && user.employeeId !== args.id) {
+      throw new Error("Unauthorized: Cannot view other employees");
+    }
     return employee;
   },
 });
@@ -60,11 +63,15 @@ export const get = query({
 export const getByEmail = query({
   args: { email: v.string() },
   handler: async (ctx, args) => {
-    await requireAuth(ctx);
+    const user = await getCurrentUser(ctx);
     const employee = await ctx.db
       .query("employees")
       .withIndex("by_email", (q) => q.eq("email", args.email))
       .first();
+    // Admins can view any; employees can only view their own email
+    if (user.role === "employee" && employee && user.employeeId !== employee._id) {
+      throw new Error("Unauthorized: Cannot view other employees");
+    }
     return employee;
   },
 });
@@ -244,6 +251,71 @@ export const remove = mutation({
 
     await ctx.db.delete(args.id);
     return args.id;
+  },
+});
+
+// Append a completed trip to an employee's travel history (internal use)
+export const appendTravelHistory = mutation({
+  args: {
+    employeeId: v.id("employees"),
+    entry: v.object({
+      destination: v.string(),
+      departureDate: v.number(),
+      returnDate: v.number(),
+      hotelChain: v.optional(v.string()),
+      airline: v.optional(v.string()),
+      preferences: v.optional(v.string()),
+    }),
+  },
+  handler: async (ctx, args) => {
+    const employee = await ctx.db.get(args.employeeId);
+    if (!employee) throw new Error("Employee not found");
+
+    const history = employee.travelHistory ?? [];
+    await ctx.db.patch(args.employeeId, {
+      travelHistory: [...history, args.entry],
+      updatedAt: Date.now(),
+    });
+  },
+});
+
+// Update inferred preferences for an employee (internal use)
+export const updateInferredPreferences = mutation({
+  args: {
+    employeeId: v.id("employees"),
+    preferences: v.object({
+      seatPreference: v.optional(v.string()),
+      hotelTier: v.optional(v.string()),
+      budgetRange: v.optional(v.string()),
+      notes: v.optional(v.string()),
+    }),
+  },
+  handler: async (ctx, args) => {
+    const employee = await ctx.db.get(args.employeeId);
+    if (!employee) throw new Error("Employee not found");
+
+    await ctx.db.patch(args.employeeId, {
+      inferredPreferences: args.preferences,
+      updatedAt: Date.now(),
+    });
+  },
+});
+
+// Get employee with memory context (for agent personalization)
+export const getWithMemory = query({
+  args: { employeeId: v.id("employees") },
+  handler: async (ctx, args) => {
+    const employee = await ctx.db.get(args.employeeId);
+    if (!employee) return null;
+
+    return {
+      name: employee.name,
+      restrictions: employee.restrictions,
+      travelHistory: employee.travelHistory ?? [],
+      inferredPreferences: employee.inferredPreferences ?? null,
+      frequentFlyerNumbers: employee.frequentFlyerNumbers ?? [],
+      loyaltyPrograms: employee.loyaltyPrograms ?? [],
+    };
   },
 });
 

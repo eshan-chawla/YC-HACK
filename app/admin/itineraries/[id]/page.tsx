@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { use, useMemo } from 'react'
 import { useQuery } from 'convex/react'
 import { api } from '@/convex/_generated/api'
 import type { Id } from '@/convex/_generated/dataModel'
@@ -37,14 +37,15 @@ function formatDate(ts: number) {
   return new Date(ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
-export default function EventDetailPage({ params }: { params: { id: string } }) {
-  const eventId = params.id as Id<'events'>
+export default function EventDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params)
+  const eventId = id as Id<'events'>
   const eventData = useQuery(api.events.getWithEmployees, { id: eventId })
   const trips = useQuery(api.trips.listByEvent, { eventId })
   const recentActivity = useQuery(api.auditLogs.getRecentActivity, { limit: 50 })
   const auditLogs = useMemo(
-    () => (recentActivity ?? []).filter((log) => log.resourceId === params.id),
-    [recentActivity, params.id]
+    () => (recentActivity ?? []).filter((log) => log.resourceId === id),
+    [recentActivity, id]
   )
 
   const isLoading = eventData === undefined || trips === undefined
@@ -233,7 +234,7 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
                   </div>
                 </div>
                 <Card className="border-border/60 overflow-hidden shadow-sm">
-                  <BookingsTable employees={employeesForTable} eventId={params.id} />
+                  <BookingsTable employees={employeesForTable} eventId={id} />
                 </Card>
               </div>
 
@@ -298,7 +299,7 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
           </TabsContent>
 
           <TabsContent value="configuration" className="mt-0 outline-none">
-            <EventConfiguration eventId={params.id} />
+            <EventConfiguration eventId={id} />
           </TabsContent>
         </Tabs>
       </div>

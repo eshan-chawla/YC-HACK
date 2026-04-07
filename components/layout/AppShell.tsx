@@ -3,9 +3,10 @@
 import { Sidebar } from './Sidebar'
 import { Topbar } from './Topbar'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Loader2 } from 'lucide-react'
+import { useCurrentUser } from '@/hooks/useCurrentUser'
 
 interface AppShellProps {
   children: React.ReactNode
@@ -14,34 +15,18 @@ interface AppShellProps {
 
 export function AppShell({ children, role = 'admin' }: AppShellProps) {
   const router = useRouter()
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
+  const { isLoading, isAuthenticated } = useCurrentUser()
+  const isRedirecting = useRef(false)
 
   useEffect(() => {
-    const sessionStr = localStorage.getItem('tripweaver_session')
-    
-    if (!sessionStr) {
+    if (!isLoading && !isAuthenticated) {
+      if (isRedirecting.current) return
+      isRedirecting.current = true
       router.push('/')
-    } else {
-      try {
-        const session = JSON.parse(sessionStr)
-        const sessionDate = new Date(session.timestamp)
-        const now = new Date()
-        const diffDays = Math.ceil(Math.abs(now.getTime() - sessionDate.getTime()) / (1000 * 60 * 60 * 24))
-        
-        if (diffDays > 15) {
-          localStorage.removeItem('tripweaver_session')
-          router.push('/')
-        } else {
-          setIsAuthenticated(true)
-        }
-      } catch (e) {
-        localStorage.removeItem('tripweaver_session')
-        router.push('/')
-      }
+    } else if (isAuthenticated) {
+      isRedirecting.current = false
     }
-    setIsLoading(false)
-  }, [router])
+  }, [isLoading, isAuthenticated, router])
 
   if (isLoading) {
     return (

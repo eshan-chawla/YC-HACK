@@ -142,6 +142,21 @@ const schema = defineSchema({
     lastEventBooking: v.optional(v.number()), // Unix timestamp
     totalTripsBooked: v.optional(v.number()),
     profileImage: v.optional(v.string()),
+    // Agent memory: travel history for personalization
+    travelHistory: v.optional(v.array(v.object({
+      destination: v.string(),
+      departureDate: v.number(),
+      returnDate: v.number(),
+      hotelChain: v.optional(v.string()),
+      airline: v.optional(v.string()),
+      preferences: v.optional(v.string()), // Free-text notes about preferences
+    }))),
+    inferredPreferences: v.optional(v.object({
+      seatPreference: v.optional(v.string()),
+      hotelTier: v.optional(v.string()),
+      budgetRange: v.optional(v.string()),
+      notes: v.optional(v.string()),
+    })),
     // Encrypted fields stored as base64 strings
     encryptedData: v.optional(v.string()), // For sensitive personal info
     createdAt: v.number(),
@@ -194,6 +209,7 @@ const schema = defineSchema({
       v.literal("completed"),
       v.literal("cancelled")
     ),
+    confirmationNumber: v.optional(v.string()), // Generated on booking: TW-{timestamp}-{hash}
     itineraryId: v.optional(v.id("itineraries")), // Link to cached itinerary
     costBreakdown: v.optional(costBreakdownValidator),
     agentNotes: v.optional(v.string()),
@@ -327,6 +343,34 @@ const schema = defineSchema({
     .index("by_eventId", ["eventId"])
     .index("by_employeeId", ["employeeId"])
     .index("by_eventId_employeeId", ["eventId", "employeeId"]),
+
+  // Change requests from employees for itinerary modifications
+  changeRequests: defineTable({
+    tripId: v.id("trips"),
+    employeeId: v.id("employees"),
+    eventId: v.id("events"),
+    status: v.union(
+      v.literal("pending"),
+      v.literal("approved"),
+      v.literal("rejected"),
+      v.literal("fulfilled")
+    ),
+    requestType: v.union(
+      v.literal("flight_change"),
+      v.literal("hotel_change"),
+      v.literal("transport_change"),
+      v.literal("general")
+    ),
+    description: v.string(), // What the employee wants to change
+    adminNotes: v.optional(v.string()), // Admin's response/notes
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    respondedAt: v.optional(v.number()),
+  })
+    .index("by_tripId", ["tripId"])
+    .index("by_employeeId", ["employeeId"])
+    .index("by_status", ["status"])
+    .index("by_eventId", ["eventId"]),
 
   // Rate limiting table
   rateLimits: defineTable({

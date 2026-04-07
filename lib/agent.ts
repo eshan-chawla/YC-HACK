@@ -1,6 +1,6 @@
 'use server'
 
-import { chatWithGeminiAgent, AgentMessage } from './agent/gemini-agent'
+import { chatWithGeminiAgent, AgentMessage, EmployeeContext } from './agent/gemini-agent'
 
 /**
  * Serialized chat message for server action response
@@ -29,7 +29,8 @@ export interface AgentResponse {
  */
 export async function chatWithAgent(
   userMessage: string,
-  chatHistory: SerializedChatMessage[]
+  chatHistory: SerializedChatMessage[],
+  employeeContext?: EmployeeContext
 ): Promise<AgentResponse> {
   try {
     // Validate API key
@@ -61,8 +62,8 @@ export async function chatWithAgent(
       timestamp: new Date(msg.timestamp).getTime(),
     }))
 
-    // Call the Gemini agent
-    const response = await chatWithGeminiAgent(userMessage, geminiHistory)
+    // Call the Gemini agent with employee context for personalization
+    const response = await chatWithGeminiAgent(userMessage, geminiHistory, undefined, employeeContext)
 
     return {
       content: response.content,

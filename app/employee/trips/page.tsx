@@ -105,7 +105,7 @@ function TripCard({
     >
       <Card
         className={cn(
-          'p-0 overflow-hidden border-border/60 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group',
+          'p-0 overflow-hidden border-border/60 hover:shadow-md transition-shadow duration-200 group',
           isPast && 'opacity-70 grayscale-[0.5]'
         )}
       >

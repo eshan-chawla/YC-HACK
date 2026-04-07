@@ -7,6 +7,7 @@ node_modules/
 coverage/
 *.lcov
 .nyc_output
+test-results/
 
 # Next.js
 .next/
@@ -145,3 +146,6 @@ supabase/.temp/
 # package-lock.json
 # yarn.lock
 
+
+# clerk configuration (can include secrets)
+/.clerk/

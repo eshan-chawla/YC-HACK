@@ -3,6 +3,11 @@
  * 
  * This module provides access to MCP servers using the official MCP SDK,
  * transforming requests/responses between Gemini function calls and MCP tools.
+ * 
+ * Multi-Source Flight Data Architecture:
+ * - Primary: Kiwi MCP (real flight data)
+ * - Fallback: Amadeus API (future integration)
+ * - Last Resort: Realistic mock data (clearly labeled)
  */
 
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
@@ -10,6 +15,22 @@ import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/
 import type { FlightSearchParams, FlightSearchResult, Flight, MCPTool } from "./types";
 
 const isDev = process.env.NODE_ENV === "development";
+
+// Flight data provider types for multi-source fallback
+export type FlightDataProvider = 'kiwi' | 'amadeus' | 'mock';
+
+export interface FlightProviderConfig {
+  priority: number;
+  enabled: boolean;
+  timeout: number; // ms
+}
+
+// Provider configuration - extend this to add Amadeus or other sources
+const FLIGHT_PROVIDERS: Record<FlightDataProvider, FlightProviderConfig> = {
+  kiwi: { priority: 1, enabled: true, timeout: 10000 },
+  amadeus: { priority: 2, enabled: false, timeout: 8000 }, // Not yet implemented
+  mock: { priority: 99, enabled: true, timeout: 100 }, // Always available as fallback
+};
 
 // MCP Server configurations
 const MCP_SERVERS = {
@@ -189,16 +210,16 @@ export class KiwiClient {
       });
 
       // Parse the MCP response
-      const content = result.content;
+      const content = result.content as { type: string; text?: string }[];
       if (!content || content.length === 0) {
-        if (isDev) console.warn("Empty response from Kiwi MCP server");
+        if (isDev) console.warn("Empty response from Kiwi MCP server - falling back to mock");
         return getMockFlightResults(params);
       }
 
       // Extract text content from MCP response
-      const textContent = content.find((c) => c.type === "text");
-      if (!textContent || textContent.type !== "text") {
-        if (isDev) console.warn("No text content in Kiwi MCP response");
+      const textContent = content.find((c: { type: string }) => c.type === "text");
+      if (!textContent || textContent.type !== "text" || !textContent.text) {
+        if (isDev) console.warn("No text content in Kiwi MCP response - falling back to mock");
         return getMockFlightResults(params);
       }
 
@@ -423,6 +444,162 @@ export class LocusClient {
       };
     }
   }
+}
+
+/**
+ * Amadeus Flight API Client
+ * Uses the Self-Service API (free tier, 2000 calls/month).
+ * Automatically enabled when AMADEUS_API_KEY and AMADEUS_API_SECRET are set.
+ */
+class AmadeusClient {
+  private accessToken: string | null = null;
+  private tokenExpiry = 0;
+
+  private get isConfigured(): boolean {
+    return !!(process.env.AMADEUS_API_KEY && process.env.AMADEUS_API_SECRET);
+  }
+
+  private get baseUrl(): string {
+    // Use test environment by default; set AMADEUS_PRODUCTION=true for prod
+    return process.env.AMADEUS_PRODUCTION === 'true'
+      ? 'https://api.amadeus.com'
+      : 'https://test.api.amadeus.com';
+  }
+
+  private async authenticate(): Promise<string> {
+    if (this.accessToken && Date.now() < this.tokenExpiry) {
+      return this.accessToken;
+    }
+
+    const res = await fetch(`${this.baseUrl}/v1/security/oauth2/token`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        grant_type: 'client_credentials',
+        client_id: process.env.AMADEUS_API_KEY!,
+        client_secret: process.env.AMADEUS_API_SECRET!,
+      }),
+    });
+
+    if (!res.ok) throw new Error(`Amadeus auth failed: ${res.status}`);
+    const data = await res.json();
+    this.accessToken = data.access_token;
+    this.tokenExpiry = Date.now() + (data.expires_in - 60) * 1000;
+    return this.accessToken!;
+  }
+
+  async searchFlights(params: FlightSearchParams): Promise<FlightSearchResult> {
+    if (!this.isConfigured) {
+      throw new Error('Amadeus API keys not configured');
+    }
+
+    const token = await this.authenticate();
+
+    const searchParams = new URLSearchParams({
+      originLocationCode: params.origin,
+      destinationLocationCode: params.destination,
+      departureDate: params.departureDate,
+      adults: String(params.passengers ?? 1),
+      max: '5',
+      currencyCode: 'USD',
+    });
+
+    if (params.returnDate) {
+      searchParams.set('returnDate', params.returnDate);
+    }
+    if (params.cabinClass && params.cabinClass !== 'economy') {
+      searchParams.set('travelClass', params.cabinClass.toUpperCase().replace('_', ' '));
+    }
+
+    const res = await fetch(
+      `${this.baseUrl}/v2/shopping/flight-offers?${searchParams}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+        signal: AbortSignal.timeout(FLIGHT_PROVIDERS.amadeus.timeout),
+      }
+    );
+
+    if (!res.ok) throw new Error(`Amadeus search failed: ${res.status}`);
+    const data = await res.json();
+
+    const flights: Flight[] = (data.data ?? []).map((offer: any, i: number) => {
+      const seg = offer.itineraries?.[0]?.segments?.[0];
+      return {
+        id: `amadeus_${offer.id}`,
+        airline: seg?.carrierCode ?? 'Unknown',
+        flightNumber: `${seg?.carrierCode ?? ''}${seg?.number ?? ''}`,
+        departure: {
+          airport: seg?.departure?.iataCode ?? params.origin,
+          time: seg?.departure?.at ?? params.departureDate,
+        },
+        arrival: {
+          airport: seg?.arrival?.iataCode ?? params.destination,
+          time: seg?.arrival?.at ?? params.departureDate,
+        },
+        duration: parseInt(offer.itineraries?.[0]?.duration?.replace('PT', '')?.replace('H', '*60+')?.replace('M', '') ?? '0') || 0,
+        stops: (offer.itineraries?.[0]?.segments?.length ?? 1) - 1,
+        price: parseFloat(offer.price?.total ?? '0'),
+        currency: offer.price?.currency ?? 'USD',
+        cabinClass: params.cabinClass ?? 'economy',
+        seatsAvailable: offer.numberOfBookableSeats ?? 0,
+      };
+    });
+
+    return {
+      searchId: `amadeus_search_${Date.now()}`,
+      flights,
+      currency: 'USD',
+      searchedAt: new Date().toISOString(),
+    };
+  }
+}
+
+const amadeusClient = new AmadeusClient();
+
+/**
+ * Search flights using the multi-source fallback chain.
+ * Tries providers in priority order: Kiwi → Amadeus → Mock.
+ * Returns the first successful result.
+ */
+export async function searchFlightsWithFallback(
+  params: FlightSearchParams
+): Promise<FlightSearchResult & { provider: FlightDataProvider }> {
+  const providers = Object.entries(FLIGHT_PROVIDERS)
+    .filter(([, config]) => config.enabled)
+    .sort(([, a], [, b]) => a.priority - b.priority) as [FlightDataProvider, FlightProviderConfig][];
+
+  // Auto-enable Amadeus if keys are present
+  if (process.env.AMADEUS_API_KEY && process.env.AMADEUS_API_SECRET) {
+    FLIGHT_PROVIDERS.amadeus.enabled = true;
+  }
+
+  for (const [name] of providers) {
+    try {
+      if (name === 'kiwi') {
+        const result = await kiwiClient.searchFlights(params);
+        // Only accept if Kiwi returned real results (not its own mock fallback)
+        if (result.searchId.startsWith('kiwi_search_')) {
+          if (isDev) console.log('Flight search: Kiwi returned real results');
+          return { ...result, provider: 'kiwi' };
+        }
+      } else if (name === 'amadeus' && FLIGHT_PROVIDERS.amadeus.enabled) {
+        const result = await amadeusClient.searchFlights(params);
+        if (result.flights.length > 0) {
+          if (isDev) console.log('Flight search: Amadeus returned results');
+          return { ...result, provider: 'amadeus' };
+        }
+      } else if (name === 'mock') {
+        if (isDev) console.log('Flight search: using mock fallback');
+        return { ...getMockFlightResults(params), provider: 'mock' };
+      }
+    } catch (err) {
+      if (isDev) console.warn(`Flight provider ${name} failed:`, err);
+      // Continue to next provider
+    }
+  }
+
+  // Should never reach here since mock is always enabled, but just in case
+  return { ...getMockFlightResults(params), provider: 'mock' };
 }
 
 // Helper function to map cabin class to Kiwi format

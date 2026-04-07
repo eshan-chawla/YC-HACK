@@ -1,6 +1,6 @@
 'use client'
 
-import { useMutation } from 'convex/react'
+import { useMutation, useQuery } from 'convex/react'
 import { api } from '@/convex/_generated/api'
 import { AppShell } from '@/components/layout/AppShell'
 import { PageHeader } from '@/components/layout/PageHeader'
@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { motion } from 'framer-motion'
-import { Save, Bell, Lock, User, Zap, Shield, Mail, Globe, Megaphone } from 'lucide-react'
+import { Save, Bell, Lock, User, Zap, Shield, Mail, Globe, Megaphone, Bot, Activity } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { EmptyState } from '@/components/layout/EmptyState'
 import { useState } from 'react'
@@ -29,6 +29,7 @@ export default function SettingsPage() {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState('notifications')
   const createAnnouncement = useMutation(api.notifications.createAnnouncement)
+  const agentUsage = useQuery(api.rateLimits.getAgentUsageStats)
   const [announceTitle, setAnnounceTitle] = useState('')
   const [announceMessage, setAnnounceMessage] = useState('')
   const [announceTarget, setAnnounceTarget] = useState<'all' | 'admin' | 'employee'>('all')
@@ -252,12 +253,56 @@ export default function SettingsPage() {
           {/* Integrations Tab */}
           <TabsContent value="integrations" className="outline-none">
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-              <EmptyState 
-                icon={Zap}
-                title="Integrations Coming Soon"
-                description="The App Marketplace is currently disabled for this demo. Third-party integrations will be available in a future update."
-                className="py-20"
-              />
+              <div className="grid gap-6">
+                <Card className="p-6 border-border/60 shadow-sm">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                      <Bot className="w-4 h-4" />
+                    </div>
+                    <h3 className="text-base font-semibold text-foreground">AI Agent Usage</h3>
+                  </div>
+                  {agentUsage ? (
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      {[
+                        { label: 'Calls Today', value: String(agentUsage.totalCallsToday) },
+                        { label: 'Active Users', value: String(agentUsage.activeUsers) },
+                        { label: 'Daily Limit / User', value: String(agentUsage.dailyLimitPerUser) },
+                        { label: 'Rate Limit / Min', value: String(agentUsage.perMinuteLimit) },
+                      ].map((stat) => (
+                        <div key={stat.label} className="p-4 bg-muted/20 rounded-xl text-center">
+                          <p className="text-2xl font-bold text-foreground">{stat.value}</p>
+                          <p className="text-[11px] text-muted-foreground uppercase tracking-wider mt-1">{stat.label}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">Loading usage data...</p>
+                  )}
+                </Card>
+                <Card className="p-6 border-border/60 shadow-sm">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-8 h-8 rounded-lg bg-muted/50 flex items-center justify-center text-muted-foreground">
+                      <Activity className="w-4 h-4" />
+                    </div>
+                    <h3 className="text-base font-semibold text-foreground">Flight Data Providers</h3>
+                  </div>
+                  <div className="space-y-3">
+                    {[
+                      { name: 'Kiwi MCP', status: 'Active', desc: 'Primary flight search' },
+                      { name: 'Amadeus API', status: process.env.NEXT_PUBLIC_AMADEUS_CONFIGURED === 'true' ? 'Active' : 'Standby', desc: 'Backup flight search' },
+                      { name: 'Mock Fallback', status: 'Always On', desc: 'Last-resort demo data' },
+                    ].map((p) => (
+                      <div key={p.name} className="flex items-center justify-between p-3 bg-muted/20 rounded-lg">
+                        <div>
+                          <p className="text-sm font-medium text-foreground">{p.name}</p>
+                          <p className="text-[11px] text-muted-foreground">{p.desc}</p>
+                        </div>
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">{p.status}</span>
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+              </div>
             </motion.div>
           </TabsContent>
         </Tabs>

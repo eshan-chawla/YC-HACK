@@ -3,91 +3,83 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* ─── Design Tokens ───────────────────────────────────────────────────────── */
 :root {
-  /* TripWeaver Brand Colors */
-  --tw-green-50: #ECFDF5;
-  --tw-green-100: #D1FAE5;
-  --tw-green-200: #A7F3D0;
-  --tw-green-400: #34D399;
-  --tw-green-500: #10B981;
-  --tw-green-600: #059669;
-  --tw-green-700: #047857;
-  --tw-green-800: #065F46;
-  --tw-green-900: #064E3B;
-
-  --background: #FFFFFF;
-  --foreground: #0F172A;
-  --card: #FFFFFF;
-  --card-foreground: #0F172A;
-  --popover: #FFFFFF;
-  --popover-foreground: #0F172A;
+  /* Light mode */
+  --background: #fafafa;
+  --foreground: #0a0a0a;
+  --card: #ffffff;
+  --card-foreground: #0a0a0a;
+  --popover: #ffffff;
+  --popover-foreground: #0a0a0a;
   --primary: #059669;
-  --primary-foreground: #FFFFFF;
-  --secondary: #F1F5F9;
-  --secondary-foreground: #1E293B;
-  --muted: #F8FAFC;
-  --muted-foreground: #64748B;
-  --accent: #ECFDF5;
-  --accent-foreground: #064E3B;
-  --destructive: #EF4444;
-  --destructive-foreground: #FFFFFF;
-  --border: #E2E8F0;
-  --input: #E2E8F0;
+  --primary-foreground: #ffffff;
+  --secondary: #f5f5f5;
+  --secondary-foreground: #171717;
+  --muted: #f5f5f5;
+  --muted-foreground: #737373;
+  --accent: #ecfdf5;
+  --accent-foreground: #064e3b;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #e5e5e5;
+  --input: #e5e5e5;
   --ring: #059669;
 
   --chart-1: #059669;
-  --chart-2: #0EA5E9;
-  --chart-3: #8B5CF6;
-  --chart-4: #F59E0B;
-  --chart-5: #EF4444;
+  --chart-2: #0ea5e9;
+  --chart-3: #8b5cf6;
+  --chart-4: #f59e0b;
+  --chart-5: #ef4444;
 
-  --radius: 0.75rem;
+  --radius: 0.5rem;
 
-  --sidebar: #FAFBFC;
-  --sidebar-foreground: #0F172A;
+  --sidebar: #f5f5f5;
+  --sidebar-foreground: #0a0a0a;
   --sidebar-primary: #059669;
-  --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #ECFDF5;
-  --sidebar-accent-foreground: #064E3B;
-  --sidebar-border: #E2E8F0;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #ecfdf5;
+  --sidebar-accent-foreground: #064e3b;
+  --sidebar-border: #e5e5e5;
   --sidebar-ring: #059669;
 }
 
+/* ─── Dark mode ───────────────────────────────────────────────────────────── */
 .dark {
-  --background: #020617;
-  --foreground: #F8FAFC;
-  --card: #0F172A;
-  --card-foreground: #F8FAFC;
-  --popover: #0F172A;
-  --popover-foreground: #F8FAFC;
-  --primary: #10B981;
-  --primary-foreground: #FFFFFF;
-  --secondary: #1E293B;
-  --secondary-foreground: #F8FAFC;
-  --muted: #1E293B;
-  --muted-foreground: #94A3B8;
-  --accent: #064E3B;
-  --accent-foreground: #A7F3D0;
-  --destructive: #DC2626;
-  --destructive-foreground: #FEE2E2;
-  --border: #1E293B;
-  --input: #1E293B;
-  --ring: #10B981;
+  --background: #080808;
+  --foreground: #f2f2f2;
+  --card: #111111;
+  --card-foreground: #f2f2f2;
+  --popover: #181818;
+  --popover-foreground: #f2f2f2;
+  --primary: #10b981;
+  --primary-foreground: #ffffff;
+  --secondary: #1a1a1a;
+  --secondary-foreground: #d4d4d4;
+  --muted: #161616;
+  --muted-foreground: #6b6b6b;
+  --accent: #181818;
+  --accent-foreground: #6ee7b7;
+  --destructive: #ef4444;
+  --destructive-foreground: #fef2f2;
+  --border: #1e1e1e;
+  --input: #1e1e1e;
+  --ring: #10b981;
 
-  --chart-1: #10B981;
-  --chart-2: #38BDF8;
-  --chart-3: #A78BFA;
-  --chart-4: #FBBF24;
-  --chart-5: #F87171;
+  --chart-1: #10b981;
+  --chart-2: #38bdf8;
+  --chart-3: #a78bfa;
+  --chart-4: #fbbf24;
+  --chart-5: #f87171;
 
-  --sidebar: #0F172A;
-  --sidebar-foreground: #F8FAFC;
-  --sidebar-primary: #10B981;
-  --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #1E293B;
-  --sidebar-accent-foreground: #F8FAFC;
-  --sidebar-border: #1E293B;
-  --sidebar-ring: #10B981;
+  --sidebar: #080808;
+  --sidebar-foreground: #f2f2f2;
+  --sidebar-primary: #10b981;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #161616;
+  --sidebar-accent-foreground: #f2f2f2;
+  --sidebar-border: #141414;
+  --sidebar-ring: #10b981;
 }
 
 @theme inline {
@@ -117,10 +109,10 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 2px);
+  --radius-xl: calc(var(--radius) + 6px);
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -129,38 +121,162 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --duration-fast: 120ms;
+  --duration-base: 180ms;
+  --duration-slow: 280ms;
 }
 
+/* ─── Base layer ──────────────────────────────────────────────────────────── */
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
   body {
     @apply bg-background text-foreground;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    font-feature-settings: "rlig" 1, "calt" 1, "tnum" 1;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+  /* Subtle grain overlay — dark mode only */
+  .dark body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9998;
+    opacity: 0.022;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 256px 256px;
+    background-repeat: repeat;
+  }
 }
 
-/* Custom scrollbar */
+/* ─── Utilities ───────────────────────────────────────────────────────────── */
 @layer utilities {
+  /* Scrollbar */
   .scrollbar-thin {
     scrollbar-width: thin;
     scrollbar-color: var(--border) transparent;
   }
   .scrollbar-thin::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    width: 5px;
+    height: 5px;
   }
   .scrollbar-thin::-webkit-scrollbar-track {
     background: transparent;
   }
   .scrollbar-thin::-webkit-scrollbar-thumb {
     background: var(--border);
-    border-radius: 3px;
+    border-radius: 999px;
   }
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
     background: var(--muted-foreground);
+  }
+
+  /* Typography scale */
+  .text-display {
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    font-weight: 800;
+    line-height: 1.04;
+    letter-spacing: -0.04em;
+  }
+
+  .text-heading {
+    font-size: clamp(1.75rem, 3vw, 2.25rem);
+    font-weight: 700;
+    line-height: 1.18;
+    letter-spacing: -0.025em;
+  }
+
+  /* Section labels — uppercase, wide tracking, small, muted */
+  .text-label {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--muted-foreground);
+  }
+
+  /* Mono numerals */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+  }
+
+  /* ── Status pill badges (Stripe/Ramp-style) ───────────────────────────── */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.1875rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    line-height: 1;
+    white-space: nowrap;
+  }
+  .badge::before {
+    content: '';
+    display: block;
+    width: 0.375rem;
+    height: 0.375rem;
+    border-radius: 9999px;
+    background: currentColor;
+    flex-shrink: 0;
+  }
+  .badge-pending {
+    background-color: rgb(251 191 36 / 0.12);
+    color: rgb(251 191 36);
+  }
+  .badge-active {
+    background-color: rgb(96 165 250 / 0.12);
+    color: rgb(96 165 250);
+  }
+  .badge-completed {
+    background-color: rgb(16 185 129 / 0.12);
+    color: rgb(16 185 129);
+  }
+  .badge-draft {
+    background-color: rgb(107 107 107 / 0.12);
+    color: rgb(107 107 107);
+  }
+  .badge-cancelled {
+    background-color: rgb(239 68 68 / 0.12);
+    color: rgb(239 68 68);
+  }
+  .badge-generating {
+    background-color: rgb(167 139 250 / 0.12);
+    color: rgb(167 139 250);
+  }
+
+  /* ── Icon container (stat cards, feature cards) ───────────────────────── */
+  .icon-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 0.5rem;
+    background-color: rgb(16 185 129 / 0.1);
+    color: rgb(16 185 129);
+    flex-shrink: 0;
+  }
+  .icon-container-sm {
+    width: 1.625rem;
+    height: 1.625rem;
+    border-radius: 0.375rem;
+  }
+
+  /* ── Card interactive states ──────────────────────────────────────────── */
+  .card-hover {
+    transition: border-color 150ms ease, background-color 150ms ease;
+  }
+  .card-hover:hover {
+    border-color: rgb(255 255 255 / 0.08);
+    background-color: rgb(255 255 255 / 0.02);
+  }
+  .dark .card-hover:hover {
+    border-color: rgb(255 255 255 / 0.06);
+    background-color: rgb(255 255 255 / 0.02);
   }
 }

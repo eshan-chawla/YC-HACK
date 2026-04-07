@@ -1,6 +1,5 @@
 'use client'
 
-import { Card } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import { motion } from 'framer-motion'
 import { LucideIcon } from 'lucide-react'
@@ -19,53 +18,52 @@ interface StatCardProps {
   index?: number
 }
 
-export function StatCard({ 
-  label, 
-  value, 
-  description, 
-  icon: Icon, 
+export function StatCard({
+  label,
+  value,
+  description,
+  icon: Icon,
   trend,
   className,
-  index = 0
+  index = 0,
 }: StatCardProps) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
+      initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.06, duration: 0.3 }}
+      transition={{ delay: index * 0.05, duration: 0.25, ease: [0.32, 0.72, 0, 1] }}
+      className={cn(
+        "rounded-lg border border-border bg-card p-5 flex flex-col gap-3",
+        className
+      )}
     >
-      <Card className={cn("p-5 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200", className)}>
-        <div className="flex items-start justify-between">
-          <div className="space-y-1">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-              {label}
-            </p>
-            <div className="flex items-baseline gap-2">
-              <h3 className="text-2xl font-bold tracking-tight text-foreground">
-                {value}
-              </h3>
-              {trend && (
-                <span className={cn(
-                  "text-xs font-medium px-1.5 py-0.5 rounded-md",
-                  trend.isPositive 
-                    ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400" 
-                    : "bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400"
-                )}>
-                  {trend.isPositive ? '+' : ''}{trend.value}%
-                </span>
-              )}
-            </div>
-            {description && (
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {description}
-              </p>
-            )}
-          </div>
-          <div className="p-2 rounded-lg bg-muted text-muted-foreground">
-            <Icon className="w-4 h-4" />
-          </div>
+      <div className="flex items-start justify-between gap-2">
+        <p className="text-label">{label}</p>
+        <div className="icon-container icon-container-sm shrink-0">
+          <Icon className="w-3.5 h-3.5" />
         </div>
-      </Card>
+      </div>
+
+      <div className="space-y-0.5">
+        <div className="flex items-baseline gap-2">
+          <span className="text-[28px] font-semibold tracking-tight tabular-nums leading-none text-foreground">
+            {value}
+          </span>
+          {trend && (
+            <span className={cn(
+              "text-[11px] font-medium tabular-nums",
+              trend.isPositive ? "text-primary" : "text-destructive"
+            )}>
+              {trend.isPositive ? '+' : ''}{trend.value}%
+            </span>
+          )}
+        </div>
+        {(description || trend?.label) && (
+          <p className="text-[12px] text-muted-foreground/50">
+            {description ?? trend?.label}
+          </p>
+        )}
+      </div>
     </motion.div>
   )
 }

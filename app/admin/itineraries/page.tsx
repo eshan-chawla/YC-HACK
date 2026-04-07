@@ -63,7 +63,7 @@ export default function ItinerariesPage() {
                 transition={{ delay: index * 0.1 }}
               >
                 <Link href={`/admin/itineraries/${event._id}`}>
-                  <Card className="p-0 overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 border-border/60 group">
+                  <Card className="p-0 overflow-hidden hover:shadow-md transition-shadow duration-200 border-border/60 group">
                     <div className="flex flex-col md:flex-row">
                       <div
                         className={cn(

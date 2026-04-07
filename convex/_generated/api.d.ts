@@ -18,6 +18,7 @@ import type * as notifications from "../notifications.js";
 import type * as onboarding from "../onboarding.js";
 import type * as policies from "../policies.js";
 import type * as rateLimits from "../rateLimits.js";
+import type * as seed from "../seed.js";
 import type * as trips from "../trips.js";
 import type * as userProfiles from "../userProfiles.js";
 
@@ -38,6 +39,7 @@ declare const fullApi: ApiFromModules<{
   onboarding: typeof onboarding;
   policies: typeof policies;
   rateLimits: typeof rateLimits;
+  seed: typeof seed;
   trips: typeof trips;
   userProfiles: typeof userProfiles;
 }>;
