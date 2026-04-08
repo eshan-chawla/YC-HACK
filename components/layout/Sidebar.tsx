@@ -67,17 +67,17 @@ export function Sidebar({ role = 'admin' }: SidebarProps) {
 
   return (
     <motion.aside
-      animate={{ width: isCollapsed ? 64 : 240 }}
+      animate={{ width: isCollapsed ? 72 : 260 }}
       transition={{ duration: 0.2, ease: [0.32, 0.72, 0, 1] }}
-      className="relative h-screen border-r border-border bg-background flex flex-col z-50 shrink-0 overflow-hidden"
+      className="relative h-screen bg-background flex flex-col z-50 shrink-0 overflow-hidden py-6"
     >
       {/* Logo */}
       <div className={cn(
-        "flex items-center h-14 border-b border-border shrink-0",
-        isCollapsed ? "justify-center px-0" : "px-5 justify-between"
+        "flex items-center shrink-0 mb-8",
+        isCollapsed ? "justify-center px-0" : "px-6 justify-between"
       )}>
         {!isCollapsed && (
-          <Link href={role === 'admin' ? "/admin" : "/employee"} className="block">
+          <Link href={role === 'admin' ? "/admin" : "/employee"} className="flex items-center gap-3">
             <TripWeaverLogo variant="full" size="sm" />
           </Link>
         )}
@@ -92,7 +92,7 @@ export function Sidebar({ role = 'admin' }: SidebarProps) {
             variant="ghost"
             size="icon"
             onClick={() => setIsCollapsed(true)}
-            className="h-6 w-6 rounded-md text-muted-foreground/50 hover:text-muted-foreground hover:bg-white/[0.04]"
+            className="h-7 w-7 rounded-lg text-muted-foreground/40 hover:text-muted-foreground hover:bg-muted/50"
           >
             <ChevronLeft className="w-3.5 h-3.5" />
           </Button>
@@ -103,14 +103,21 @@ export function Sidebar({ role = 'admin' }: SidebarProps) {
       {isCollapsed && (
         <button
           onClick={() => setIsCollapsed(false)}
-          className="absolute -right-3 top-[52px] z-50 flex h-6 w-6 items-center justify-center rounded-full border border-border bg-background text-muted-foreground/60 hover:text-muted-foreground shadow-sm transition-colors"
+          className="absolute -right-3 top-[60px] z-50 flex h-6 w-6 items-center justify-center rounded-full paper-card text-muted-foreground/60 hover:text-muted-foreground transition-colors"
         >
           <ChevronRight className="w-3 h-3" />
         </button>
       )}
 
+      {/* Section label */}
+      {!isCollapsed && (
+        <div className="px-6 mb-3">
+          <span className="text-label">Workspace</span>
+        </div>
+      )}
+
       {/* Navigation */}
-      <nav className="flex-1 px-2 py-3 space-y-px overflow-y-auto scrollbar-thin">
+      <nav className="flex-1 px-3 space-y-1 overflow-y-auto scrollbar-thin">
         {navItems.map((item) => {
           const Icon = item.icon
           const isActive = pathname === item.href
@@ -120,22 +127,26 @@ export function Sidebar({ role = 'admin' }: SidebarProps) {
               key={item.href}
               href={item.href}
               className={cn(
-                'relative flex items-center gap-2.5 px-3 py-[7px] rounded-md text-[13px] font-medium transition-all duration-150 group',
+                'relative flex items-center gap-3 px-3 py-2.5 rounded-2xl text-[13px] font-medium transition-all duration-200 group btn-press',
                 isCollapsed ? 'justify-center' : '',
                 isActive
-                  ? 'text-foreground bg-white/[0.055] before:absolute before:left-0 before:top-[6px] before:bottom-[6px] before:w-[3px] before:rounded-full before:bg-primary'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-white/[0.04]'
+                  ? 'plate-meso text-foreground shadow-layer-1'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/30'
               )}
             >
-              <Icon className={cn(
-                "w-[15px] h-[15px] shrink-0 transition-colors",
-                isActive ? "text-primary" : "text-muted-foreground/40 group-hover:text-muted-foreground/70"
-              )} />
+              <div className={cn(
+                "w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-all duration-200",
+                isActive
+                  ? "icon-3d-emerald"
+                  : "text-muted-foreground/40 group-hover:text-muted-foreground/70"
+              )}>
+                <Icon className="w-[15px] h-[15px]" />
+              </div>
               {!isCollapsed && (
                 <span className="truncate">{item.label}</span>
               )}
               {isCollapsed && (
-                <div className="pointer-events-none absolute left-full ml-2.5 px-2.5 py-1.5 bg-popover border border-border text-popover-foreground text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 shadow-lg">
+                <div className="pointer-events-none absolute left-full ml-3 px-3 py-2 bg-popover border border-border text-popover-foreground text-xs rounded-xl opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 shadow-layer-2">
                   {item.label}
                 </div>
               )}
@@ -146,19 +157,21 @@ export function Sidebar({ role = 'admin' }: SidebarProps) {
 
       {/* Footer */}
       <div className={cn(
-        "px-2 pb-3 pt-2 border-t border-border space-y-px shrink-0",
+        "px-3 pt-4 mt-2 border-t border-border/50 space-y-1 shrink-0",
       )}>
         {canSwitchRole && (
           <Link
             href={role === 'admin' ? '/employee' : '/admin'}
             onClick={handleRoleSwitch}
             className={cn(
-              "flex items-center gap-2.5 px-3 py-[7px] rounded-md text-[13px] font-medium transition-colors duration-150",
-              "text-muted-foreground hover:text-foreground hover:bg-white/[0.04]",
+              "flex items-center gap-3 px-3 py-2.5 rounded-2xl text-[13px] font-medium transition-colors duration-200",
+              "text-muted-foreground hover:text-foreground hover:bg-muted/30",
               isCollapsed ? "justify-center" : ""
             )}
           >
-            <Shield className="w-[15px] h-[15px] shrink-0 text-muted-foreground/40" />
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0">
+              <Shield className="w-[15px] h-[15px] text-muted-foreground/40" />
+            </div>
             {!isCollapsed && <span>Switch to {role === 'admin' ? 'Employee' : 'Admin'}</span>}
           </Link>
         )}
@@ -166,11 +179,13 @@ export function Sidebar({ role = 'admin' }: SidebarProps) {
         <button
           onClick={handleSignOut}
           className={cn(
-            "w-full flex items-center gap-2.5 px-3 py-[7px] rounded-md text-[13px] font-medium text-muted-foreground hover:text-foreground hover:bg-white/[0.04] transition-colors duration-150 cursor-pointer",
+            "w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-[13px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/30 transition-colors duration-200 cursor-pointer",
             isCollapsed ? "justify-center" : ""
           )}
         >
-          <LogOut className="w-[15px] h-[15px] shrink-0 text-muted-foreground/40" />
+          <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0">
+            <LogOut className="w-[15px] h-[15px] text-muted-foreground/40" />
+          </div>
           {!isCollapsed && <span>Sign out</span>}
         </button>
       </div>

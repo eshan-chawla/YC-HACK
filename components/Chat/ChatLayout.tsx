@@ -48,7 +48,7 @@ export function ChatLayout({ role, initialConversationId }: ChatLayoutProps) {
   }
 
   return (
-    <div className="flex h-full bg-background border border-border/60 rounded-xl overflow-hidden shadow-sm">
+    <div className="flex h-full rounded-2xl overflow-hidden paper-card">
       <ConversationSidebar
         role={role}
         conversations={conversations}
@@ -57,6 +57,12 @@ export function ChatLayout({ role, initialConversationId }: ChatLayoutProps) {
         activeEmployeeId={activeEmployeeId}
         onSelectConversation={handleSelectConversation}
         onSelectEmployee={handleSelectEmployee}
+        onConversationDeleted={(deletedId) => {
+          if (activeConversationId === deletedId) {
+            setActiveConversationId(null)
+            setActiveView('ai')
+          }
+        }}
       />
 
       <div className="flex-1 flex flex-col overflow-hidden min-h-0">
@@ -73,9 +79,9 @@ export function ChatLayout({ role, initialConversationId }: ChatLayoutProps) {
           </div>
         ) : (
           <>
-            <div className="px-6 h-14 border-b border-border/60 bg-card flex items-center justify-between shrink-0">
+            <div className="px-6 h-14 border-b border-border/10 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground font-semibold text-xs">
+                <div className="w-8 h-8 paper-inset blob-3 rounded-full flex items-center justify-center text-muted-foreground font-semibold text-xs">
                   {activeEmployee ? activeEmployee.name.slice(0, 2).toUpperCase() : '—'}
                 </div>
                 <div>
@@ -93,20 +99,20 @@ export function ChatLayout({ role, initialConversationId }: ChatLayoutProps) {
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-8 flex flex-col items-center justify-center text-center">
-              <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center mb-4">
+            <div className="flex-1 overflow-y-auto p-8 flex flex-col items-center justify-center text-center paper-inset rounded-none">
+              <div className="w-14 h-14 paper-inset blob-3 flex items-center justify-center mb-4">
                 <MessageSquare className="w-6 h-6 text-muted-foreground/40" />
               </div>
-              <h2 className="text-lg font-semibold text-foreground mb-1">Chat with {activeEmployee?.name ?? 'team member'}</h2>
+              <h2 className="text-title text-foreground mb-1">Chat with {activeEmployee?.name ?? 'team member'}</h2>
               <p className="text-sm text-muted-foreground max-w-sm">
                 Direct messages with team members are not yet available. Use the AI assistant for travel questions.
               </p>
             </div>
 
-            <div className="p-4 bg-card border-t border-border/60 shrink-0">
+            <div className="p-4 border-t border-border/10 shrink-0">
               <div className="max-w-3xl mx-auto flex items-center gap-3">
-                <Input placeholder={`Message ${activeEmployee?.name ?? '...'} (coming soon)`} className="flex-1 bg-muted/40 border-transparent h-10 text-sm focus-visible:ring-1 focus-visible:ring-primary/20" disabled />
-                <Button className="h-10 px-5 text-sm" disabled>Send</Button>
+                <Input placeholder={`Message ${activeEmployee?.name ?? '...'} (coming soon)`} className="flex-1 paper-inset border-0 h-10 text-sm rounded-xl focus-visible:ring-1 focus-visible:ring-emerald-500/30" disabled />
+                <Button className="h-10 px-5 text-sm btn-press" disabled>Send</Button>
               </div>
             </div>
           </>

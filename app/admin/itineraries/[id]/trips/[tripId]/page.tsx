@@ -204,13 +204,13 @@ export default function TripDetailPage({
                   {employee?.name || 'Employee'}
                 </h1>
                 <Badge className={`uppercase text-[10px] font-bold tracking-wider px-2.5 py-1 rounded-md ${
-                  trip.status === 'booked' 
-                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20'
+                  trip.status === 'booked'
+                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                     : trip.status === 'generating'
-                    ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20'
+                    ? 'bg-amber-50 text-amber-700 border-amber-200'
                     : trip.status === 'pending'
-                    ? 'bg-slate-50 text-slate-700 border-slate-200 dark:bg-slate-500/10 dark:text-slate-400 dark:border-slate-500/20'
-                    : 'bg-red-50 text-red-700 border-red-200 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20'
+                    ? 'bg-slate-50 text-slate-700 border-slate-200'
+                    : 'bg-red-50 text-red-700 border-red-200'
                 }`}>
                   {trip.status}
                 </Badge>

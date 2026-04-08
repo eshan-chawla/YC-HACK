@@ -33,26 +33,33 @@ export function StatCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05, duration: 0.25, ease: [0.32, 0.72, 0, 1] }}
       className={cn(
-        "rounded-lg border border-border bg-card p-5 flex flex-col gap-3",
+        "paper-card rounded-2xl p-5 flex flex-col gap-4 relative overflow-hidden group",
         className
       )}
     >
-      <div className="flex items-start justify-between gap-2">
-        <p className="text-label">{label}</p>
-        <div className="icon-container icon-container-sm shrink-0">
-          <Icon className="w-3.5 h-3.5" />
+      {/* Decorative blob accent */}
+      <div className="absolute -right-8 -top-8 w-28 h-28 rounded-full bg-emerald-400/[0.04] blur-[40px] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+
+      <div className="flex items-start justify-between gap-2 relative z-10">
+        <div className="px-2.5 py-1 rounded-lg paper-inset">
+          <p className="text-label">{label}</p>
+        </div>
+        <div className="paper-inset blob-1 w-10 h-10 shrink-0 flex items-center justify-center">
+          <Icon className="w-4 h-4 text-emerald-600" />
         </div>
       </div>
 
-      <div className="space-y-0.5">
-        <div className="flex items-baseline gap-2">
-          <span className="text-[28px] font-semibold tracking-tight tabular-nums leading-none text-foreground">
+      <div className="space-y-1 relative z-10">
+        <div className="flex items-baseline gap-2.5">
+          <span className="stat-value text-foreground">
             {value}
           </span>
           {trend && (
             <span className={cn(
-              "text-[11px] font-medium tabular-nums",
-              trend.isPositive ? "text-primary" : "text-destructive"
+              "text-[11px] font-semibold tabular-nums px-2 py-0.5 rounded-lg border",
+              trend.isPositive
+                ? "text-emerald-700 bg-emerald-50 border-emerald-200"
+                : "text-destructive bg-red-50 border-red-200"
             )}>
               {trend.isPositive ? '+' : ''}{trend.value}%
             </span>

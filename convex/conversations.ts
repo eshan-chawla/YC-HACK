@@ -217,6 +217,29 @@ export const remove = mutation({
   },
 });
 
+// Get or create the single AI conversation for the current user
+export const getOrCreate = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const user = await requireAuth(ctx);
+
+    const existing = await ctx.db
+      .query("conversations")
+      .withIndex("by_userId", (q) => q.eq("userId", user._id))
+      .order("desc")
+      .first();
+
+    if (existing) return existing._id;
+
+    const now = Date.now();
+    return ctx.db.insert("conversations", {
+      userId: user._id,
+      lastMessageAt: now,
+      createdAt: now,
+    });
+  },
+});
+
 // Get conversation count for user
 export const getCount = query({
   args: {},

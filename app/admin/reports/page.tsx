@@ -189,7 +189,7 @@ export default function ReportsPage() {
                         <tr key={row.id} className="hover:bg-muted/20 transition-colors group">
                           <td className="py-4 px-6">
                             <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                              <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600">
                                 <Calendar className="w-4 h-4" />
                               </div>
                               <span className="text-sm font-semibold text-foreground">{row.event}</span>
@@ -202,17 +202,17 @@ export default function ReportsPage() {
                               <div className="w-full max-w-[60px] h-1.5 bg-muted rounded-full overflow-hidden">
                                 <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${row.compliance}%` }} />
                               </div>
-                              <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">{row.compliance}%</span>
+                              <span className="text-xs font-semibold text-emerald-600">{row.compliance}%</span>
                             </div>
                           </td>
                           <td className="py-4 px-6">
                             <span
                               className={`px-2.5 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider ${
                                 row.status === 'completed'
-                                  ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400'
+                                  ? 'bg-emerald-50 text-emerald-700'
                                   : row.status === 'active'
-                                    ? 'bg-sky-50 text-sky-700 dark:bg-sky-500/10 dark:text-sky-400'
-                                    : 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400'
+                                    ? 'bg-sky-50 text-sky-700'
+                                    : 'bg-amber-50 text-amber-700'
                               }`}
                             >
                               {row.status}

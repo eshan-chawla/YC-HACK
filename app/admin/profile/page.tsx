@@ -93,7 +93,7 @@ export default function AdminProfilePage() {
               <div className="absolute top-0 left-0 w-full h-1 bg-emerald-600" />
               <Avatar className="w-24 h-24 mx-auto mb-4 ring-4 ring-emerald-500/10">
                 <AvatarImage src={imageUrl} alt={displayNameFallback} />
-                <AvatarFallback className="text-xl font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
+                <AvatarFallback className="text-xl font-bold bg-emerald-50 text-emerald-700">
                   {initials}
                 </AvatarFallback>
               </Avatar>
@@ -104,33 +104,33 @@ export default function AdminProfilePage() {
 
               <div className="mt-6 pt-6 border-t border-border/40 space-y-3 text-left">
                 <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium">
-                  <Mail className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                  <Mail className="w-3.5 h-3.5 text-emerald-600" />
                   {email || 'No email'}
                 </div>
                 {companyName && (
                   <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium">
-                    <Briefcase className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                    <Briefcase className="w-3.5 h-3.5 text-emerald-600" />
                     {companyName}
                   </div>
                 )}
                 {jobTitle && (
                   <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium">
-                    <MapPin className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                    <MapPin className="w-3.5 h-3.5 text-emerald-600" />
                     {jobTitle}
                   </div>
                 )}
               </div>
             </Card>
 
-            <Card className="p-4 border-border/60 bg-slate-900 text-white shadow-xl">
-              <h4 className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-4 flex items-center gap-2">
-                <Shield className="w-3 h-3 text-emerald-400" />
+            <Card className="p-4 border-border/60 paper-card shadow-lg">
+              <h4 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-4 flex items-center gap-2">
+                <Shield className="w-3 h-3 text-emerald-600" />
                 Access Level
               </h4>
               <div className="space-y-4">
-                <div className="p-3 rounded-lg bg-white/5 border border-white/10">
-                  <p className="text-sm font-semibold text-white">Full Administrator</p>
-                  <p className="text-[10px] text-slate-400 mt-1 leading-relaxed">
+                <div className="p-3 rounded-lg paper-inset">
+                  <p className="text-sm font-semibold text-foreground">Full Administrator</p>
+                  <p className="text-[10px] text-muted-foreground mt-1 leading-relaxed">
                     You have global access to manage itineraries, company policies, and employee records.
                   </p>
                 </div>
@@ -141,7 +141,7 @@ export default function AdminProfilePage() {
           <div className="md:col-span-2 space-y-6">
             <Card className="p-6 border-border/60 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
               <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground mb-6 flex items-center gap-2">
-                <User className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                <User className="w-4 h-4 text-emerald-600" />
                 Personal Information
               </h3>
 
@@ -191,7 +191,7 @@ export default function AdminProfilePage() {
 
             <Card className="p-6 border-border/60 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
               <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground mb-6 flex items-center gap-2">
-                <Lock className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                <Lock className="w-4 h-4 text-emerald-600" />
                 Security Settings
               </h3>
               <p className="text-sm text-muted-foreground">

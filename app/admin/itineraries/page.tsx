@@ -79,18 +79,18 @@ export default function ItinerariesPage() {
                         <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-6">
                           <div>
                             <div className="flex items-center gap-2 mb-1">
-                              <h3 className="text-xl font-bold text-foreground group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+                              <h3 className="text-xl font-bold text-foreground group-hover:text-emerald-600 transition-colors">
                                 {event.name}
                               </h3>
                               <span
                                 className={cn(
                                   'px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider border',
                                   event.status === 'active' &&
-                                    'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20',
+                                    'bg-emerald-50 text-emerald-700 border-emerald-200',
                                   event.status === 'pending' && 'bg-amber-50 text-amber-600 border-amber-100',
                                   event.status === 'draft' && 'bg-slate-100 text-slate-600 border-slate-200',
                                   event.status === 'completed' &&
-                                    'bg-emerald-50/50 text-emerald-600 border-emerald-100 dark:bg-emerald-500/5 dark:text-emerald-400/70 dark:border-emerald-500/10',
+                                    'bg-emerald-50/50 text-emerald-600 border-emerald-100',
                                   event.status === 'cancelled' && 'bg-red-50 text-red-600 border-red-200'
                                 )}
                               >
@@ -117,7 +117,7 @@ export default function ItinerariesPage() {
                                 ${event.totalBudget.toLocaleString()}
                               </p>
                             </div>
-                            <ArrowRight className="w-5 h-5 text-muted-foreground/30 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors group-hover:translate-x-1" />
+                            <ArrowRight className="w-5 h-5 text-muted-foreground/30 group-hover:text-emerald-600 transition-colors group-hover:translate-x-1" />
                           </div>
                         </div>
 
@@ -160,7 +160,7 @@ export default function ItinerariesPage() {
                               <span className="text-xs font-medium text-muted-foreground uppercase">
                                 Progress
                               </span>
-                              <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                              <span className="text-xs font-bold text-emerald-600">
                                 {event.employeeIds.length > 0
                                   ? Math.round((event.bookedCount / event.employeeIds.length) * 100)
                                   : 0}
