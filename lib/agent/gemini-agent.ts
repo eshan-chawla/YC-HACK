@@ -69,13 +69,41 @@ const SYSTEM_PROMPT = `You are TripWeaver AI, an intelligent corporate travel as
 
 Remember: You're helping companies save time and money on corporate travel while ensuring employee comfort and policy compliance.`;
 
+const ADMIN_SYSTEM_ADDENDUM = `
+
+## Admin Capabilities
+You are speaking with a **travel admin**. You have full access to:
+- All employee profiles, restrictions, and travel history
+- All events and their budgets
+- Team-wide itinerary generation (generate_team_itineraries tool)
+- Budget compliance checking across all trips
+- Policy override authority — you can approve exceptions
+
+When the admin says "generate itineraries for event X" or "book all trips for [event]",
+use generate_team_itineraries. Always show cost summaries grouped by employee.
+Flag any policy violations clearly with the specific policy rule breached.`;
+
+const EMPLOYEE_SYSTEM_ADDENDUM = `
+
+## Employee Mode
+You are speaking with a **traveling employee**. Focus on:
+- Their personal upcoming trip only
+- Their specific restrictions and preferences (shown in context above)
+- Explaining flight options clearly with pros/cons
+- Confirming before any booking action
+- Making change requests feel easy — offer to draft one if they're unhappy`;
+
 /**
  * Build a personalized system prompt by appending employee context when available.
  */
-function buildSystemPrompt(employeeContext?: EmployeeContext): string {
-  if (!employeeContext) return SYSTEM_PROMPT;
+function buildSystemPrompt(employeeContext?: EmployeeContext, role?: 'admin' | 'employee'): string {
+  let basePrompt = SYSTEM_PROMPT;
+  if (role === 'admin') basePrompt += ADMIN_SYSTEM_ADDENDUM;
+  else if (role === 'employee') basePrompt += EMPLOYEE_SYSTEM_ADDENDUM;
 
-  const lines: string[] = [SYSTEM_PROMPT, '\n## Current Employee Context'];
+  if (!employeeContext) return basePrompt;
+
+  const lines: string[] = [basePrompt, '\n## Current Employee Context'];
   lines.push(`- **Name**: ${employeeContext.name}`);
 
   if (employeeContext.restrictions) {
@@ -137,14 +165,15 @@ export async function chatWithGeminiAgent(
   userMessage: string,
   chatHistory: AgentMessage[] = [],
   dbContext?: DatabaseContext,
-  employeeContext?: EmployeeContext
+  employeeContext?: EmployeeContext,
+  role?: 'admin' | 'employee'
 ): Promise<AgentResponse> {
   const genAI = getGeminiClient();
 
   // Get the Gemini 2.5 Pro model with function calling
   const model = genAI.getGenerativeModel({
     model: "gemini-2.5-pro",
-    systemInstruction: buildSystemPrompt(employeeContext),
+    systemInstruction: buildSystemPrompt(employeeContext, role),
     tools: [{
       functionDeclarations: allFunctionDeclarations.map(fd => ({
         name: fd.name,

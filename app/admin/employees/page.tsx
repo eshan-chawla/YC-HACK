@@ -86,17 +86,40 @@ export default function EmployeesPage() {
     e.preventDefault()
     setIsSubmitting(true)
     try {
+      const trimmedEmail = newEmployee.email.trim()
+      const trimmedName = newEmployee.name.trim()
       await createEmployee({
-        name: newEmployee.name.trim(),
-        email: newEmployee.email.trim(),
+        name: trimmedName,
+        email: trimmedEmail,
         team: newEmployee.team.trim(),
         role: newEmployee.role.trim(),
         location: newEmployee.location.trim() || undefined,
         status: 'active',
       })
-      toast.success('Employee added successfully', {
-        description: `${newEmployee.name} has been added to TripWeaver.`,
-      })
+      // Send Clerk invitation email (non-blocking — don't fail employee creation if invite errors)
+      try {
+        const res = await fetch('/api/invite', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: trimmedEmail, name: trimmedName }),
+        })
+        if (res.ok) {
+          toast.success('Employee added & invitation sent', {
+            description: `${trimmedName} will receive an invite at ${trimmedEmail}.`,
+          })
+        } else {
+          const { error } = await res.json().catch(() => ({ error: '' }))
+          toast.success('Employee added', {
+            description: error
+              ? `Note: invite email not sent — ${error}`
+              : `${trimmedName} was added but the invite email could not be sent.`,
+          })
+        }
+      } catch {
+        toast.success('Employee added', {
+          description: `${trimmedName} was added. Invite email could not be sent right now.`,
+        })
+      }
       setIsAddModalOpen(false)
       setNewEmployee({ name: '', email: '', team: '', role: '', location: '' })
     } catch (err) {
@@ -171,10 +194,10 @@ export default function EmployeesPage() {
         <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
           <DialogContent className="sm:max-w-[500px] rounded-2xl p-0 overflow-hidden border-none shadow-2xl">
             <form onSubmit={handleAddEmployee}>
-              <DialogHeader className="p-8 bg-slate-900 text-white relative overflow-hidden">
+              <DialogHeader className="p-8 bg-emerald-50 relative overflow-hidden">
                 <div className="relative z-10">
-                  <DialogTitle className="text-2xl font-bold tracking-[-0.02em]">Add New Employee</DialogTitle>
-                  <DialogDescription className="text-slate-400 mt-2">
+                  <DialogTitle className="text-2xl font-bold tracking-[-0.02em] text-foreground">Add New Employee</DialogTitle>
+                  <DialogDescription className="text-muted-foreground mt-2">
                     Invite a new team member to start managing their travel.
                   </DialogDescription>
                 </div>

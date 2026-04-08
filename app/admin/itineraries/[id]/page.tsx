@@ -139,7 +139,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
             <div>
               <div className="flex items-center gap-3 mb-1.5">
                 <h1 className="text-2xl font-bold tracking-[-0.02em] text-foreground">{event.name}</h1>
-                <Badge className="bg-emerald-50 text-emerald-700 hover:bg-emerald-50 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20 uppercase text-[10px] font-bold tracking-wider px-2.5 py-1 rounded-md">
+                <Badge className="bg-emerald-50 text-emerald-700 hover:bg-emerald-50 border-emerald-200 uppercase text-[10px] font-bold tracking-wider px-2.5 py-1 rounded-md">
                   {event.status}
                 </Badge>
               </div>
@@ -148,7 +148,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                 <span className="hidden md:inline text-muted-foreground/30">&bull;</span>
                 <span>Ends {formatDate(event.returnDate)}</span>
                 <span className="hidden md:inline text-muted-foreground/30">&bull;</span>
-                <span className="text-emerald-600 dark:text-emerald-400">{event.destination}</span>
+                <span className="text-emerald-600">{event.destination}</span>
               </div>
             </div>
           </div>
@@ -256,7 +256,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
             >
               <Card className="p-6 border-border/60 shadow-sm">
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600">
                     <Plane className="w-5 h-5" />
                   </div>
                   <div>
@@ -273,7 +273,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
               </Card>
               <Card className="p-6 border-border/60 shadow-sm">
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600">
                     <Building2 className="w-5 h-5" />
                   </div>
                   <div>

@@ -76,7 +76,7 @@ export default function SettingsPage() {
               <div className="grid gap-6">
                 <Card className="p-6 border-border/60 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
                     <div className="flex items-center gap-3 mb-6">
-                        <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                        <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600">
                             <Bell className="w-4 h-4" />
                         </div>
                         <h3 className="text-base font-semibold text-foreground">Event Notifications</h3>
@@ -102,7 +102,7 @@ export default function SettingsPage() {
 
                 <Card className="p-6 border-border/60 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
                     <div className="flex items-center gap-3 mb-6">
-                        <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                        <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600">
                             <Mail className="w-4 h-4" />
                         </div>
                         <h3 className="text-base font-semibold text-foreground">System Digests</h3>
@@ -122,7 +122,7 @@ export default function SettingsPage() {
 
                 <Card className="p-6 border-border/60 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
                     <div className="flex items-center gap-3 mb-6">
-                        <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                        <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600">
                             <Megaphone className="w-4 h-4" />
                         </div>
                         <h3 className="text-base font-semibold text-foreground">Send announcement</h3>
@@ -205,7 +205,7 @@ export default function SettingsPage() {
                     <div className="flex items-center justify-between p-4 bg-muted/30 rounded-xl">
                         <div className="flex items-center gap-4">
                             <div className="w-10 h-10 rounded-full bg-background flex items-center justify-center border border-border/60 shadow-sm">
-                                <Zap className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                                <Zap className="w-5 h-5 text-emerald-600" />
                             </div>
                             <div>
                                 <p className="text-sm font-semibold">Two-Factor Authentication</p>
@@ -224,7 +224,7 @@ export default function SettingsPage() {
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
               <Card className="p-6 border-border/60 shadow-sm space-y-8">
                 <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                    <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600">
                         <Globe className="w-4 h-4" />
                     </div>
                     <h3 className="text-base font-semibold text-foreground">Company Profile</h3>
@@ -256,7 +256,7 @@ export default function SettingsPage() {
               <div className="grid gap-6">
                 <Card className="p-6 border-border/60 shadow-sm">
                   <div className="flex items-center gap-3 mb-6">
-                    <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                    <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600">
                       <Bot className="w-4 h-4" />
                     </div>
                     <h3 className="text-base font-semibold text-foreground">AI Agent Usage</h3>
@@ -297,7 +297,7 @@ export default function SettingsPage() {
                           <p className="text-sm font-medium text-foreground">{p.name}</p>
                           <p className="text-[11px] text-muted-foreground">{p.desc}</p>
                         </div>
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">{p.status}</span>
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-600">{p.status}</span>
                       </div>
                     ))}
                   </div>

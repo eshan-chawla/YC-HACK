@@ -149,3 +149,10 @@ supabase/.temp/
 
 # clerk configuration (can include secrets)
 /.clerk/
+.aidesigner/*
+!.aidesigner/.gitkeep
+
+# E2E auth state — contains real session cookies/tokens after auth setup runs
+tests/e2e/.auth/
+# Playwright auth state at any depth
+**/.auth/*.json

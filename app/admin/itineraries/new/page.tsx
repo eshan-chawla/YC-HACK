@@ -170,7 +170,7 @@ export default function NewEventPage() {
                 {/* Event Details Card */}
                 <Card className="p-6 border-border/60 shadow-sm">
                     <h2 className="text-base font-semibold text-foreground mb-6 flex items-center gap-2 tracking-wider">
-                        <Calendar className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                        <Calendar className="w-5 h-5 text-emerald-600" />
                         Basic Information
                     </h2>
                     
@@ -249,7 +249,7 @@ export default function NewEventPage() {
                 <Card className="p-6 border-border/60 shadow-sm">
                     <div className="flex items-center justify-between mb-6">
                         <h2 className="text-base font-semibold text-foreground flex items-center gap-2 tracking-wider">
-                            <Users className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                            <Users className="w-5 h-5 text-emerald-600" />
                             Participants
                         </h2>
                         <div className="flex gap-2">
@@ -258,7 +258,7 @@ export default function NewEventPage() {
                                 variant="ghost"
                                 size="sm"
                                 onClick={selectAll}
-                                className="text-xs font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-500/10"
+                                className="text-xs font-bold uppercase tracking-widest text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
                             >
                                 Select All
                             </Button>
@@ -286,7 +286,7 @@ export default function NewEventPage() {
                             className={cn(
                                 "flex items-center gap-4 p-4 rounded-xl border transition-all cursor-pointer",
                                 selectedEmployeeIds.has(employee.id) 
-                                    ? "bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/20 shadow-sm" 
+                                    ? "bg-emerald-50 border-emerald-200 shadow-sm" 
                                     : "border-border/60 hover:bg-muted/30"
                             )}
                             onClick={() => toggleEmployee(employee.id)}
@@ -321,7 +321,7 @@ export default function NewEventPage() {
                 {/* Budget Sidebar Card */}
                 <Card className="p-6 border-border/60 shadow-sm sticky top-24">
                     <h2 className="text-base font-semibold text-foreground uppercase tracking-wider mb-6 flex items-center gap-2">
-                        <DollarSign className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                        <DollarSign className="w-4 h-4 text-emerald-600" />
                         Budget Estimate
                     </h2>
                     
@@ -355,7 +355,7 @@ export default function NewEventPage() {
                             </div>
                             <div className="pt-4 flex justify-between items-center">
                                 <span className="font-bold text-foreground uppercase tracking-widest text-xs">Total Budget</span>
-                                <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+                                <span className="text-2xl font-bold text-emerald-600">
                                     ${calculateTotalBudget().toLocaleString()}
                                 </span>
                             </div>
@@ -403,7 +403,7 @@ export default function NewEventPage() {
         <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
           <DialogContent className="sm:max-w-[500px] rounded-2xl overflow-hidden p-0 border-none shadow-2xl">
             <div className="p-8 text-center space-y-6">
-              <div className="mx-auto w-20 h-20 rounded-full bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center mb-2">
+              <div className="mx-auto w-20 h-20 rounded-full bg-emerald-50 flex items-center justify-center mb-2">
                 <CheckCircle2 className="w-10 h-10 text-emerald-500" />
               </div>
               
@@ -426,7 +426,7 @@ export default function NewEventPage() {
                   </div>
                   <div className="flex items-center justify-between text-sm border-t border-border/60 pt-4">
                     <span className="font-medium text-muted-foreground/60 uppercase tracking-wider text-xs">Total Allocation</span>
-                    <span className="font-bold text-emerald-600 dark:text-emerald-400 text-lg">
+                    <span className="font-bold text-emerald-600 text-lg">
                       ${successData.totalBudget.toLocaleString()}
                     </span>
                   </div>

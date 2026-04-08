@@ -12,18 +12,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { TripWeaverLogo } from "@/components/TripWeaverLogo";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  Loader2, 
-  User, 
-  Building2, 
-  Briefcase, 
-  Phone, 
-  Globe, 
-  Bell, 
-  ArrowRight, 
+import {
+  Loader2,
+  User,
+  Building2,
+  Briefcase,
+  Phone,
+  Globe,
+  Bell,
+  ArrowRight,
   ArrowLeft,
   CheckCircle2,
   Home,
+  Check,
 } from "lucide-react";
 
 const STEPS = [
@@ -81,7 +82,7 @@ export default function AdminOnboardingPage() {
 
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
-  
+
   // Form state
   const [formData, setFormData] = useState({
     // Step 1: Basic Info
@@ -89,11 +90,11 @@ export default function AdminOnboardingPage() {
     companyName: "",
     department: "",
     phoneNumber: "",
-    
+
     // Step 2: Profile Setup
     jobTitle: "",
     timezone: "",
-    
+
     // Step 3: Preferences
     currency: "USD",
     language: "en",
@@ -134,8 +135,8 @@ export default function AdminOnboardingPage() {
   // Wait for auth/status before showing form (avoid flash then redirect)
   if (isAuthenticated && status === undefined) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="w-6 h-6 animate-spin text-emerald-500" />
+      <div className="min-h-screen bg-[#faf9f7] flex items-center justify-center">
+        <Loader2 className="w-6 h-6 animate-spin text-emerald-600" />
       </div>
     );
   }
@@ -158,10 +159,10 @@ export default function AdminOnboardingPage() {
           push: formData.pushNotifications,
         },
       });
-      
+
       // Clear the signup role from session storage
       sessionStorage.removeItem("tripweaver_signup_role");
-      
+
       // Redirect to admin dashboard
       router.push("/admin");
     } catch (error) {
@@ -171,15 +172,22 @@ export default function AdminOnboardingPage() {
     }
   };
 
+  const inputClasses = "pl-10 h-11 bg-white/80 border-black/[0.08] text-foreground placeholder:text-muted-foreground/50 focus-visible:border-emerald-500/40 focus-visible:ring-emerald-500/10 rounded-xl";
+  const inputNoIconClasses = "h-11 bg-white/80 border-black/[0.08] text-foreground placeholder:text-muted-foreground/50 focus-visible:border-emerald-500/40 focus-visible:ring-emerald-500/10 rounded-xl";
+
   return (
-    <div className="min-h-screen bg-background p-4">
+    <div className="min-h-screen bg-[#faf9f7] p-4 relative overflow-hidden">
+      {/* Ambient decorative blobs */}
+      <div className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] rounded-full bg-emerald-100/40 blur-3xl pointer-events-none" />
+      <div className="absolute bottom-[-15%] left-[-8%] w-[400px] h-[400px] rounded-full bg-amber-100/30 blur-3xl pointer-events-none" />
+
       <div className="relative z-10 max-w-2xl mx-auto pt-8">
         {/* Logo and Back to home */}
         <div className="flex items-center justify-between mb-10">
           <TripWeaverLogo size="md" />
           <Link
             href="/"
-            className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-emerald-400 transition-colors"
+            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-emerald-600 transition-colors"
           >
             <Home className="w-4 h-4" />
             Back to home
@@ -192,17 +200,23 @@ export default function AdminOnboardingPage() {
             <div key={step.id} className="flex items-center">
               <div className="flex items-center gap-1.5">
                 <div
-                  className={`w-2 h-2 rounded-full transition-colors ${
+                  className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium transition-colors ${
                     currentStep > step.id
-                      ? "bg-emerald-400"
+                      ? "bg-emerald-600 text-white"
                       : currentStep === step.id
-                        ? "bg-emerald-400"
-                        : "bg-slate-700"
+                        ? "border-2 border-emerald-500/40 text-emerald-600 bg-white"
+                        : "bg-black/[0.06] text-muted-foreground"
                   }`}
-                />
+                >
+                  {currentStep > step.id ? (
+                    <Check className="w-3.5 h-3.5" />
+                  ) : (
+                    step.id
+                  )}
+                </div>
                 <span
                   className={`text-xs font-medium transition-colors ${
-                    currentStep >= step.id ? "text-emerald-400" : "text-slate-600"
+                    currentStep >= step.id ? "text-emerald-600" : "text-muted-foreground"
                   }`}
                 >
                   {step.title}
@@ -211,7 +225,7 @@ export default function AdminOnboardingPage() {
               {index < STEPS.length - 1 && (
                 <div
                   className={`w-10 h-px mx-3 transition-colors ${
-                    currentStep > step.id ? "bg-emerald-600" : "bg-slate-800"
+                    currentStep > step.id ? "bg-emerald-600" : "bg-black/[0.08]"
                   }`}
                 />
               )}
@@ -220,11 +234,11 @@ export default function AdminOnboardingPage() {
         </div>
 
         {/* Form Section */}
-        <div>
-          {/* Simple heading — no icon header */}
+        <div className="paper-card rounded-2xl p-6 sm:p-8">
+          {/* Simple heading */}
           <div className="mb-6">
-            <h1 className="text-xl font-semibold text-white">Complete Your Profile</h1>
-            <p className="text-sm text-slate-500 mt-1">
+            <h1 className="text-title text-foreground">Complete Your Profile</h1>
+            <p className="text-sm text-muted-foreground mt-1">
               Step {currentStep} of 3: {STEPS[currentStep - 1].title}
             </p>
           </div>
@@ -242,55 +256,55 @@ export default function AdminOnboardingPage() {
                   className="space-y-4"
                 >
                   <div className="space-y-2">
-                    <Label htmlFor="fullName" className="text-xs font-medium text-slate-400">Full Name *</Label>
+                    <Label htmlFor="fullName" className="text-xs font-medium text-muted-foreground">Full Name *</Label>
                     <div className="relative">
-                      <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-600" />
+                      <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
                       <Input
                         id="fullName"
                         placeholder="John Doe"
                         value={formData.fullName}
                         onChange={(e) => updateFormData("fullName", e.target.value)}
-                        className="pl-10 h-11 bg-white/[0.02] border-white/[0.08] text-white placeholder:text-slate-600 focus-visible:border-emerald-500/40 focus-visible:ring-emerald-500/10"
+                        className={inputClasses}
                       />
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="companyName" className="text-xs font-medium text-slate-400">Company Name *</Label>
+                    <Label htmlFor="companyName" className="text-xs font-medium text-muted-foreground">Company Name *</Label>
                     <div className="relative">
-                      <Building2 className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-600" />
+                      <Building2 className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
                       <Input
                         id="companyName"
                         placeholder="Acme Corporation"
                         value={formData.companyName}
                         onChange={(e) => updateFormData("companyName", e.target.value)}
-                        className="pl-10 h-11 bg-white/[0.02] border-white/[0.08] text-white placeholder:text-slate-600 focus-visible:border-emerald-500/40 focus-visible:ring-emerald-500/10"
+                        className={inputClasses}
                       />
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="department" className="text-xs font-medium text-slate-400">Department *</Label>
+                    <Label htmlFor="department" className="text-xs font-medium text-muted-foreground">Department *</Label>
                     <Input
                       id="department"
                       placeholder="Operations, HR, Finance, etc."
                       value={formData.department}
                       onChange={(e) => updateFormData("department", e.target.value)}
-                      className="h-11 bg-white/[0.02] border-white/[0.08] text-white placeholder:text-slate-600 focus-visible:border-emerald-500/40 focus-visible:ring-emerald-500/10"
+                      className={inputNoIconClasses}
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="phoneNumber" className="text-xs font-medium text-slate-400">Phone Number (Optional)</Label>
+                    <Label htmlFor="phoneNumber" className="text-xs font-medium text-muted-foreground">Phone Number (Optional)</Label>
                     <div className="relative">
-                      <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-600" />
+                      <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
                       <Input
                         id="phoneNumber"
                         type="tel"
                         placeholder="+1 (555) 123-4567"
                         value={formData.phoneNumber}
                         onChange={(e) => updateFormData("phoneNumber", e.target.value)}
-                        className="pl-10 h-11 bg-white/[0.02] border-white/[0.08] text-white placeholder:text-slate-600 focus-visible:border-emerald-500/40 focus-visible:ring-emerald-500/10"
+                        className={inputClasses}
                       />
                     </div>
                   </div>
@@ -308,32 +322,32 @@ export default function AdminOnboardingPage() {
                   className="space-y-4"
                 >
                   <div className="space-y-2">
-                    <Label htmlFor="jobTitle" className="text-xs font-medium text-slate-400">Job Title *</Label>
+                    <Label htmlFor="jobTitle" className="text-xs font-medium text-muted-foreground">Job Title *</Label>
                     <div className="relative">
-                      <Briefcase className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-600" />
+                      <Briefcase className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
                       <Input
                         id="jobTitle"
                         placeholder="Travel Manager, HR Director, etc."
                         value={formData.jobTitle}
                         onChange={(e) => updateFormData("jobTitle", e.target.value)}
-                        className="pl-10 h-11 bg-white/[0.02] border-white/[0.08] text-white placeholder:text-slate-600 focus-visible:border-emerald-500/40 focus-visible:ring-emerald-500/10"
+                        className={inputClasses}
                       />
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="timezone" className="text-xs font-medium text-slate-400">Timezone *</Label>
+                    <Label htmlFor="timezone" className="text-xs font-medium text-muted-foreground">Timezone *</Label>
                     <Select
                       value={formData.timezone}
                       onValueChange={(value) => updateFormData("timezone", value)}
                     >
-                      <SelectTrigger className="h-11 bg-white/[0.02] border-white/[0.08] text-white">
-                        <Globe className="mr-2 h-4 w-4 text-slate-600" />
+                      <SelectTrigger className="h-11 bg-white/80 border-black/[0.08] text-foreground rounded-xl">
+                        <Globe className="mr-2 h-4 w-4 text-muted-foreground/60" />
                         <SelectValue placeholder="Select your timezone" />
                       </SelectTrigger>
-                      <SelectContent className="bg-[#0F172A] border-white/[0.06]">
+                      <SelectContent>
                         {TIMEZONES.map((tz) => (
-                          <SelectItem key={tz.value} value={tz.value} className="text-white hover:bg-white/[0.04]">
+                          <SelectItem key={tz.value} value={tz.value}>
                             {tz.label}
                           </SelectItem>
                         ))}
@@ -355,17 +369,17 @@ export default function AdminOnboardingPage() {
                 >
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="currency" className="text-xs font-medium text-slate-400">Default Currency</Label>
+                      <Label htmlFor="currency" className="text-xs font-medium text-muted-foreground">Default Currency</Label>
                       <Select
                         value={formData.currency}
                         onValueChange={(value) => updateFormData("currency", value)}
                       >
-                        <SelectTrigger className="h-11 bg-white/[0.02] border-white/[0.08] text-white">
+                        <SelectTrigger className="h-11 bg-white/80 border-black/[0.08] text-foreground rounded-xl">
                           <SelectValue placeholder="Select currency" />
                         </SelectTrigger>
-                        <SelectContent className="bg-[#0F172A] border-white/[0.06]">
+                        <SelectContent>
                           {CURRENCIES.map((curr) => (
-                            <SelectItem key={curr.value} value={curr.value} className="text-white hover:bg-white/[0.04]">
+                            <SelectItem key={curr.value} value={curr.value}>
                               {curr.label}
                             </SelectItem>
                           ))}
@@ -374,17 +388,17 @@ export default function AdminOnboardingPage() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="language" className="text-xs font-medium text-slate-400">Language</Label>
+                      <Label htmlFor="language" className="text-xs font-medium text-muted-foreground">Language</Label>
                       <Select
                         value={formData.language}
                         onValueChange={(value) => updateFormData("language", value)}
                       >
-                        <SelectTrigger className="h-11 bg-white/[0.02] border-white/[0.08] text-white">
+                        <SelectTrigger className="h-11 bg-white/80 border-black/[0.08] text-foreground rounded-xl">
                           <SelectValue placeholder="Select language" />
                         </SelectTrigger>
-                        <SelectContent className="bg-[#0F172A] border-white/[0.06]">
+                        <SelectContent>
                           {LANGUAGES.map((lang) => (
-                            <SelectItem key={lang.value} value={lang.value} className="text-white hover:bg-white/[0.04]">
+                            <SelectItem key={lang.value} value={lang.value}>
                               {lang.label}
                             </SelectItem>
                           ))}
@@ -394,12 +408,12 @@ export default function AdminOnboardingPage() {
                   </div>
 
                   <div className="space-y-4">
-                    <Label className="text-xs font-medium text-slate-400">Notification Preferences</Label>
-                    
-                    <div className="flex items-center justify-between border border-white/[0.06] rounded-lg p-4 bg-white/[0.01]">
+                    <Label className="text-xs font-medium text-muted-foreground">Notification Preferences</Label>
+
+                    <div className="flex items-center justify-between border border-black/[0.06] rounded-xl p-4 bg-white/60">
                       <div>
-                        <p className="text-white font-medium">Email Notifications</p>
-                        <p className="text-sm text-slate-400">Receive updates via email</p>
+                        <p className="text-foreground font-medium">Email Notifications</p>
+                        <p className="text-sm text-muted-foreground">Receive updates via email</p>
                       </div>
                       <Switch
                         checked={formData.emailNotifications}
@@ -407,10 +421,10 @@ export default function AdminOnboardingPage() {
                       />
                     </div>
 
-                    <div className="flex items-center justify-between border border-white/[0.06] rounded-lg p-4 bg-white/[0.01]">
+                    <div className="flex items-center justify-between border border-black/[0.06] rounded-xl p-4 bg-white/60">
                       <div>
-                        <p className="text-white font-medium">SMS Notifications</p>
-                        <p className="text-sm text-slate-400">Receive urgent alerts via SMS</p>
+                        <p className="text-foreground font-medium">SMS Notifications</p>
+                        <p className="text-sm text-muted-foreground">Receive urgent alerts via SMS</p>
                       </div>
                       <Switch
                         checked={formData.smsNotifications}
@@ -418,10 +432,10 @@ export default function AdminOnboardingPage() {
                       />
                     </div>
 
-                    <div className="flex items-center justify-between border border-white/[0.06] rounded-lg p-4 bg-white/[0.01]">
+                    <div className="flex items-center justify-between border border-black/[0.06] rounded-xl p-4 bg-white/60">
                       <div>
-                        <p className="text-white font-medium">Push Notifications</p>
-                        <p className="text-sm text-slate-400">Receive in-app notifications</p>
+                        <p className="text-foreground font-medium">Push Notifications</p>
+                        <p className="text-sm text-muted-foreground">Receive in-app notifications</p>
                       </div>
                       <Switch
                         checked={formData.pushNotifications}
@@ -439,7 +453,7 @@ export default function AdminOnboardingPage() {
                 variant="ghost"
                 onClick={handleBack}
                 disabled={currentStep === 1}
-                className="text-slate-400 disabled:opacity-50"
+                className="text-muted-foreground disabled:opacity-50"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back
@@ -449,7 +463,7 @@ export default function AdminOnboardingPage() {
                 <Button
                   onClick={handleNext}
                   disabled={!canProceed()}
-                  className="bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-900/30"
+                  className="btn-emerald-solid rounded-xl px-6"
                 >
                   Next
                   <ArrowRight className="w-4 h-4 ml-2" />
@@ -458,7 +472,7 @@ export default function AdminOnboardingPage() {
                 <Button
                   onClick={handleComplete}
                   disabled={!canProceed() || isLoading}
-                  className="bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-900/30"
+                  className="btn-emerald-solid rounded-xl px-6"
                 >
                   {isLoading ? (
                     <>

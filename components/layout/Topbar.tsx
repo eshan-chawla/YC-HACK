@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo, useEffect, useRef } from 'react'
-import { Search, User, ChevronDown, MessageSquare, LogOut, Users, Calendar, MessageCircle, Plane } from 'lucide-react'
+import { Search, User, ChevronDown, MessageSquare, LogOut, Users, Calendar, MessageCircle, Plane, Sparkles } from 'lucide-react'
 import { useUser, useClerk } from '@clerk/nextjs'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
 import { useQuery } from 'convex/react'
@@ -183,31 +183,31 @@ export function Topbar({ role = 'admin' }: TopbarProps) {
   const profileHref = role === 'admin' ? '/admin/profile' : '/employee/profile'
 
   return (
-    <header className="h-14 border-b border-border bg-background sticky top-0 z-40 px-6 flex items-center justify-between">
-      {/* Left: Search */}
-      <div className="flex items-center gap-3 flex-1 max-w-md">
+    <header className="h-20 px-8 flex items-center justify-between border-b border-border/30 relative z-20">
+      {/* Left: Page context + Search */}
+      <div className="flex items-center gap-4 flex-1 max-w-lg">
         <div className="relative w-full hidden md:block">
           <Popover open={searchOpen} onOpenChange={setSearchOpen}>
             <PopoverAnchor asChild>
               <div className="relative w-full">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/40 pointer-events-none z-10" />
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/40 pointer-events-none z-10" />
                 <Input
                   ref={searchInputRef}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onFocus={() => setSearchOpen(true)}
-                  placeholder={role === 'admin' ? 'Search employees, trips...' : 'Search trips...'}
-                  className="pl-8 pr-14 bg-transparent border-border h-8 text-[13px] focus-visible:ring-1 focus-visible:ring-primary/30 focus-visible:border-primary/30 placeholder:text-muted-foreground/40"
+                  placeholder={role === 'admin' ? 'Locate traveler, event, trip...' : 'Search trips...'}
+                  className="pl-9 pr-16 paper-inset border-0 h-10 text-[13px] rounded-2xl focus-visible:ring-1 focus-visible:ring-emerald-500/30 focus-visible:border-emerald-500/30 placeholder:text-muted-foreground/40 transition-all"
                 />
-                <kbd className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none h-5 px-1.5 rounded border border-border bg-muted/40 text-[10px] font-medium text-muted-foreground/50 hidden sm:inline">⌘K</kbd>
+                <kbd className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none h-5 px-1.5 rounded-lg border border-border/30 bg-white/60 text-[10px] font-bold text-muted-foreground/50 hidden sm:inline">⌘K</kbd>
               </div>
             </PopoverAnchor>
-            <PopoverContent className="w-[var(--radix-popover-trigger-width)] min-w-[280px] p-0" align="start">
+            <PopoverContent className="w-[var(--radix-popover-trigger-width)] min-w-[280px] p-0 rounded-2xl shadow-layer-2" align="start">
               <Command
                 value={searchQuery}
                 onValueChange={setSearchQuery}
                 shouldFilter={false}
-                className="rounded-lg border-0 shadow-none"
+                className="rounded-2xl border-0 shadow-none"
               >
                 <CommandList>
                   <CommandEmpty>
@@ -310,25 +310,27 @@ export function Topbar({ role = 'admin' }: TopbarProps) {
         </div>
       </div>
 
-      {/* Right */}
-      <div className="flex items-center gap-1">
+      {/* Right: Actions */}
+      <div className="flex items-center gap-2">
+        {/* AI Concierge button */}
         <Link href={role === 'admin' ? '/admin/chat' : '/employee'}>
-          <Button variant="ghost" size="icon" className="relative h-8 w-8 text-muted-foreground/60 hover:text-foreground hover:bg-white/[0.04]">
-            <MessageSquare className="w-4 h-4" />
+          <Button variant="ghost" className="relative group h-10 px-4 rounded-2xl paper-inset border-0 hover:border-emerald-500/20 transition-all duration-300 btn-press">
+            <Sparkles className="w-4 h-4 text-gold mr-2" />
+            <span className="text-[13px] font-medium hidden lg:inline">AI Concierge</span>
             {role === 'employee' && (
-              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-primary rounded-full" />
+              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-primary rounded-full shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
             )}
           </Button>
         </Link>
 
         <NotificationCenter />
 
-        <div className="h-4 w-px bg-border mx-1.5" />
+        <div className="h-5 w-px bg-border/50 mx-1" />
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="pl-1 pr-2 gap-1.5 h-8 rounded-md hover:bg-white/[0.04]">
-              <Avatar className="w-6 h-6">
+            <Button variant="ghost" className="pl-1.5 pr-2.5 gap-2 h-10 rounded-2xl hover:bg-muted/30 btn-press">
+              <Avatar className="w-7 h-7 ring-2 ring-border/50">
                 <AvatarImage src={imageUrl} alt={displayName} />
                 <AvatarFallback className="bg-primary/10 text-primary text-[10px] font-semibold">
                   {initials}
@@ -340,9 +342,9 @@ export function Topbar({ role = 'admin' }: TopbarProps) {
               <ChevronDown className="w-3 h-3 text-muted-foreground/50" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-52">
-            <div className="flex items-center gap-2.5 p-2.5">
-              <Avatar className="w-8 h-8">
+          <DropdownMenuContent align="end" className="w-56 rounded-2xl shadow-layer-2 p-1.5">
+            <div className="flex items-center gap-3 p-3">
+              <Avatar className="w-9 h-9 ring-2 ring-border/50">
                 <AvatarImage src={imageUrl} alt={displayName} />
                 <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">{initials}</AvatarFallback>
               </Avatar>
@@ -353,14 +355,14 @@ export function Topbar({ role = 'admin' }: TopbarProps) {
             </div>
             <DropdownMenuSeparator />
             <Link href={profileHref}>
-              <DropdownMenuItem className="gap-2 cursor-pointer text-[13px]">
+              <DropdownMenuItem className="gap-2 cursor-pointer text-[13px] rounded-xl">
                 <User className="w-3.5 h-3.5" /> Profile
               </DropdownMenuItem>
             </Link>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={handleSignOut}
-              className="gap-2 cursor-pointer text-[13px] text-destructive focus:text-destructive"
+              className="gap-2 cursor-pointer text-[13px] text-destructive focus:text-destructive rounded-xl"
             >
               <LogOut className="w-3.5 h-3.5" /> Sign out
             </DropdownMenuItem>

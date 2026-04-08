@@ -127,7 +127,8 @@ export function ChatInterface({ role, conversationId, onConversationCreated, ini
       const agentResponse = await chatWithAgent(
         userMessage,
         historyForAgent,
-        employeeMemory ?? undefined
+        employeeMemory ?? undefined,
+        role
       )
       await addMessage({
         conversationId: activeConversationId,
@@ -152,21 +153,21 @@ export function ChatInterface({ role, conversationId, onConversationCreated, ini
     <div className="h-full flex flex-col max-w-4xl mx-auto">
       <div className="flex items-center justify-between mb-5">
         <div>
-          <h1 className="text-xl font-bold text-foreground tracking-[-0.02em]">
+          <h1 className="text-title text-foreground">
             AI Travel Agent
           </h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
+          <p className="text-xs text-muted-foreground mt-1 tracking-wide">
             {role === 'admin' ? 'Operations monitoring & policy overrides' : 'Personalized travel planning'}
           </p>
         </div>
-        <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 rounded-md text-xs font-medium border border-amber-200/60 dark:border-amber-800/40">
+        <div className="hidden md:flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[11px] font-semibold tracking-wide paper-inset blob-3-gold text-gold-foreground">
           <Info className="w-3.5 h-3.5" />
           AI responses may vary
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col overflow-hidden rounded-xl border border-border/60 bg-card shadow-sm min-h-0">
-        <div ref={scrollRef} className="flex-1 overflow-y-auto p-5 space-y-6 scrollbar-thin">
+      <div className="flex-1 flex flex-col overflow-hidden rounded-2xl paper-card min-h-0">
+        <div ref={scrollRef} className="flex-1 overflow-y-auto p-5 space-y-6 scrollbar-thin paper-inset rounded-none">
           {chatHistory.map((msg, index) => {
             const isProposal = msg.role === 'agent' && msg.content.includes('Proposed Itinerary')
 
@@ -179,18 +180,18 @@ export function ChatInterface({ role, conversationId, onConversationCreated, ini
                 className={cn('flex gap-3', msg.role === 'user' ? 'justify-end' : 'justify-start')}
               >
                 {msg.role === 'agent' && (
-                  <div className="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center shrink-0">
-                    <Bot className="w-4 h-4" />
+                  <div className="w-8 h-8 paper-inset blob-1 flex items-center justify-center shrink-0">
+                    <Bot className="w-4 h-4 text-emerald-700 text-emerald-600" />
                   </div>
                 )}
 
                 <div className="flex flex-col gap-1 max-w-[80%]">
                   <div
                     className={cn(
-                      'rounded-xl px-4 py-3 text-sm leading-relaxed',
+                      'rounded-2xl px-4 py-3 text-sm leading-relaxed',
                       msg.role === 'user'
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-muted/50 text-foreground border border-border/40'
+                        ? 'bg-gradient-to-br from-emerald-600 to-emerald-700 text-white shadow-[0_4px_16px_-4px_rgba(16,185,129,0.3)]'
+                        : 'paper-card text-foreground'
                     )}
                   >
                     {msg.paymentCompleted && (
@@ -238,19 +239,19 @@ export function ChatInterface({ role, conversationId, onConversationCreated, ini
                     )}
 
                     {isProposal && role === 'admin' && (
-                      <div className="mt-4 flex items-center gap-2 pt-3 border-t border-border/40">
-                        <Button size="sm" className="text-xs h-8 gap-1.5">
+                      <div className="mt-4 flex items-center gap-2 pt-3 border-t border-border/10">
+                        <Button size="sm" className="text-xs h-8 gap-1.5 bg-emerald-600 hover:bg-emerald-700 font-bold uppercase tracking-widest btn-press" onClick={() => setMessage('Go ahead and book this itinerary as proposed.')}>
                           <Check className="w-3.5 h-3.5" /> Approve
                         </Button>
-                        <Button size="sm" variant="outline" className="text-xs h-8 gap-1.5 text-destructive hover:text-destructive border-destructive/20 hover:bg-destructive/5">
-                          <X className="w-3.5 h-3.5" /> Reject
+                        <Button size="sm" variant="outline" className="text-xs h-8 gap-1.5 text-destructive hover:text-destructive border-destructive/20 hover:bg-destructive/5 btn-press" onClick={() => setMessage('I want to request a revision to this itinerary: ')}>
+                          <X className="w-3.5 h-3.5" /> Request Revision
                         </Button>
                       </div>
                     )}
 
                     {isProposal && role === 'employee' && (
-                      <div className="mt-4 pt-3 border-t border-border/40">
-                        <Button size="sm" variant="outline" className="w-full text-xs h-8 gap-1.5">
+                      <div className="mt-4 pt-3 border-t border-border/10">
+                        <Button size="sm" variant="outline" className="w-full text-xs h-8 gap-1.5 btn-press" onClick={() => setMessage('I want to request a revision to this itinerary: ')}>
                           <MessageSquare className="w-3.5 h-3.5" /> Request Revision
                         </Button>
                       </div>
@@ -268,7 +269,7 @@ export function ChatInterface({ role, conversationId, onConversationCreated, ini
                 </div>
 
                 {msg.role === 'user' && (
-                  <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                  <div className="w-8 h-8 paper-inset blob-3 flex items-center justify-center shrink-0">
                     <User className="w-4 h-4 text-muted-foreground" />
                   </div>
                 )}
@@ -284,10 +285,10 @@ export function ChatInterface({ role, conversationId, onConversationCreated, ini
                 exit={{ opacity: 0 }}
                 className="flex gap-3 justify-start"
               >
-                <div className="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center shrink-0 animate-pulse">
-                  <Bot className="w-4 h-4" />
+                <div className="w-8 h-8 paper-inset blob-1 flex items-center justify-center shrink-0 animate-pulse">
+                  <Bot className="w-4 h-4 text-emerald-700 text-emerald-600" />
                 </div>
-                <div className="bg-muted/50 rounded-xl px-4 py-3 border border-border/40">
+                <div className="paper-card rounded-2xl px-4 py-3">
                   {showPaymentAnimation ? (
                     <div className="w-full max-w-xs">
                       <PaymentFlowAnimation isLoading={true} />
@@ -305,7 +306,7 @@ export function ChatInterface({ role, conversationId, onConversationCreated, ini
           </AnimatePresence>
         </div>
 
-        <div className="p-4 border-t border-border/40">
+        <div className="p-4 border-t border-border/10">
           <form onSubmit={handleSubmit} className="relative flex items-center gap-3">
             <div className="relative flex-1">
               <Input
@@ -314,19 +315,19 @@ export function ChatInterface({ role, conversationId, onConversationCreated, ini
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder={role === 'admin' ? 'Issue a command or policy override...' : 'Ask anything about your trip...'}
                 disabled={isLoading}
-                className="w-full pl-4 pr-24 h-11 bg-muted/30 border-border/40 rounded-lg focus-visible:ring-1 focus-visible:ring-primary/20 text-sm"
+                className="w-full pl-4 pr-24 h-12 paper-inset rounded-xl border-0 text-sm focus-visible:ring-1 focus-visible:ring-emerald-500/30"
               />
               <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
                 <Button type="button" variant="ghost" size="icon-sm" className="text-muted-foreground/50 hover:text-muted-foreground">
                   <Paperclip className="w-4 h-4" />
                 </Button>
-                <Button type="submit" disabled={!message.trim() || isLoading} size="icon-sm" className="bg-primary hover:bg-primary/90 text-primary-foreground disabled:opacity-40">
+                <Button type="submit" disabled={!message.trim() || isLoading} size="icon-sm" className="paper-inset blob-1 text-emerald-700 text-emerald-600 disabled:opacity-40 btn-press">
                   <Send className="w-4 h-4" />
                 </Button>
               </div>
             </div>
           </form>
-          <div className="mt-3 flex items-center justify-center gap-4 text-[10px] text-muted-foreground/40">
+          <div className="mt-3 flex items-center justify-center gap-4 text-label opacity-50">
             <span>Powered by TripWeaver AI</span>
             <span>&middot;</span>
             <span>Encrypted</span>
