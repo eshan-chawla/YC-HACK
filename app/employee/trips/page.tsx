@@ -41,7 +41,7 @@ export default function EmployeeTripsPage() {
           description="View your upcoming and past travel itineraries"
           actions={
             <Link href="/employee">
-              <Button className="bg-emerald-600 hover:bg-emerald-700 gap-2 h-10 px-5 font-bold text-xs uppercase tracking-widest">
+              <Button className="btn-emerald-solid blob-2 gap-2 h-10 px-5 font-bold text-xs uppercase tracking-widest btn-press">
                 <MessageSquare className="w-4 h-4" />
                 Ask AI for help
               </Button>
@@ -50,22 +50,23 @@ export default function EmployeeTripsPage() {
         />
 
         <div className="space-y-6">
-          <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider px-1">Upcoming Travel</h2>
+          <h2 className="text-label px-1">Upcoming Travel</h2>
           {upcoming.length === 0 ? (
-            <Card className="p-12 border-border/60 border-dashed text-center">
-              <p className="text-muted-foreground text-sm">No upcoming trips. When your admin assigns you to an event, it will appear here.</p>
-            </Card>
+            <div className="p-12 paper-card rounded-2xl text-center relative overflow-hidden">
+              <Plane className="w-16 h-16 text-gray-200 mx-auto mb-3" />
+              <p className="text-muted-foreground text-sm relative z-10">No upcoming trips. When your admin assigns you to an event, it will appear here.</p>
+            </div>
           ) : (
             upcoming.map((trip, idx) => (
               <TripCard key={trip._id} trip={trip as TripWithEvent} index={idx} />
             ))
           )}
 
-          <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider px-1 pt-4">History</h2>
+          <h2 className="text-label px-1 pt-4">History</h2>
           {history.length === 0 ? (
-            <Card className="p-12 border-border/60 border-dashed text-center">
+            <div className="p-12 paper-card rounded-2xl text-center">
               <p className="text-muted-foreground text-sm">No past trips yet.</p>
-            </Card>
+            </div>
           ) : (
             history.map((trip, idx) => (
               <TripCard key={trip._id} trip={trip as TripWithEvent} index={idx} isPast />
@@ -103,23 +104,23 @@ function TripCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.1 }}
     >
-      <Card
+      <div
         className={cn(
-          'p-0 overflow-hidden border-border/60 hover:shadow-md transition-shadow duration-200 group',
+          'p-0 overflow-hidden rounded-2xl paper-card group',
           isPast && 'opacity-70 grayscale-[0.5]'
         )}
       >
         <div className="flex flex-col md:flex-row">
           <div
             className={cn(
-              'w-full md:w-2 h-2 md:h-auto',
-              isPast ? 'bg-muted' : 'bg-emerald-500'
+              'w-full md:w-1.5 h-1.5 md:h-auto rounded-l-2xl',
+              isPast ? 'bg-muted' : 'bg-gradient-to-b from-emerald-400 to-emerald-600'
             )}
           />
           <div className="flex-1 p-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
               <div>
-                <h3 className="text-xl font-bold text-foreground group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+                <h3 className="font-serif text-xl text-foreground group-hover:text-emerald-700 transition-colors tracking-[-0.02em]">
                   {eventName}
                 </h3>
                 <div className="flex items-center gap-4 mt-1.5 text-muted-foreground text-sm font-medium">
@@ -134,7 +135,7 @@ function TripCard({
               <Link href={`/employee/trips/${trip._id}`}>
                 <Button
                   variant="outline"
-                  className="h-9 gap-2 font-bold text-[10px] uppercase tracking-widest rounded-lg"
+                  className="h-9 gap-2 font-bold text-[10px] uppercase tracking-widest rounded-xl btn-press"
                 >
                   View Details <ArrowRight className="w-3 h-3" />
                 </Button>
@@ -142,28 +143,28 @@ function TripCard({
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-4 rounded-xl bg-muted/30 border border-border/60 flex items-center gap-4">
-                <div className="w-10 h-10 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shadow-sm">
-                  <Plane className="w-5 h-5" />
+              <div className="p-4 rounded-xl paper-inset flex items-center gap-4">
+                <div className="w-10 h-10 paper-inset blob-1 flex items-center justify-center">
+                  <Plane className="w-5 h-5 text-emerald-600" />
                 </div>
                 <div>
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Flight</p>
+                  <p className="text-label">Flight</p>
                   <p className="text-sm font-bold text-foreground">{flightLabel}</p>
                 </div>
               </div>
-              <div className="p-4 rounded-xl bg-muted/30 border border-border/60 flex items-center gap-4">
-                <div className="w-10 h-10 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shadow-sm">
-                  <Building2 className="w-5 h-5" />
+              <div className="p-4 rounded-xl paper-inset flex items-center gap-4">
+                <div className="w-10 h-10 paper-inset blob-3 flex items-center justify-center">
+                  <Building2 className="w-5 h-5 text-emerald-600" />
                 </div>
                 <div>
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Stay</p>
+                  <p className="text-label">Stay</p>
                   <p className="text-sm font-bold text-foreground">{hotelLabel}</p>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </Card>
+      </div>
     </motion.div>
   )
 }

@@ -22,8 +22,7 @@ export function Providers({ children }: ProvidersProps) {
     <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
       <ThemeProvider
         attribute="class"
-        defaultTheme="system"
-        enableSystem
+        defaultTheme="light"
         disableTransitionOnChange
       >
         {children}

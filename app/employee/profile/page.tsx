@@ -85,19 +85,19 @@ export default function EmployeeProfilePage() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="md:col-span-1 space-y-6">
-            <Card className="p-6 border-border/60 text-center">
-              <Avatar className="w-24 h-24 mx-auto mb-4 ring-4 ring-emerald-500/10">
+            <div className="p-6 rounded-2xl paper-card text-center">
+              <Avatar className="w-24 h-24 mx-auto mb-4 ring-4 ring-emerald-500/20 shadow-[var(--shadow-emerald-glow)]">
                 <AvatarImage src={imageUrl} alt={displayNameFallback} />
-                <AvatarFallback className="text-xl font-bold bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                <AvatarFallback className="text-xl font-bold bg-emerald-50 text-emerald-600">
                   {initials}
                 </AvatarFallback>
               </Avatar>
-              <h3 className="text-lg font-bold text-foreground">{displayNameFallback}</h3>
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mt-1">
+              <h3 className="font-serif text-lg text-foreground">{displayNameFallback}</h3>
+              <p className="text-label mt-1">
                 {employee ? employee.role : 'Employee'}
               </p>
 
-              <div className="mt-6 pt-6 border-t border-border/60 space-y-3">
+              <div className="mt-6 pt-6 border-t border-border/10 space-y-3">
                 <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium justify-center">
                   <Mail className="w-3.5 h-3.5" />
                   {email || 'No email'}
@@ -109,65 +109,69 @@ export default function EmployeeProfilePage() {
                   </div>
                 )}
               </div>
-            </Card>
+            </div>
 
-            <Card className="p-4 border-border/60 bg-muted/20">
-              <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-4">Quick Stats</h4>
+            <div className="p-4 rounded-2xl paper-inset">
+              <h4 className="text-label mb-4">Quick Stats</h4>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold">Team</span>
-                  <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">{employee?.team ?? '—'}</span>
+                  <span className="text-sm font-serif text-emerald-600">{employee?.team ?? '—'}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold">Department</span>
-                  <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">{employee?.department ?? '—'}</span>
+                  <span className="text-sm font-serif text-emerald-600">{employee?.department ?? '—'}</span>
                 </div>
               </div>
-            </Card>
+            </div>
           </div>
 
           <div className="md:col-span-2 space-y-6">
-            <Card className="p-6 border-border/60 shadow-sm">
-              <h3 className="text-base font-semibold text-foreground mb-6 flex items-center gap-2 tracking-wider">
-                <User className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            <div className="p-6 rounded-2xl paper-card">
+              <h3 className="font-serif text-base text-foreground mb-6 flex items-center gap-3">
+                <div className="w-8 h-8 paper-inset blob-1 flex items-center justify-center">
+                  <User className="w-4 h-4 text-emerald-600" />
+                </div>
                 Personal Information
               </h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div className="grid gap-2">
-                  <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Display Name</Label>
+                  <Label className="text-label">Display Name</Label>
                   <Input
                     value={displayName}
                     onChange={(e) => setDisplayName(e.target.value)}
                     placeholder={displayNameFallback}
-                    className="h-11 rounded-xl"
+                    className="h-11 rounded-xl paper-inset border-0 focus-visible:ring-1 focus-visible:ring-emerald-500/30"
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Contact Email</Label>
-                  <Input value={email} readOnly disabled className="h-11 rounded-xl bg-muted/50" />
+                  <Label className="text-label">Contact Email</Label>
+                  <Input value={email} readOnly disabled className="h-11 rounded-xl paper-inset border-0 opacity-60" />
                 </div>
                 <div className="grid gap-2 sm:col-span-2">
-                  <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Phone Number</Label>
+                  <Label className="text-label">Phone Number</Label>
                   <Input
                     value={phoneNumber}
                     onChange={(e) => setPhoneNumber(e.target.value)}
                     placeholder="+1 (555) 000-0000"
-                    className="h-11 rounded-xl"
+                    className="h-11 rounded-xl paper-inset border-0 focus-visible:ring-1 focus-visible:ring-emerald-500/30"
                   />
                 </div>
               </div>
-            </Card>
+            </div>
 
-            <Card className="p-6 border-border/60 shadow-sm">
-              <h3 className="text-base font-semibold text-foreground mb-6 flex items-center gap-2 tracking-wider">
-                <Shield className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            <div className="p-6 rounded-2xl paper-card">
+              <h3 className="font-serif text-base text-foreground mb-6 flex items-center gap-3">
+                <div className="w-8 h-8 paper-inset blob-3 flex items-center justify-center">
+                  <Shield className="w-4 h-4 text-emerald-600" />
+                </div>
                 Travel Preferences
               </h3>
               <p className="text-sm text-muted-foreground">
                 Travel policies and preferences are set by your administrator. Contact your admin or use the AI assistant for trip changes.
               </p>
-            </Card>
+            </div>
 
             {error && <p className="text-sm text-destructive">{error}</p>}
 
@@ -182,7 +186,7 @@ export default function EmployeeProfilePage() {
               <Button
                 onClick={handleSave}
                 disabled={saving}
-                className="gap-2 bg-emerald-600 hover:bg-emerald-700 font-bold text-xs uppercase tracking-widest h-11 px-8 rounded-xl shadow-lg shadow-emerald-500/10"
+                className="gap-2 btn-emerald-solid blob-2 font-bold text-xs uppercase tracking-widest h-11 px-8 btn-press"
               >
                 <Save className="w-4 h-4" /> {saving ? 'Saving…' : 'Save Profile'}
               </Button>

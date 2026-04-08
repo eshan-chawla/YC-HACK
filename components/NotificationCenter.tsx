@@ -16,10 +16,10 @@ import { CheckCircle2, AlertTriangle, Info, AlertCircle, Bell, MailOpen } from '
 import { cn } from '@/lib/utils'
 
 const iconConfig = {
-  success: { icon: CheckCircle2, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-500/10' },
-  error: { icon: AlertCircle, color: 'text-red-600 dark:text-red-400', bg: 'bg-red-50 dark:bg-red-500/10' },
-  warning: { icon: AlertTriangle, color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-50 dark:bg-amber-500/10' },
-  info: { icon: Info, color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-50 dark:bg-blue-500/10' },
+  success: { icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+  error: { icon: AlertCircle, color: 'text-red-600', bg: 'bg-red-50' },
+  warning: { icon: AlertTriangle, color: 'text-amber-600', bg: 'bg-amber-50' },
+  info: { icon: Info, color: 'text-blue-600', bg: 'bg-blue-50' },
 }
 
 function formatRelativeTime(ts: number): string {

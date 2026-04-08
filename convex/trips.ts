@@ -628,3 +628,49 @@ export const respondToChangeRequest = mutation({
     return { success: true, status: args.action };
   },
 });
+
+// List trips with optional filters (for agent DatabaseContext)
+export const listFiltered = query({
+  args: {
+    eventId: v.optional(v.id("events")),
+    employeeId: v.optional(v.id("employees")),
+    status: v.optional(v.union(
+      v.literal("pending"),
+      v.literal("generating"),
+      v.literal("booked"),
+      v.literal("in_progress"),
+      v.literal("failed"),
+      v.literal("completed"),
+      v.literal("cancelled")
+    )),
+  },
+  handler: async (ctx, args) => {
+    const user = await requireAuth(ctx);
+
+    let trips;
+    if (args.eventId) {
+      trips = await ctx.db
+        .query("trips")
+        .withIndex("by_eventId", (q) => q.eq("eventId", args.eventId!))
+        .collect();
+    } else if (args.employeeId) {
+      trips = await ctx.db
+        .query("trips")
+        .withIndex("by_employeeId", (q) => q.eq("employeeId", args.employeeId!))
+        .collect();
+    } else {
+      trips = await ctx.db.query("trips").collect();
+    }
+
+    const filtered = args.status
+      ? trips.filter((t) => t.status === args.status)
+      : trips;
+
+    // Employees can only see their own trips
+    if (user.role === "employee") {
+      return filtered.filter((t) => t.employeeId === user.employeeId);
+    }
+
+    return filtered;
+  },
+});

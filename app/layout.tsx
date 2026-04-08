@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Plus_Jakarta_Sans, DM_Mono } from 'next/font/google'
+import { Plus_Jakarta_Sans, DM_Mono, Instrument_Serif } from 'next/font/google'
 import './globals.css'
 import { ClerkProvider } from '@clerk/nextjs'
 import { Providers } from '@/components/Providers'
@@ -16,6 +16,14 @@ const dmMono = DM_Mono({
   variable: "--font-mono",
   display: "swap",
   weight: ["300", "400", "500"],
+});
+
+const instrumentSerif = Instrument_Serif({
+  subsets: ["latin"],
+  variable: "--font-serif",
+  display: "swap",
+  weight: ["400"],
+  style: ["normal", "italic"],
 });
 
 export const metadata: Metadata = {
@@ -47,7 +55,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${plusJakarta.variable} ${dmMono.variable} font-sans antialiased`}>
+      <body className={`${plusJakarta.variable} ${dmMono.variable} ${instrumentSerif.variable} font-sans antialiased`}>
         <ClerkProvider
           signInFallbackRedirectUrl="/auth/login"
           signUpFallbackRedirectUrl="/auth/select-role"
